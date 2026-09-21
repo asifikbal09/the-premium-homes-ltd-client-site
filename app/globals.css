@@ -1,26 +1,204 @@
 @import "tailwindcss";
 
+/* Brand Typography Configuration */
 :root {
+  /* Brand Palette */
+  --brand-forest: #044133;
+  --brand-gold: #d0a65b;
+  --brand-emerald: #055b4b;
+  --brand-ivory: #fdfdf8;
+  --brand-cream: #f7e7cb;
+  --brand-charcoal: #1f2723;
+
+  /* Theme mappings for luxury estate aesthetic */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1f2723;
+  --card: #ffffff;
+  --card-foreground: #1f2723;
+  --popover: #ffffff;
+  --popover-foreground: #1f2723;
+  --primary: #044133;
+  --primary-foreground: #fdfdf8;
+  --secondary: #f7e7cb;
+  --secondary-foreground: #044133;
+  --muted: #f7e7cb;
+  --muted-foreground: #526058;
+  --accent: #d0a65b;
+  --accent-foreground: #1f2723;
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: #ffffff;
+  --border: #e8e2d2;
+  --input: #e8e2d2;
+  --ring: #d0a65b;
+  --radius: 0.5rem;
+
+  --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-victor: var(--font-heading);
+  --font-ivymode: var(--font-heading);
+}
+
+@font-face {
+  font-family: "K Victor Trial";
+  src: url("/fonts/KVictorTrial-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "K Victor Trial";
+  src: url("/fonts/KVictorTrial-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "K Victor Trial";
+  src: url("/fonts/KVictorTrial-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "K Victor Trial";
+  src: url("/fonts/KVictorTrial-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.dark {
+  --background: #1f2723;
+  --foreground: #fdfdf8;
+  --card: #044133;
+  --card-foreground: #fdfdf8;
+  --popover: #044133;
+  --popover-foreground: #fdfdf8;
+  --primary: #d0a65b;
+  --primary-foreground: #1f2723;
+  --secondary: #055b4b;
+  --secondary-foreground: #fdfdf8;
+  --muted: #055b4b;
+  --muted-foreground: #d0a65b;
+  --accent: #055b4b;
+  --accent-foreground: #fdfdf8;
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: #ffffff;
+  --border: #055b4b;
+  --input: #055b4b;
+  --ring: #d0a65b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand Palette Utilities */
+  --color-brand-forest: #044133;
+  --color-brand-gold: #d0a65b;
+  --color-brand-emerald: #055b4b;
+  --color-brand-ivory: #fdfdf8;
+  --color-brand-cream: #f7e7cb;
+  --color-brand-charcoal: #1f2723;
+
+  /* Direct shorthand color utilities */
+  --color-forest: #044133;
+  --color-gold: #d0a65b;
+  --color-emerald-deep: #055b4b;
+  --color-ivory: #fdfdf8;
+  --color-cream: #f7e7cb;
+  --color-charcoal: #1f2723;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Body, Navigation, Buttons -> Vazirmatn */
+  --font-sans:
+    var(--font-vazirmatn), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-body:
+    var(--font-vazirmatn), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-vazirmatn:
+    var(--font-vazirmatn), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+
+  /* Headings -> Cormorant Garamond */
+  --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-cormorant: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-victor: var(--font-heading);
+  --font-ivymode: var(--font-heading);
+
+  /* Specific accents / signatures -> Seaweed Script */
+  --font-signature: var(--font-seaweed-script), "Seaweed Script", cursive;
+  --font-script: var(--font-seaweed-script), "Seaweed Script", cursive;
+  --font-sign: var(--font-seaweed-script), "Seaweed Script", cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base element typography rules */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Cormorant Garamond for all headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+/* Vazirmatn for navigation, buttons, and form controls */
+nav,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+}
+
+/* Infinite Marquee Animation (Right to Left) */
+@keyframes marquee-rtl {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-rtl {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-rtl 35s linear infinite;
+}
+
+.animate-marquee-rtl:hover {
+  animation-play-state: paused;
 }
