@@ -14,7 +14,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LuxuryMenuModal } from "@/components/navbar";
+import { NavDropdownMenu } from "@/components/navbar";
 
 // --- Types & Constants ---
 interface ChatMessage {
@@ -424,6 +424,34 @@ function HeroAdvisorChat() {
 // --- Main Hero Section Export ---
 export function HomeHero() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const heroNavRef = useRef<HTMLDivElement>(null);
+
+  // Close hero dropdown on ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
+  // Close hero dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        heroNavRef.current &&
+        !heroNavRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <>
@@ -457,52 +485,81 @@ export function HomeHero() {
           </div>
 
           {/* TOP BAR: Logo & Navigation Controls (Directly inside 16:9 Hero Frame) */}
-          <div className="relative z-30 w-full flex items-center justify-between">
-            {/* Brand Logo */}
-            <Link
-              href="/"
-              className="group relative flex items-center transition-transform duration-300 hover:scale-[1.02]"
-              aria-label="Premium Homes Home"
-            >
-              <div className="relative h-4 sm:h-7 md:h-8 lg:h-9 w-20 sm:w-36 md:w-44 lg:w-48">
-                <Image
-                  src="/image/logo.png"
-                  alt="Premium Homes"
-                  fill
-                  sizes="(max-width: 640px) 100px, (max-width: 768px) 180px, 200px"
-                  priority
-                  className="object-contain object-left"
-                />
-              </div>
-            </Link>
-
-            {/* Top Right Action Pills */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
-              {/* ALL PROJECT Button */}
+          <div ref={heroNavRef} className="relative z-30 w-full">
+            <div className="flex items-center justify-between">
+              {/* Brand Logo */}
               <Link
-                href="#projects"
-                className="group relative inline-flex items-center justify-center px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-black/35 hover:bg-black/55 border border-white/20 hover:border-white/35 backdrop-blur-md transition-all duration-200 shadow-sm active:scale-95"
+                href="/"
+                className="group relative flex items-center transition-transform duration-300 hover:scale-[1.02]"
+                aria-label="Premium Homes Home"
               >
-                <span>ALL PROJECT</span>
+                <div className="relative h-4 sm:h-7 md:h-8 lg:h-9 w-20 sm:w-36 md:w-44 lg:w-48">
+                  <Image
+                    src="/image/logo.png"
+                    alt="Premium Homes"
+                    fill
+                    sizes="(max-width: 640px) 100px, (max-width: 768px) 180px, 200px"
+                    priority
+                    className="object-contain object-left"
+                  />
+                </div>
               </Link>
 
-              {/* MENU Button */}
-              <button
-                type="button"
-                onClick={() => setMenuOpen(true)}
-                aria-label="Open Navigation Menu"
-                className="group relative inline-flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-black/35 hover:bg-black/55 border border-white/20 hover:border-white/35 backdrop-blur-md transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
-              >
-                <span
-                  className="flex flex-col justify-center gap-[3px] sm:gap-[4px] w-2.5 sm:w-3.5"
-                  aria-hidden="true"
+              {/* Top Right Action Pills */}
+              <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
+                {/* ALL PROJECT Button */}
+                <Link
+                  href="#projects"
+                  className="group relative inline-flex items-center justify-center px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-black/35 hover:bg-black/55 border border-white/20 hover:border-white/35 backdrop-blur-md transition-all duration-200 shadow-sm active:scale-95"
                 >
-                  <span className="block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform group-hover:translate-x-0.5" />
-                  <span className="block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform group-hover:-translate-x-0.5" />
-                </span>
-                <span>MENU</span>
-              </button>
+                  <span>ALL PROJECT</span>
+                </Link>
+
+                {/* MENU Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  aria-label={
+                    menuOpen ? "Close Navigation Menu" : "Open Navigation Menu"
+                  }
+                  aria-expanded={menuOpen}
+                  className={cn(
+                    "group relative inline-flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white border backdrop-blur-md transition-all duration-200 shadow-sm cursor-pointer active:scale-95",
+                    menuOpen
+                      ? "bg-black/60 border-white/40"
+                      : "bg-black/35 hover:bg-black/55 border-white/20 hover:border-white/35",
+                  )}
+                >
+                  <span
+                    className="flex flex-col justify-center gap-[3px] sm:gap-[4px] w-2.5 sm:w-3.5"
+                    aria-hidden="true"
+                  >
+                    <span
+                      className={cn(
+                        "block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
+                        menuOpen &&
+                          "rotate-45 translate-y-[2px] sm:translate-y-[2.5px]",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
+                        menuOpen &&
+                          "-rotate-45 -translate-y-[2px] sm:-translate-y-[2.5px]",
+                      )}
+                    />
+                  </span>
+                  <span>MENU</span>
+                </button>
+              </div>
             </div>
+
+            {/* Dropdown Menu attached directly beneath hero top bar */}
+            <NavDropdownMenu
+              isOpen={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              className="mt-2 sm:mt-3 rounded-xl sm:rounded-2xl border border-white/20 shadow-2xl"
+            />
           </div>
 
           {/* MIDDLE AREA: Left Headline & Right Floating Contact / Chat */}
@@ -545,9 +602,6 @@ export function HomeHero() {
           </motion.div>
         </div>
       </section>
-
-      {/* Shared Luxury Navigation Modal */}
-      <LuxuryMenuModal isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
 }

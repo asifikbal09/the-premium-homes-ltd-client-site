@@ -34,6 +34,7 @@ const STATS: StatItem[] = [
 export function HomeAbout() {
   return (
     <section
+      id="about"
       aria-labelledby="about-heading"
       className="w-full bg-white pb-20 sm:pb-24 lg:pb-32 pt-6 sm:pt-10 lg:pt-12 selection:bg-[#d0a65b]/20"
     >

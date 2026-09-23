@@ -8,6 +8,7 @@ import { FeaturedProjects } from "@/components/section/home/featured_projects";
 import { ArtOfLivingVideo } from "@/components/section/home/art_of_living_video";
 import { CommunityGallery } from "@/components/section/home/community_gallery";
 import { MobileAppSection } from "@/components/section/home/mobile_app_section";
+import { PropertyPredictionSection } from "@/components/section/team/property_prediction_section";
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
         <CommunityGallery />
         <FounderMessage />
         <MobileAppSection />
+         <PropertyPredictionSection />
       </main>
       <Footer />
     </div>

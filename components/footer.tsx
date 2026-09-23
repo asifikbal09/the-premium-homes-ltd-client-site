@@ -20,7 +20,10 @@ export function Footer() {
   };
 
   return (
-    <footer className="w-full bg-[#05261e] text-[#fdfdf8] selection:bg-[#d0a65b]/30 selection:text-white font-sans [&_h1]:font-sans [&_h2]:font-sans [&_h3]:font-sans [&_h4]:font-sans [&_h5]:font-sans [&_h6]:font-sans">
+    <footer
+      id="contact"
+      className="w-full bg-[#05261e] text-[#fdfdf8] selection:bg-[#d0a65b]/30 selection:text-white font-sans [&_h1]:font-sans [&_h2]:font-sans [&_h3]:font-sans [&_h4]:font-sans [&_h5]:font-sans [&_h6]:font-sans"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 sm:pb-12">
         {/* Top Section: Newsletter & Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
@@ -105,6 +108,13 @@ export function Footer() {
                   { name: "NRB Buyers", href: "#nrb-buyers" },
                   { name: "Investors", href: "#investors" },
                   { name: "News", href: "#news" },
+                  { name: "Home", href: "/" },
+                  { name: "Projects", href: "/#projects" },
+                  { name: "About Us", href: "/#about" },
+                  { name: "Our Team", href: "/team" },
+                  { name: "NRB Buyers", href: "/#nrb-buyers" },
+                  { name: "Investors", href: "/#investors" },
+                  { name: "News", href: "/#news" },
                 ].map((item) => (
                   <li key={item.name}>
                     <Link

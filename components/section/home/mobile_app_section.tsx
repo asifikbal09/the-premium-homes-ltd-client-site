@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import appImage from "@/public/image/apps/apps_showcase.png";
 
 function AppleIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -41,7 +42,7 @@ export function MobileAppSection() {
   return (
     <section
       aria-labelledby="mobile-app-heading"
-      className="w-full relative overflow-x-clip pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-14 sm:pb-18 md:pb-20 lg:pb-24 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 selection:bg-[#d0a65b]/20"
+      className="w-full relative overflow-hidden py-14 sm:py-20 md:py-24 lg:py-28 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 selection:bg-[#d0a65b]/20"
       style={{
         background:
           "linear-gradient(180deg, #FFFFFF 0%, #FAF1E2 20%, #EED5AA 55%, #CFA564 100%)",
@@ -49,7 +50,7 @@ export function MobileAppSection() {
     >
       <div className="max-w-[1360px] mx-auto">
         {/* Luxury Rounded Dark Emerald Card */}
-        <div className="relative rounded-[28px] sm:rounded-[36px] md:rounded-[44px] lg:rounded-[52px] bg-[#07241c] shadow-[0_25px_60px_rgba(0,0,0,0.22)] overflow-hidden lg:overflow-visible lg:min-h-[480px] xl:min-h-[520px] flex flex-col lg:flex-row lg:items-end">
+        <div className="relative rounded-[28px] sm:rounded-[36px] md:rounded-[44px] lg:rounded-[52px] bg-[#07241c] shadow-[0_25px_60px_rgba(0,0,0,0.22)] overflow-hidden lg:overflow-visible lg:min-h-[500px] xl:min-h-[540px] flex flex-col lg:flex-row lg:items-end">
           {/* Subtle Ambient Background Highlight behind Phone */}
           <div
             className="absolute top-0 right-0 w-full lg:w-3/5 h-full pointer-events-none rounded-[28px] sm:rounded-[36px] md:rounded-[44px] lg:rounded-[52px] overflow-hidden"
@@ -84,6 +85,8 @@ export function MobileAppSection() {
               {/* Apple App Store */}
               <a
                 href="https://apps.apple.com/us/app/tphl-premium-homes-ltd/id6752620266"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#dadedd] hover:bg-white text-[#1f2723] transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-sm group select-none cursor-pointer"
                 aria-label="Download on the App Store"
               >
@@ -101,8 +104,9 @@ export function MobileAppSection() {
               {/* Google Play */}
               <a
                 href="https://play.google.com/store/apps/details?id=com.premium_homes.tech&pcampaignid=web_share"
-                className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#dadedd] hover:bg-white text-[#1f2723] transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-sm group select-none cursor-pointer"
                 target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#dadedd] hover:bg-white text-[#1f2723] transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-sm group select-none cursor-pointer"
                 aria-label="Get it on Google Play"
               >
                 <GooglePlayIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-300 group-hover:scale-105" />
@@ -120,14 +124,14 @@ export function MobileAppSection() {
 
           {/* Right Content: Hand holding phone mockup */}
           <div className="w-full lg:w-[52%] xl:w-[55%] flex justify-center lg:justify-end items-end px-4 sm:px-8 lg:px-0 pt-4 lg:pt-0">
-            <div className="relative w-full max-w-[340px] sm:max-w-[400px] md:max-w-[450px] lg:max-w-[490px] xl:max-w-[530px] lg:absolute  lg:bottom-2 xl:bottom-3 pointer-events-none select-none">
+            <div className="relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[560px] xl:max-w-[620px] lg:absolute lg:bottom-3 xl:bottom-4 pointer-events-none select-none">
               <Image
-                src="/image/apps/apps_showcase.png"
+                src={appImage}
                 alt="Premium Homes Mobile Application Interface"
                 width={1200}
-                height={1257}
+                height={978}
                 priority
-                className="w-full h-auto object-contain rounded-b-4xl drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+                className="w-full h-auto object-contain md:rounded-br-[54px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
               />
             </div>
           </div>

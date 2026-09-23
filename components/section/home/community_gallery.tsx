@@ -50,12 +50,12 @@ const AMENITY_CATEGORIES: AmenityCategory[] = [
         alt: "Rooftop park with serene poolside lounge deck and tropical foliage",
       },
       {
-        src: "/image/rooftop/rooftop02.png",
-        alt: "Architectural resort chalets overlooking reflecting swimming pool",
-      },
-      {
         src: "/image/rooftop/rooftop03.jpg",
         alt: "Sunlit recreational pool with leisure floats and umbrella deck",
+      },
+      {
+        src: "/image/rooftop/rooftop02.png",
+        alt: "Architectural resort chalets overlooking reflecting swimming pool",
       },
     ],
   },
@@ -131,7 +131,10 @@ export function CommunityGallery() {
   const marqueeItems = [...COMMUNITY_IMAGES, ...COMMUNITY_IMAGES];
 
   return (
-    <section className="w-full bg-[#ffffff] pt-16 sm:pt-20 md:pt-24 select-none">
+    <section
+      id="reviews"
+      className="w-full bg-[#ffffff] pt-16 sm:pt-20 md:pt-24 select-none"
+    >
       {/* Header Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-12 md:mb-14">
         <p className="text-xs sm:text-[13px] font-semibold tracking-[0.25em] uppercase text-[#054b3c] mb-2 sm:mb-3">
@@ -151,12 +154,12 @@ export function CommunityGallery() {
               className="h-[300px] sm:h-[360px] md:h-[420px] shrink-0 overflow-hidden shadow-sm transition-transform duration-300 hover:scale-[1.01]"
             >
               {/* Native img for zero-layout-shift horizontal marquee with natural aspect ratios */}
-              <img
+              <Image
                 src={item.src}
                 alt={item.alt}
-                loading="eager"
-                draggable={false}
-                className="h-full w-auto object-cover pointer-events-none"
+                width={600}
+                height={400}
+                className="h-full w-auto object-cover"
               />
             </div>
           ))}

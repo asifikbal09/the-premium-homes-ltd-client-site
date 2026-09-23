@@ -4,6 +4,7 @@ import Image from "next/image";
 export function FounderMessage() {
   return (
     <section
+      id="team"
       aria-label="Founder Statement"
       className="w-full relative overflow-hidden bg-[#06211a] bg-[radial-gradient(ellipse_80%_60%_at_50%_35%,#0f4334_0%,#08271f_60%,#051c16_100%)] text-[#fdfdf8] selection:bg-[#d0a65b]/30 selection:text-white py-10 sm:py-16 md:py-20 lg:py-24"
     >
