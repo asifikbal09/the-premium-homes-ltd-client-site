@@ -102,12 +102,7 @@ export function Footer() {
               </h4>
               <ul className="space-y-2.5 text-xs sm:text-[13px] text-white/70">
                 {[
-                  { name: "Home", href: "#home" },
-                  { name: "Projects", href: "#projects" },
-                  { name: "About Us", href: "#about" },
-                  { name: "NRB Buyers", href: "#nrb-buyers" },
-                  { name: "Investors", href: "#investors" },
-                  { name: "News", href: "#news" },
+                  
                   { name: "Home", href: "/" },
                   { name: "Projects", href: "/#projects" },
                   { name: "About Us", href: "/#about" },
@@ -115,8 +110,8 @@ export function Footer() {
                   { name: "NRB Buyers", href: "/#nrb-buyers" },
                   { name: "Investors", href: "/#investors" },
                   { name: "News", href: "/#news" },
-                ].map((item) => (
-                  <li key={item.name}>
+                ].map((item, index) => (
+                  <li key={index}>
                     <Link
                       href={item.href}
                       className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200 font-light"
@@ -137,7 +132,7 @@ export function Footer() {
                 {[
                   { name: "Contact Us", href: "#contact" },
                   { name: "Partnerships", href: "#partnerships" },
-                  { name: "Careers", href: "#careers" },
+                  { name: "Careers", href: "/career" },
                 ].map((item) => (
                   <li key={item.name}>
                     <Link

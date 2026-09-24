@@ -509,7 +509,7 @@ export function HomeHero() {
               <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
                 {/* ALL PROJECT Button */}
                 <Link
-                  href="#projects"
+                  href="/projects"
                   className="group relative inline-flex items-center justify-center px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-black/35 hover:bg-black/55 border border-white/20 hover:border-white/35 backdrop-blur-md transition-all duration-200 shadow-sm active:scale-95"
                 >
                   <span>ALL PROJECT</span>

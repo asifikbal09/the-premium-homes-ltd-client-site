@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { NavDropdownMenu } from "@/components/navbar";
 
-export function TeamHero() {
+export function CareerHero() {
   const [menuOpen, setMenuOpen] = useState(false);
   const heroNavRef = useRef<HTMLDivElement>(null);
 
@@ -38,17 +38,24 @@ export function TeamHero() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
+  const scrollToPositions = () => {
+    const el = document.getElementById("open-positions");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section
-      aria-label="Team Hero Section"
-      className="relative w-full bg-[#051c16] bg-[radial-gradient(ellipse_100%_80%_at_50%_25%,#092e24_0%,#051c16_65%,#03130f_100%)] text-white overflow-hidden"
+      aria-label="Career Hero Section"
+      className="relative w-full bg-[#061d16] bg-[radial-gradient(ellipse_100%_80%_at_50%_25%,#092e24_0%,#061d16_65%,#03130f_100%)] text-white overflow-hidden"
     >
       {/* Background Ambience Overlay */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-40"
+        className="absolute inset-0 pointer-events-none opacity-30"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 50% 30%, rgba(208, 166, 91, 0.08) 0%, transparent 60%)",
+            "radial-gradient(circle at 50% 30%, rgba(208, 166, 91, 0.08) 0%, transparent 65%)",
         }}
       />
 
@@ -131,28 +138,41 @@ export function TeamHero() {
         {/* Center Typography matching Image 1 */}
         <div className="flex-1 flex flex-col items-center justify-center text-center mt-12 sm:mt-16 md:mt-20">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-4xl mx-auto px-2"
           >
-            {/* Eyebrow Label */}
-            <span className="inline-block text-[#d0a65b] font-semibold text-xs sm:text-[13px] md:text-sm tracking-[0.22em] uppercase mb-4 sm:mb-6">
-              MEET THE TEAM
+            {/* Breadcrumb / Eyebrow Label */}
+            <span className="inline-block text-[#d0a65b] font-medium text-xs sm:text-[13px] tracking-[0.22em] uppercase mb-4 sm:mb-6">
+              HOMEPAGE / CARRER
             </span>
 
             {/* Display Headline */}
             <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[84px] font-normal text-white leading-[1.08] sm:leading-[1.04] tracking-tight">
-              The People Behind
+              Build Your Future
               <br />
-              Every Premium Home.
+              With Premium Homes
             </h1>
 
-            {/* Philosophy Subtitle */}
-            <p className="font-sans text-xs sm:text-sm md:text-base lg:text-lg text-white/75 font-light leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
-              Our Philosophy is simple, hire great people and give them the
-              resources and support to do their best work
+            {/* Subtitle */}
+            <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-light leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
+              Join a fast-growing real estate group shaping tomorrow&apos;s
+              communities across the region.
+              <br className="hidden sm:inline" /> We&apos;re looking for
+              passionate people ready to innovate, grow, and make an impact.
             </p>
+
+            {/* View Open Positions CTA Button */}
+            <div className="mt-8 sm:mt-10">
+              <button
+                type="button"
+                onClick={scrollToPositions}
+                className="group relative inline-flex items-center justify-center px-7 sm:px-9 py-3 sm:py-3.5 rounded-full text-[10px] sm:text-xs font-semibold tracking-[0.16em] uppercase text-white bg-[#2b3e34] hover:bg-[#344b3f] border border-[#43594d] transition-all duration-300 shadow-md cursor-pointer active:scale-95"
+              >
+                <span>VIEW OPEN POSITIONS</span>
+              </button>
+            </div>
           </motion.div>
         </div>
       </div>
