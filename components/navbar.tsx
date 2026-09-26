@@ -19,6 +19,7 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "BLOGS", href: "/blogs" },
   { name: "Life At Premium Homes", href: "/life-at-premium-homes" },
   { name: "FAQ", href: "/faq" },
+  { name: "Projects Progress", href: "/project-progress" },
   { name: "Careers", href: "/careers" },
   {name: "Contact", href: "/contact" },
 ];
