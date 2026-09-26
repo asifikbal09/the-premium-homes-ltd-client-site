@@ -17,9 +17,9 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "ABOUT", href: "/#about" },
   { name: "TEAM", href: "/team" },
   { name: "BLOGS", href: "/#blogs" },
-  { name: "REVIEWS", href: "/#reviews" },
-  { name: "FAQ", href: "/#faq" },
-  { name: "CONTACT", href: "/#contact" },
+  { name: "Life At Premium Homes", href: "/life-at-premium-homes" },
+  { name: "FAQ", href: "/faq" },
+  { name: "Careers", href: "/careers" },
 ];
 
 export interface NavDropdownMenuProps {
