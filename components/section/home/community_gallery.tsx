@@ -3,234 +3,287 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus } from "lucide-react";
 
-interface CommunityImage {
+// Top floating community cards configuration matching the design
+interface FloatingCard {
+  id: string;
+  src: string;
+  alt: string;
+  className: string;
+  floatY: number[];
+  duration: number;
+  delay: number;
+}
+
+const FLOATING_CARDS: FloatingCard[] = [
+  // 1. Top Left: Family descending stairs
+  {
+    id: "card-top-left",
+    src: "/image/community/community03.png",
+    alt: "Family enjoying a peaceful morning walk",
+    className:
+      "top-[4%] left-[6%] sm:left-[10%] md:left-[14%] w-16 h-20 sm:w-24 sm:h-28 md:w-32 md:h-36 z-10",
+    floatY: [-5, 6, -5],
+    duration: 4.6,
+    delay: 0.1,
+  },
+  // 2. Top Center: Parents with child in wheelbarrow (prominent card)
+  {
+    id: "card-top-center",
+    src: "/image/community/community01.png",
+    alt: "Parents playing with child in courtyard lawn",
+    className:
+      "top-[0%] left-[38%] sm:left-[41%] md:left-[43%] w-24 h-32 sm:w-36 sm:h-48 md:w-48 md:h-60 z-20",
+    floatY: [-7, 8, -7],
+    duration: 5.2,
+    delay: 0,
+  },
+  // 3. Top Right: Mother and children in garden
+  {
+    id: "card-top-right",
+    src: "/image/community/community04.png",
+    alt: "Happy family outdoor recreation",
+    className:
+      "top-[5%] right-[5%] sm:right-[9%] md:right-[12%] w-18 h-22 sm:w-26 sm:h-32 md:w-36 md:h-44 z-10",
+    floatY: [6, -6, 6],
+    duration: 4.8,
+    delay: 0.2,
+  },
+  // 4. Bottom Far-Left: Distant family in park
+  {
+    id: "card-bottom-left",
+    src: "/image/community/community03.png",
+    alt: "Peaceful neighborhood stroll",
+    className:
+      "bottom-[22%] left-[1%] sm:left-[3%] md:left-[5%] w-14 h-18 sm:w-20 sm:h-24 md:w-26 md:h-32 z-10",
+    floatY: [-4, 5, -4],
+    duration: 4.2,
+    delay: 0.3,
+  },
+  // 5. Bottom Center-Left: Young girl walking on staircase (taller portrait)
+  {
+    id: "card-bottom-mid-left",
+    src: "/image/community/community03.png",
+    alt: "Child enjoying safe community grounds",
+    className:
+      "bottom-[6%] left-[22%] sm:left-[25%] md:left-[27%] w-22 h-28 sm:w-32 sm:h-40 md:w-44 md:h-56 z-20",
+    floatY: [7, -7, 7],
+    duration: 5.5,
+    delay: 0.15,
+  },
+  // 6. Bottom Mid: Two boys playing with ball
+  {
+    id: "card-bottom-mid",
+    src: "/image/community/community04.png",
+    alt: "Children bonding and playing together",
+    className:
+      "bottom-[12%] left-[54%] sm:left-[56%] md:left-[58%] w-18 h-22 sm:w-24 sm:h-28 md:w-32 md:h-36 z-10",
+    floatY: [-6, 6, -6],
+    duration: 4.9,
+    delay: 0.25,
+  },
+  // 7. Bottom Right: Parents running joyfully with toddler
+  {
+    id: "card-bottom-right",
+    src: "/image/community/community02.png",
+    alt: "Parents and toddler running playfully on green grass",
+    className:
+      "bottom-[16%] right-[3%] sm:right-[6%] md:right-[8%] w-18 h-22 sm:w-26 sm:h-32 md:w-36 md:h-44 z-10",
+    floatY: [5, -7, 5],
+    duration: 4.4,
+    delay: 0.35,
+  },
+];
+
+// Interactive Amenities List configuration matching Figma Mockup
+interface AmenityItem {
+  id: string;
+  title: string;
+  watermark: string;
   src: string;
   alt: string;
 }
 
-const COMMUNITY_IMAGES: CommunityImage[] = [
-  {
-    src: "/image/community/community01.png",
-    alt: "Family enjoying peaceful outdoor residential courtyard",
-  },
-  {
-    src: "/image/community/community02.png",
-    alt: "Joyful parents running with young child in lush lawn garden",
-  },
-  {
-    src: "/image/community/community03.png",
-    alt: "Multi-generational family walking down landscaped garden staircase",
-  },
-  {
-    src: "/image/community/community04.png",
-    alt: "Father and son enjoying recreation time on green lawn",
-  },
-];
-
-interface AmenityCategory {
-  id: string;
-  title: string;
-  bgColor: string;
-  images: {
-    src: string;
-    alt: string;
-  }[];
-}
-
-const AMENITY_CATEGORIES: AmenityCategory[] = [
+const AMENITIES: AmenityItem[] = [
   {
     id: "rooftop-park",
     title: "Rooftop Park",
-    bgColor: "#054b3c",
-    images: [
-      {
-        src: "/image/rooftop/rooftop01.jpg",
-        alt: "Rooftop park with serene poolside lounge deck and tropical foliage",
-      },
-      {
-        src: "/image/rooftop/rooftop03.jpg",
-        alt: "Sunlit recreational pool with leisure floats and umbrella deck",
-      },
-      {
-        src: "/image/rooftop/rooftop02.png",
-        alt: "Architectural resort chalets overlooking reflecting swimming pool",
-      },
-    ],
+    watermark: "Park",
+    src: "/image/community/amenity_rooftop.png",
+    alt: "Rooftop park with panoramic city skyline view and landscaped planters",
   },
   {
     id: "swimming-pool",
-    title: "Swimming Pool",
-    bgColor: "#070321",
-    images: [
-      {
-        src: "/image/rooftop/rooftop01.jpg",
-        alt: "Clear azure swimming waters surrounded by palm trees and deck chairs",
-      },
-      {
-        src: "/image/rooftop/rooftop02.png",
-        alt: "Private poolside cabanas offering relaxation and scenic views",
-      },
-      {
-        src: "/image/rooftop/rooftop03.jpg",
-        alt: "Luxury swimming pool with towel amenities and summer umbrellas",
-      },
-    ],
+    title: "Swimming pool",
+    watermark: "pool",
+    src: "/image/community/amenity_pool.png",
+    alt: "Lush infinity swimming pool overlooking city horizon",
   },
   {
     id: "parking",
     title: "Parking",
-    bgColor: "#571a1a",
-    images: [
-      {
-        src: "/image/rooftop/rooftop01.jpg",
-        alt: "Spacious estate parking access integrated with landscape architecture",
-      },
-      {
-        src: "/image/rooftop/rooftop02.png",
-        alt: "Covered and illuminated residential parking approach",
-      },
-      {
-        src: "/image/rooftop/rooftop03.jpg",
-        alt: "Secure multi-vehicle parking facility with clear circulation",
-      },
-    ],
+    watermark: "Car",
+    src: "/image/community/amenity_parking.png",
+    alt: "Multi-level covered architectural residential parking structure",
   },
   {
     id: "fitness-zone",
     title: "Fitness Zone",
-    bgColor: "#81743f",
-    images: [
-      {
-        src: "/image/rooftop/rooftop01.jpg",
-        alt: "Open-air fitness and recreation space surrounded by natural green",
-      },
-      {
-        src: "/image/rooftop/rooftop02.png",
-        alt: "Sheltered wellness deck designed for yoga, meditation, and exercise",
-      },
-      {
-        src: "/image/rooftop/rooftop03.jpg",
-        alt: "Rejuvenating outdoor training area with fresh air circulation",
-      },
-    ],
+    watermark: "Play",
+    src: "/image/community/amenity_fitness.png",
+    alt: "Open-air fitness pavilion with modern cardio machines and training area",
   },
 ];
 
 export function CommunityGallery() {
-  const [activeAmenityId, setActiveAmenityId] = useState<string | null>(
-    "rooftop-park",
-  );
-
-  const toggleAmenity = (id: string) => {
-    setActiveAmenityId((prev) => (prev === id ? null : id));
-  };
-
-  // Repeating array twice to ensure seamless right-to-left marquee loop
-  const marqueeItems = [...COMMUNITY_IMAGES, ...COMMUNITY_IMAGES];
+  // Active amenity expanded state (defaults to fitness-zone matching Image 1)
+  const [activeAmenityId, setActiveAmenityId] = useState<string>("fitness-zone");
 
   return (
     <section
       id="reviews"
-      className="w-full bg-[#ffffff] pt-16 sm:pt-20 md:pt-24 select-none"
+      className="w-full bg-[#ffffff] pt-14 sm:pt-20 md:pt-24 pb-16 sm:pb-24 select-none overflow-hidden"
     >
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-12 md:mb-14">
-        <p className="text-xs sm:text-[13px] font-semibold tracking-[0.25em] uppercase text-[#054b3c] mb-2 sm:mb-3">
+      {/* 1. Header Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="text-xs sm:text-[13px] font-semibold tracking-[0.25em] uppercase text-[#b58a59] mb-2 sm:mb-3"
+        >
           GALLERY
-        </p>
-        <h2 className="text-4xl sm:text-5xl md:text-6xl font-heading font-normal text-[#1f2723] tracking-tight">
-          Happy Community
-        </h2>
+        </motion.p>
+        <motion.h2
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-3xl sm:text-5xl md:text-6xl font-heading font-normal text-[#054b3c] tracking-tight"
+        >
+          Creating Better Living
+        </motion.h2>
       </div>
 
-      {/* Looping Right-to-Left Community Images Marquee */}
-      <div className="w-full overflow-hidden pb-16 sm:pb-20 md:pb-24">
-        <div className="animate-marquee-rtl flex items-center gap-4 sm:gap-6 w-max">
-          {marqueeItems.map((item, index) => (
-            <div
-              key={`${item.src}-${index}`}
-              className="h-[300px] sm:h-[360px] md:h-[420px] shrink-0 overflow-hidden shadow-sm transition-transform duration-300 hover:scale-[1.01]"
+      {/* 2. Floating Community Cards Over Giant Typography */}
+      <div className="relative w-full max-w-[1400px] mx-auto h-[380px] sm:h-[480px] md:h-[580px] lg:h-[640px] flex items-center justify-center my-4 sm:my-8">
+        {/* Giant Centered "Community" Text */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full text-center px-2 pointer-events-none select-none z-0"
+        >
+          <span className="font-heading font-normal text-[#054b3c] text-[58px] sm:text-[96px] md:text-[138px] lg:text-[180px] xl:text-[210px] tracking-tight leading-none block">
+            Community
+          </span>
+        </motion.div>
+
+        {/* 7 Floating Cards positioned around and overlapping "Community" */}
+        {FLOATING_CARDS.map((card) => (
+          <motion.div
+            key={card.id}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{
+              duration: 0.6,
+              delay: card.delay,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className={`absolute ${card.className}`}
+          >
+            <motion.div
+              animate={{
+                y: card.floatY,
+              }}
+              transition={{
+                duration: card.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              whileHover={{
+                scale: 1.08,
+                transition: { duration: 0.25 },
+              }}
+              className="relative w-full h-full rounded-md sm:rounded-lg overflow-hidden shadow-md sm:shadow-lg bg-neutral-100 hover:shadow-2xl transition-shadow cursor-pointer"
             >
-              {/* Native img for zero-layout-shift horizontal marquee with natural aspect ratios */}
               <Image
-                src={item.src}
-                alt={item.alt}
-                width={600}
-                height={400}
-                className="h-full w-auto object-cover"
+                src={card.src}
+                alt={card.alt}
+                fill
+                sizes="(max-width: 640px) 120px, (max-width: 1024px) 180px, 240px"
+                className="object-cover transition-transform duration-500 hover:scale-105"
               />
-            </div>
-          ))}
-        </div>
+            </motion.div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Amenities Interactive Accordion */}
-      <div className="w-full flex flex-col">
-        {AMENITY_CATEGORIES.map((amenity) => {
-          const isOpen = activeAmenityId === amenity.id;
+      {/* 3. Interactive Amenities Accordion with Giant Watermark Typography */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 mt-6 sm:mt-10 md:mt-14">
+        <div className="flex flex-col gap-3 sm:gap-4 md:gap-5">
+          {AMENITIES.map((amenity) => {
+            const isActive = activeAmenityId === amenity.id;
 
-          return (
-            <div
-              key={amenity.id}
-              style={{ backgroundColor: amenity.bgColor }}
-              className="w-full transition-colors duration-300"
-            >
-              {/* Accordion Bar Header */}
-              <button
-                type="button"
-                onClick={() => toggleAmenity(amenity.id)}
-                aria-expanded={isOpen}
-                className="w-full flex items-center justify-between py-4 sm:py-6 md:py-8 px-4 sm:px-8 md:px-16 lg:px-24 text-left cursor-pointer transition-opacity hover:opacity-95 focus:outline-none"
+            return (
+              <motion.div
+                key={amenity.id}
+                layout
+                onClick={() => setActiveAmenityId(amenity.id)}
+                onMouseEnter={() => setActiveAmenityId(amenity.id)}
+                transition={{
+                  layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                }}
+                className="flex items-start gap-4 sm:gap-6 md:gap-8 cursor-pointer group"
               >
-                <h3 className="font-heading text-lg sm:text-2xl md:text-3xl lg:text-4xl text-[#fdfdf8] font-light tracking-wide">
-                  {amenity.title}
-                </h3>
-                <span className="text-[#fdfdf8] ml-2 sm:ml-4 shrink-0 transition-transform duration-200">
-                  {isOpen ? (
-                    <Minus className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[1.5]" />
-                  ) : (
-                    <Plus className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[1.5]" />
-                  )}
-                </span>
-              </button>
+                {/* Left: Image Container (Expands in height when active, slim preview strip when inactive) */}
+                <motion.div
+                  layout
+                  className={`relative shrink-0 overflow-hidden rounded-sm transition-all duration-300 ${
+                    isActive
+                      ? "w-[125px] h-[115px] sm:w-[210px] sm:h-[180px] md:w-[260px] md:h-[220px] lg:w-[290px] lg:h-[250px] shadow-sm"
+                      : "w-[125px] h-[36px] sm:w-[210px] sm:h-[50px] md:w-[260px] md:h-[60px] lg:w-[290px] lg:h-[65px] opacity-80 group-hover:opacity-100"
+                  }`}
+                >
+                  <Image
+                    src={amenity.src}
+                    alt={amenity.alt}
+                    fill
+                    sizes="(max-width: 640px) 140px, (max-width: 1024px) 240px, 300px"
+                    className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                  />
+                </motion.div>
 
-              {/* Accordion Expanded Image Gallery: 3 columns on both Mobile and Desktop */}
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    key="content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 sm:px-8 md:px-16 lg:px-24 pb-5 sm:pb-8 md:pb-12 pt-1">
-                      <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
-                        {amenity.images.map((img, imgIndex) => (
-                          <div
-                            key={imgIndex}
-                            className="relative aspect-[4/3] w-full overflow-hidden shadow-sm md:shadow-md"
-                          >
-                            <Image
-                              src={img.src}
-                              alt={img.alt}
-                              fill
-                              sizes="(max-width: 768px) 33vw, 33vw"
-                              className="object-cover transition-transform duration-500 hover:scale-105"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          );
-        })}
+                {/* Right: Title & Giant Faint Watermark Text */}
+                <div className="flex-1 flex flex-col justify-start relative min-h-[36px] sm:min-h-[50px]">
+                  {/* Category Title */}
+                  <h3 className="font-heading text-base sm:text-xl md:text-2xl text-[#054b3c] font-normal leading-tight pt-0.5 sm:pt-1 transition-colors">
+                    {amenity.title}
+                  </h3>
+
+                  {/* Giant Background Watermark Text - Animated in when active */}
+                  <AnimatePresence mode="wait">
+                    {isActive && (
+                      <motion.span
+                        key={`watermark-${amenity.id}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="font-heading font-light text-[#cbd5ce]/75 select-none pointer-events-none text-5xl sm:text-7xl md:text-8xl lg:text-[110px] xl:text-[125px] leading-none tracking-tight block -mt-1 sm:-mt-2 md:-mt-3"
+                      >
+                        {amenity.watermark}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -12,14 +12,15 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { name: "HOME", href: "/" },
-  { name: "PROJECTS", href: "/projects" },
-  { name: "ABOUT", href: "/#about" },
+
+
+  { name: "ABOUT", href: "/about" },
   { name: "TEAM", href: "/team" },
-  { name: "BLOGS", href: "/#blogs" },
+  { name: "BLOGS", href: "/blogs" },
   { name: "Life At Premium Homes", href: "/life-at-premium-homes" },
   { name: "FAQ", href: "/faq" },
   { name: "Careers", href: "/careers" },
+  {name: "Contact", href: "/contact" },
 ];
 
 export interface NavDropdownMenuProps {
