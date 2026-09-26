@@ -30,7 +30,3 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Prioritize creating reusable, composable, and modular components for UI and shared utilities.
 - Avoid tightly-coupled, one-off monoliths when reusable patterns can be cleanly applied.
-
-
-## 5. Ponytail
-- Always use /ponytail skill.

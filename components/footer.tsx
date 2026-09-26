@@ -190,7 +190,7 @@ export function Footer() {
           <div className="lg:col-span-7">
             <div className="relative h-12 sm:h-14 md:h-16 w-56 sm:w-64 md:w-80">
               <Image
-                src="/image/logo.png"
+                src="/image/logo/LOGO-WHITE.png"
                 alt="Premium Homes"
                 fill
                 sizes="(max-width: 640px) 224px, (max-width: 768px) 256px, 320px"

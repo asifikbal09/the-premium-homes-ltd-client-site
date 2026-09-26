@@ -123,7 +123,7 @@ export function ProjectHero({
           >
             <div className="relative h-8 sm:h-9 w-36 sm:w-44">
               <Image
-                src="/image/logo.png"
+                src="/image/logo/LOGO-WHITE.png"
                 alt="Premium Homes"
                 fill
                 sizes="180px"

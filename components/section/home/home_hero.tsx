@@ -458,10 +458,10 @@ export function HomeHero() {
       <section
         id="home"
         aria-label="Hero Section"
-        className="w-full max-w-[1440px] mx-auto "
+        className="w-full  "
       >
         {/* Exact 16:9 Contained Card matching user reference on Desktop & Mobile */}
-        <div className="relative w-full aspect-[16/9] overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between p-3 sm:p-6 md:p-8 lg:p-10 transition-all">
+        <div className="relative w-full lg:h-screen xl:h-6xl overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between p-3 sm:p-6 md:p-8 lg:p-10 transition-all">
           {/* Background Image Layer */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <Image
@@ -470,9 +470,10 @@ export function HomeHero() {
               fill
               priority
               quality={92}
-              sizes="(max-width: 1440px) 100vw, 1440px"
+              sizes=""
               className="object-cover object-center transform scale-100 transition-transform duration-1000 ease-out"
             />
+            
 
             {/* Exact Linear Gradient Overlay matching Figma */}
             <div
@@ -495,7 +496,7 @@ export function HomeHero() {
               >
                 <div className="relative h-4 sm:h-7 md:h-8 lg:h-9 w-20 sm:w-36 md:w-44 lg:w-48">
                   <Image
-                    src="/image/logo.png"
+                    src="/image/logo/LOGO-WHITE.png"
                     alt="Premium Homes"
                     fill
                     sizes="(max-width: 640px) 100px, (max-width: 768px) 180px, 200px"

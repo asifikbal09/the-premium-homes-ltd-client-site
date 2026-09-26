@@ -165,7 +165,7 @@ export function AboutHero() {
           >
             <div className="relative h-8 sm:h-9 md:h-10 w-36 sm:w-44 md:w-48">
               <Image
-                src="/image/logo_dark.png"
+                src="/image/logo/LOGO-GREEN.png"
                 alt="Premium Homes"
                 fill
                 priority
