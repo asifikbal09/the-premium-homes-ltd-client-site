@@ -59,7 +59,7 @@ export function ContactHero() {
             >
               <div className="relative h-7 sm:h-8 md:h-9 w-32 sm:w-40 md:w-48">
                 <Image
-                  src="/image/logo.png"
+                  src="/image/logo/LOGO-WHITE.png"
                   alt="Premium Homes"
                   fill
                   priority

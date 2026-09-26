@@ -458,10 +458,10 @@ export function HomeHero() {
       <section
         id="home"
         aria-label="Hero Section"
-        className="w-full  "
+        className="w-full md:h-screen lg:h-max-[900px]  "
       >
         {/* Exact 16:9 Contained Card matching user reference on Desktop & Mobile */}
-        <div className="relative w-full lg:h-screen xl:h-6xl overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between p-3 sm:p-6 md:p-8 lg:p-10 transition-all">
+        <div className="relative w-full md:aspect-[16/9] md:h-screen lg:h-max-[900px] xl:h-6xl overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between p-3 sm:p-6 md:p-8 lg:p-10 transition-all">
           {/* Background Image Layer */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <Image
