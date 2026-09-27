@@ -3,10 +3,9 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { AboutHero } from "@/components/section/about/about_hero";
 import { AboutProvenTrust } from "@/components/section/about/about_proven_trust";
-import { PhilosophyPillars } from "@/components/section/home/philosophy_pillars";
-import { FounderMessage } from "@/components/section/home/founder_message";
-import { ResidentReviews } from "@/components/section/home/resident_reviews";
-import { PropertyPredictionSection } from "@/components/section/team/property_prediction_section";
+import { AboutFamilySlider } from "@/components/section/about/about_family_slider";
+import { AboutPrinciplesDna } from "@/components/section/about/about_principles_dna";
+import { AboutBuildingJourney } from "@/components/section/about/about_building_journey";
 
 export const metadata: Metadata = {
   title: "About Us | The Story Of A Dream | Premium Homes",
@@ -27,6 +26,13 @@ export default function AboutPage() {
         {/* Built On Trust, Proven By Delivery (Second Section) */}
         <AboutProvenTrust />
 
+        {/* Designed for families. Scaled for tomorrow. (Third Section - Stacked Slider) */}
+        <AboutFamilySlider />
+
+        {/* Additional sections can be added here */}
+        <AboutPrinciplesDna/>
+
+        <AboutBuildingJourney/>
       </main>
 
       {/* Global Footer */}
