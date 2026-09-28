@@ -1,0 +1,157 @@
+import { ClientFlat, ClientNotice, ClientPayment } from "./types";
+
+export const DEFAULT_FLATS: ClientFlat[] = [
+  {
+    id: "flat-1",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 72,
+    handover_date: "Dec 2027",
+    price: "From ৳2.5 Cr",
+    slug: "the-premium-green-valley",
+  },
+  {
+    id: "flat-2",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 72,
+    handover_date: "Dec 2027",
+    price: "From ৳2.5 Cr",
+    slug: "the-premium-green-valley",
+  },
+  {
+    id: "flat-3",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 72,
+    handover_date: "Dec 2027",
+    price: "From ৳2.5 Cr",
+    slug: "the-premium-green-valley",
+  },
+];
+
+export const DEFAULT_ONGOING_PROJECTS: ClientFlat[] = [
+  {
+    id: "proj-1",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 72,
+    handover_date: "Dec 2027",
+    price: "From ৳2.5 Cr",
+    slug: "the-premium-green-valley",
+  },
+  {
+    id: "proj-2",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 68,
+    handover_date: "Jun 2028",
+    price: "From ৳2.8 Cr",
+    slug: "the-premium-green-valley",
+  },
+  {
+    id: "proj-3",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 54,
+    handover_date: "Oct 2028",
+    price: "From ৳3.1 Cr",
+    slug: "the-premium-green-valley",
+  },
+  {
+    id: "proj-4",
+    title: "The Premium Green Valley",
+    location: "Gulshan 2, Dhaka",
+    image: "/image/progress/tph_green_valley.png",
+    status: "Under Construction",
+    construction_pct: 45,
+    handover_date: "Mar 2029",
+    price: "From ৳2.4 Cr",
+    slug: "the-premium-green-valley",
+  },
+];
+
+export const DEFAULT_PAYMENTS: ClientPayment[] = [
+  {
+    id: "inv-001",
+    invoice_no: "TPHL-INV-2026-081",
+    project: "The Premium Green Valley (Unit 8B)",
+    installment_title: "10th Slab Casting Installment",
+    payment_date: "14 Feb 2026",
+    due_date: "15 Feb 2026",
+    amount: "৳ 7,50,000",
+    status: "paid",
+    method: "Bank Transfer (City Bank)",
+  },
+  {
+    id: "inv-002",
+    invoice_no: "TPHL-INV-2026-064",
+    project: "The Premium Green Valley (Unit 8B)",
+    installment_title: "8th Floor Roof Casting",
+    payment_date: "10 Jan 2026",
+    due_date: "10 Jan 2026",
+    amount: "৳ 7,50,000",
+    status: "paid",
+    method: "Bank Transfer (BRAC Bank)",
+  },
+  {
+    id: "inv-003",
+    invoice_no: "TPHL-INV-2026-092",
+    project: "The Premium Green Valley (Unit 8B)",
+    installment_title: "11th Floor Masonry Works",
+    due_date: "15 Apr 2026",
+    amount: "৳ 3,56,000",
+    status: "due",
+  },
+  {
+    id: "inv-004",
+    invoice_no: "TPHL-INV-2026-105",
+    project: "The Premium Green Valley (Unit 8B)",
+    installment_title: "Sanitary & Electrical Rough-in",
+    due_date: "30 Jun 2026",
+    amount: "৳ 5,00,000",
+    status: "upcoming",
+  },
+];
+
+export const DEFAULT_NOTICES: ClientNotice[] = [
+  {
+    id: "not-1",
+    title: "10th Slab Casting Completed Ahead of Schedule",
+    date: "25 Feb 2026",
+    category: "Construction",
+    description:
+      "We are delighted to notify valued owners that 10th slab structural casting of The Premium Green Valley was concluded ahead of schedule with grade-60 steel inspection passed.",
+    isUnread: true,
+  },
+  {
+    id: "not-2",
+    title: "Site Visit & Material Inspection Window Opened",
+    date: "18 Feb 2026",
+    category: "General",
+    description:
+      "Residents and property owners are invited to schedule guided visits with our site project engineers between 10:00 AM and 4:00 PM every Saturday.",
+    isUnread: true,
+  },
+  {
+    id: "not-3",
+    title: "Quarterly Quality Audit Certificate Issued",
+    date: "02 Feb 2026",
+    category: "Handover",
+    description:
+      "Independent structural testing lab BUET audit report for Green Valley concrete integrity has been filed and is available for download.",
+    isUnread: false,
+  },
+];
