@@ -74,6 +74,10 @@ export function ProjectHero({
   // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (target?.closest?.("[data-navigation-drawer]")) {
+        return;
+      }
       if (
         headerRef.current &&
         !headerRef.current.contains(event.target as Node)

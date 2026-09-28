@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -23,6 +23,10 @@ export function ContactHero() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (target?.closest?.("[data-navigation-drawer]")) {
+        return;
+      }
       if (
         heroNavRef.current &&
         !heroNavRef.current.contains(event.target as Node)

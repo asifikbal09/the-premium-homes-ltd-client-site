@@ -440,6 +440,10 @@ export function HomeHero() {
   // Close hero dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (target?.closest?.("[data-navigation-drawer]")) {
+        return;
+      }
       if (
         heroNavRef.current &&
         !heroNavRef.current.contains(event.target as Node)
