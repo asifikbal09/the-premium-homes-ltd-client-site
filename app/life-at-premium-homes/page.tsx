@@ -5,7 +5,9 @@ import { LifeAtTphlHero } from "@/components/section/life_at_tphl/life_at_tphl_h
 import { LifeAtTphlVideo } from "@/components/section/life_at_tphl/life_at_tphl_video";
 import { LifeAtTphlPurpose } from "@/components/section/life_at_tphl/life_at_tphl_purpose";
 import { LifeAtTphlCulture } from "@/components/section/life_at_tphl/life_at_tphl_culture";
+import { LifeAtTphlJourney } from "@/components/section/life_at_tphl/life_at_tphl_journey";
 import { LifeAtTphlStories } from "@/components/section/life_at_tphl/life_at_tphl_stories";
+import { LifeAtTphlTeamSays } from "@/components/section/life_at_tphl/life_at_tphl_team_says";
 import { LifeAtTphlJoinTeam } from "@/components/section/life_at_tphl/life_at_tphl_join_team";
 
 export const metadata: Metadata = {
@@ -24,6 +26,8 @@ export default function LifeAtPremiumHomesPage() {
         <LifeAtTphlPurpose />
         <LifeAtTphlCulture />
         <LifeAtTphlStories />
+        <LifeAtTphlTeamSays />
+        <LifeAtTphlJourney />
         <LifeAtTphlJoinTeam />
       </main>
       <Footer />
