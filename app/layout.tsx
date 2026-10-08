@@ -1,33 +1,43 @@
 import type { Metadata } from "next";
-import {
-  Vazirmatn,
-  Seaweed_Script,
-  Cormorant_Garamond,
-} from "next/font/google";
-import "./globals.css";
-
+import { Seaweed_Script } from "next/font/google";
 import localFont from "next/font/local";
+import "./globals.css";
 
 const kVictor = localFont({
   src: [
     {
-      path: "../public/fonts/KVictorTrial-Regular.otf",
+      path: "../public/fonts/K Victor Trial/KVictorTrial-10Hairline.otf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/K Victor Trial/KVictorTrial-30Light.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/K Victor Trial/KVictorTrial-40Regular.otf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../public/fonts/KVictorTrial-Medium.otf",
+      path: "../public/fonts/K Victor Trial/KVictorTrial-50Medium.otf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../public/fonts/KVictorTrial-SemiBold.otf",
+      path: "../public/fonts/K Victor Trial/KVictorTrial-60Semibold.otf",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../public/fonts/KVictorTrial-Bold.otf",
+      path: "../public/fonts/K Victor Trial/KVictorTrial-70Bold.otf",
       weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/K Victor Trial/KVictorTrial-80Black.otf",
+      weight: "800",
       style: "normal",
     },
   ],
@@ -35,9 +45,20 @@ const kVictor = localFont({
   display: "swap",
 });
 
-const vazirmatn = Vazirmatn({
+const vazirmatn = localFont({
+  src: [
+    {
+      path: "../public/fonts/vazirmatn/Vazirmatn-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/vazirmatn/Vazirmatn-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+  ],
   variable: "--font-vazirmatn",
-  subsets: ["latin"],
   display: "swap",
 });
 
@@ -45,13 +66,6 @@ const seaweedScript = Seaweed_Script({
   weight: "400",
   variable: "--font-seaweed-script",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const cormorantGaramond = Cormorant_Garamond({
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -69,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${vazirmatn.variable} ${seaweedScript.variable} ${cormorantGaramond.variable} ${kVictor.variable} h-full antialiased scroll-smooth`}
+      className={`${vazirmatn.variable} ${seaweedScript.variable} ${kVictor.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-[#ffffff] text-[#1f2723]">
         {children}

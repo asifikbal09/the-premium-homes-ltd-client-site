@@ -233,16 +233,16 @@ export function CommunityGallery() {
                 key={amenity.id}
                 layout
                 onClick={() => setActiveAmenityId(amenity.id)}
-                onMouseEnter={() => setActiveAmenityId(amenity.id)}
                 transition={{
-                  layout: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                  layout: { duration: 0.35, ease: "easeInOut" },
                 }}
                 className="flex items-start gap-4 sm:gap-6 md:gap-8 cursor-pointer group"
               >
                 {/* Left: Image Container (Expands in height when active, slim preview strip when inactive) */}
                 <motion.div
                   layout
-                  className={`relative shrink-0 overflow-hidden rounded-sm transition-all duration-300 ${
+                  transition={{ layout: { duration: 0.35, ease: "easeInOut" } }}
+                  className={`relative shrink-0 overflow-hidden rounded-sm ${
                     isActive
                       ? "w-[125px] h-[115px] sm:w-[210px] sm:h-[180px] md:w-[260px] md:h-[220px] lg:w-[290px] lg:h-[250px] shadow-sm"
                       : "w-[125px] h-[36px] sm:w-[210px] sm:h-[50px] md:w-[260px] md:h-[60px] lg:w-[290px] lg:h-[65px] opacity-80 group-hover:opacity-100"
@@ -253,14 +253,16 @@ export function CommunityGallery() {
                     alt={amenity.alt}
                     fill
                     sizes="(max-width: 640px) 140px, (max-width: 1024px) 240px, 300px"
-                    className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                   />
                 </motion.div>
 
                 {/* Right: Title & Giant Faint Watermark Text */}
                 <div className="flex-1 flex flex-col justify-start relative min-h-[36px] sm:min-h-[50px]">
                   {/* Category Title */}
-                  <h3 className="font-heading text-base sm:text-xl md:text-2xl text-[#054b3c] font-normal leading-tight pt-0.5 sm:pt-1 transition-colors">
+                  <h3 className={`font-heading text-base sm:text-xl md:text-2xl font-normal leading-tight pt-0.5 sm:pt-1 transition-colors duration-200 ${
+                    isActive ? "text-[#054b3c]" : "text-[#054b3c]/70 group-hover:text-[#054b3c]"
+                  }`}>
                     {amenity.title}
                   </h3>
 
@@ -269,10 +271,10 @@ export function CommunityGallery() {
                     {isActive && (
                       <motion.span
                         key={`watermark-${amenity.id}`}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
                         className="font-heading font-light text-[#cbd5ce]/75 select-none pointer-events-none text-5xl sm:text-7xl md:text-8xl lg:text-[110px] xl:text-[125px] leading-none tracking-tight block -mt-1 sm:-mt-2 md:-mt-3"
                       >
                         {amenity.watermark}

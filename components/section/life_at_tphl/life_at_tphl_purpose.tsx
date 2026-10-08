@@ -55,12 +55,20 @@ export function LifeAtTphlPurpose() {
 
         {/* 
           Middle Decorative Watermark:
-          "purpose" in huge soft sage serif lettering across the container width
+          "purpose" fluidly spanning across the container width without any clipping
         */}
-        <div className="relative w-full overflow-hidden text-center select-none pointer-events-none -my-3 sm:-my-6 md:mb-10 lg:mb-14">
+        <div className="relative w-full overflow-visible text-center select-none pointer-events-none -my-3 sm:-my-6 md:-my-10 lg:-my-14">
           <p
             aria-hidden="true"
-            className="font-heading font-normal text-[#dbe3e1] text-[178px] sm:text-[120px] md:text-[160px] lg:text-[210px] xl:text-[348px] leading-none tracking-tight -ml-1 sm:-ml-2"
+            style={{
+              fontFamily: "var(--font-victor), 'K Victor Trial', serif",
+              fontWeight: 100,
+              fontStyle: "normal",
+              lineHeight: "100%",
+              letterSpacing: "0%",
+              textTransform: "lowercase",
+            }}
+            className="w-full mb-20 text-[#dbe3e1] text-[clamp(68px,18.5vw,350px)] whitespace-nowrap select-none"
           >
             purpose
           </p>

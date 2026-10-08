@@ -584,7 +584,7 @@ export function HomeHero() {
               </div>
 
               {/* Headline */}
-              <h1 className="font-heading text-xl sm:text-4xl md:text-6xl xl:text-[80px] 2xl:text-[90px] text-white leading-[100%] tracking-normal drop-shadow-lg select-none">
+              <h1 className="font-heading font-medium text-xl sm:text-4xl md:text-6xl xl:text-[80px] 2xl:text-[90px] text-white leading-[100%] tracking-normal drop-shadow-lg select-none">
                 Shaping
                 <br />
                 Tomorrow&apos;s

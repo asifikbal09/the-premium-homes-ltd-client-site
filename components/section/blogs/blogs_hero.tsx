@@ -140,7 +140,7 @@ export function BlogsHero() {
           <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-normal text-white leading-[1.1] tracking-tight">
             Blogs, Insights
           </h1>
-          <p className="text-white/70 text-xs sm:text-sm md:text-[15px] font-light max-w-xl mx-auto mt-4 leading-relaxed">
+          <p className="text-white/70 text-xs sm:text-sm md:text-[15px] font-normal max-w-xl mx-auto mt-4 leading-relaxed">
             Our Philosophy is simple, hire great people and give them the
             resources and support to do their best work
           </p>

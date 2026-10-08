@@ -139,7 +139,7 @@ export function ContactHero() {
               Contact Us
             </h1>
 
-            <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-light leading-relaxed max-w-xl mx-auto mt-4 sm:mt-6">
+            <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-normal leading-relaxed max-w-xl mx-auto mt-4 sm:mt-6">
               We&apos;re here to help you find your dream home. Reach out to us anytime!
             </p>
           </motion.div>

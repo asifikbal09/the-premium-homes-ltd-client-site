@@ -156,7 +156,7 @@ export function ProjectProgressHero() {
               </h1>
 
               {/* Subtitle */}
-              <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-light leading-relaxed max-w-xl mt-5 sm:mt-7">
+              <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-normal leading-relaxed max-w-xl mt-5 sm:mt-7">
                 Track the progress of our communities as they take shape - from
                 foundation to handover.
               </p>

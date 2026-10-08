@@ -10,104 +10,120 @@ export function LifeAtTphlStories() {
       aria-label="Stories From The Team"
       className="relative w-full bg-white text-[#1f2723] pt-14 sm:pt-20 md:pt-24 lg:pt-28 pb-16 sm:pb-24 md:pb-28 overflow-hidden select-none"
     >
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8">
-        {/* Section Heading */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 md:mb-16">
-          <h2 className="font-heading font-normal text-4xl sm:text-5xl md:text-6xl lg:text-[68px] text-[#054b3c] leading-[1.08] tracking-tight">
-            Stories From
-            <br />
-            The Team.
-          </h2>
+      {/* Section Heading */}
+      <div className="w-full text-center max-w-3xl mx-auto px-4 mb-8 sm:mb-12 md:mb-14">
+        <h2 className="font-heading font-normal text-4xl sm:text-5xl md:text-6xl lg:text-[68px] text-[#054b3c] leading-[1.08] tracking-tight">
+          Stories From
+          <br />
+          The Team.
+        </h2>
+      </div>
+
+      {/* 
+        Full-Width Photo Stage (100% width edge-to-edge dashed line)
+      */}
+      <div className="relative w-full overflow-hidden min-h-[380px] sm:min-h-[440px] md:min-h-[500px] lg:min-h-[540px]">
+        {/* 
+          Continuous Dashed Wave SVG spanning edge-to-edge (2560px centered)
+          Mathematically touches all 4 red pins at exact troughs:
+          Pin 1: (930, 46)
+          Pin 2: (1200, 40)
+          Pin 3: (1612, 38)
+          Pin 4: (1835, 44)
+        */}
+        <div className="absolute top-[17px] left-1/2 -translate-x-1/2 w-[2560px] h-[100px] pointer-events-none z-0 overflow-visible">
+          <svg
+            viewBox="0 0 2560 100"
+            className="w-full h-full stroke-[#4a5550]/75"
+            fill="none"
+          >
+            <path
+              d="M 0 56 Q 465 14, 930 46 Q 1065 8, 1200 40 Q 1406 6, 1612 38 Q 1723 12, 1835 44 Q 2195 16, 2560 52"
+              strokeWidth="1.8"
+              strokeDasharray="7 7"
+              strokeLinecap="round"
+              fill="none"
+            />
+          </svg>
         </div>
 
         {/* 
-          Journey Cards with Dashed Wave Line & Red Pushpins
+          Centered Unified Photo Cluster (5 Photos matching reference composition)
+          Centered horizontally at the exact center of the wave
         */}
-        <div className="relative w-full max-w-[1180px] mx-auto min-h-[340px] sm:min-h-[420px] md:min-h-[480px] lg:min-h-[520px] flex items-center justify-center">
-          {/* Dashed Wave SVG Path across the cards */}
-          <div className="absolute inset-x-0 top-[10%] sm:top-[12%] md:top-[14%] w-full h-[120px] pointer-events-none z-0 overflow-visible">
-            <svg
-              viewBox="0 0 1200 120"
-              fill="none"
-              preserveAspectRatio="none"
-              className="w-full h-full stroke-neutral-500/70"
-            >
-              <path
-                d="M -50 70 Q 70 10, 160 35 T 350 45 T 520 20 T 720 40 T 920 15 T 1120 45 T 1250 20"
-                strokeWidth="1.5"
-                strokeDasharray="5 5"
-                fill="none"
-              />
-            </svg>
-          </div>
-
-          {/* Cards Flex/Position Container */}
-          <div className="relative z-10 w-full flex items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 overflow-x-auto sm:overflow-visible pb-4 pt-6 no-scrollbar">
-            {/* Card 1: Recognition Award (Grayscale) */}
+        <div className="relative z-10 w-full max-w-[1140px] mx-auto flex items-start justify-center px-4 sm:px-6">
+          {/* GROUP 1: Left Pair (Card 1 & Card 2) */}
+          <div className="relative z-10 flex items-start shrink-0 mr-3 sm:mr-5 md:mr-6 lg:mr-7 pt-1 sm:pt-2">
+            {/* Card 1: Recognition Award Ceremony */}
             <div
-              style={{ transform: "rotate(-6deg)" }}
-              className="relative shrink-0 w-[125px] sm:w-[155px] md:w-[185px] lg:w-[210px] aspect-[3/4] z-10 -mr-2 sm:-mr-4 transition-transform duration-300 hover:scale-105 hover:z-30"
+              style={{ transform: "rotate(-8deg)" }}
+              className="relative z-20 w-[115px] sm:w-[155px] md:w-[190px] lg:w-[205px] aspect-[3/4] transition-transform duration-300 hover:scale-105 hover:z-40"
             >
-              <div className="w-full h-full bg-white p-1.5 sm:p-2 pb-3.5 sm:pb-5 shadow-lg shadow-black/15">
+              <div className="w-full h-full bg-white p-1.5 sm:p-2 md:p-2.5 shadow-xl shadow-black/15">
                 <div className="relative w-full h-full overflow-hidden bg-neutral-100 grayscale hover:grayscale-0 transition-all duration-300">
                   <Image
                     src="/image/life-at-tphl/stories-team-award.png"
                     alt="Team member recognition and award ceremony"
                     fill
-                    sizes="(max-width: 768px) 150px, 210px"
-                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 155px, 205px"
+                    className="object-cover object-top scale-[1.8] origin-top"
                   />
                 </div>
               </div>
-              {/* Red Pushpin */}
-              <div className="absolute top-1 right-2 sm:top-1.5 sm:right-3 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
+              {/* Red Pushpin 1 (Top-right corner, aligns with Wave Dip 1) */}
+              <div className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px] rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
             </div>
 
-            {/* Card 2: Sofa Conversation (Grayscale, tplt-team1) */}
+            {/* Card 2: Lounge Conversation (Tucked behind Card 1) */}
             <div
-              style={{ transform: "rotate(4deg)" }}
-              className="relative shrink-0 w-[115px] sm:w-[145px] md:w-[175px] lg:w-[195px] aspect-[3/4] z-5 -mr-3 sm:-mr-6 transition-transform duration-300 hover:scale-105 hover:z-30"
+              style={{ transform: "rotate(5deg)" }}
+              className="relative z-10 w-[105px] sm:w-[145px] md:w-[175px] lg:w-[190px] aspect-[3/4] -ml-5 sm:-ml-8 md:-ml-10 lg:-ml-12 mt-1 sm:mt-2 transition-transform duration-300 hover:scale-105 hover:z-40"
             >
-              <div className="w-full h-full bg-white p-1.5 sm:p-2 pb-3.5 sm:pb-5 shadow-lg shadow-black/15">
+              <div className="w-full h-full bg-white p-1.5 sm:p-2 md:p-2.5 shadow-xl shadow-black/15">
                 <div className="relative w-full h-full overflow-hidden bg-neutral-100 grayscale hover:grayscale-0 transition-all duration-300">
                   <Image
                     src="/image/life-at-tphl/tplt-team1.png"
                     alt="Colleagues discussing plans in the lounge"
                     fill
-                    sizes="(max-width: 768px) 140px, 195px"
+                    sizes="(max-width: 768px) 145px, 190px"
                     className="object-cover object-top"
                   />
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Card 3: Big Centerpiece - Jenga Team Game (Full Color) */}
+          {/* GROUP 2: Center Hero Card (Card 3: Jenga Team Game) */}
+          <div className="relative z-20 shrink-0">
             <div
-              style={{ transform: "rotate(6deg)" }}
-              className="relative shrink-0 w-[180px] sm:w-[240px] md:w-[290px] lg:w-[335px] aspect-[3/4] z-20 shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-30"
+              style={{ transform: "rotate(4deg)" }}
+              className="relative w-[175px] sm:w-[245px] md:w-[295px] lg:w-[325px] aspect-[3/4] transition-transform duration-300 hover:scale-105 hover:z-40"
             >
-              <div className="w-full h-full bg-white p-2 sm:p-2.5 md:p-3 pb-5 sm:pb-7 md:pb-8 shadow-2xl shadow-black/25">
+              <div className="w-full h-full bg-white p-2 sm:p-2.5 md:p-3.5 shadow-2xl shadow-black/25">
                 <div className="relative w-full h-full overflow-hidden bg-neutral-100">
                   <Image
                     src="/image/life-at-tphl/stories-team-center.png"
                     alt="TPHL team members bonding over games at the office"
                     fill
                     priority
-                    sizes="(max-width: 768px) 240px, 335px"
-                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 245px, 325px"
+                    className="object-cover object-center scale-[1.12]"
                   />
                 </div>
               </div>
-              {/* Red Pushpin on top left */}
-              <div className="absolute top-1.5 left-4 sm:top-2 sm:left-5 md:top-2.5 md:left-6 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
+              {/* Red Pushpin 2 (Top edge ~25% from left, aligns with Wave Dip 2) */}
+              <div className="absolute -top-1.5 sm:-top-2 left-[25%] w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px] rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
             </div>
+          </div>
 
-            {/* Card 4: TV Presentation (Grayscale, tplt-team04) */}
+          {/* GROUP 3: Right Pair (Card 4 & Card 5) */}
+          <div className="relative z-10 flex items-start shrink-0 ml-3 sm:ml-5 md:ml-6 lg:ml-7 pt-1 sm:pt-2">
+            {/* Card 4: TV Presentation (Portrait aspect ratio matching reference) */}
             <div
-              style={{ transform: "rotate(-5deg)" }}
-              className="relative shrink-0 w-[120px] sm:w-[150px] md:w-[180px] lg:w-[205px] aspect-[4/3] z-10 -ml-2 sm:-ml-4 transition-transform duration-300 hover:scale-105 hover:z-30"
+              style={{ transform: "rotate(-6deg)" }}
+              className="relative z-20 w-[115px] sm:w-[150px] md:w-[190px] lg:w-[205px] aspect-[3/4] transition-transform duration-300 hover:scale-105 hover:z-40"
             >
-              <div className="w-full h-full bg-white p-1.5 sm:p-2 pb-3.5 sm:pb-5 shadow-lg shadow-black/15">
+              <div className="w-full h-full bg-white p-1.5 sm:p-2 md:p-2.5 shadow-xl shadow-black/15">
                 <div className="relative w-full h-full overflow-hidden bg-neutral-100 grayscale hover:grayscale-0 transition-all duration-300">
                   <Image
                     src="/image/life-at-tphl/tplt-team04.png"
@@ -118,47 +134,48 @@ export function LifeAtTphlStories() {
                   />
                 </div>
               </div>
-              {/* Red Pushpin */}
-              <div className="absolute top-1 right-6 sm:top-1.5 sm:right-8 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
+              {/* Red Pushpin 3 (Top edge ~72% from left, aligns with Wave Dip 3) */}
+              <div className="absolute -top-1.5 sm:-top-2 right-[24%] w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px] rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
             </div>
 
-            {/* Card 5: Cultural Celebration (Grayscale, tplt-team06) */}
+            {/* Card 5: Cultural Celebration (Tucked behind Card 4) */}
             <div
-              style={{ transform: "rotate(6deg)" }}
-              className="relative shrink-0 w-[110px] sm:w-[140px] md:w-[165px] lg:w-[185px] aspect-[3/4] z-5 -ml-3 sm:-ml-5 transition-transform duration-300 hover:scale-105 hover:z-30"
+              style={{ transform: "rotate(7deg)" }}
+              className="relative z-10 w-[105px] sm:w-[140px] md:w-[175px] lg:w-[190px] aspect-[3/4] -ml-5 sm:-ml-8 md:-ml-10 lg:-ml-12 mt-1 sm:mt-2 transition-transform duration-300 hover:scale-105 hover:z-40"
             >
-              <div className="w-full h-full bg-white p-1.5 sm:p-2 pb-3.5 sm:pb-5 shadow-lg shadow-black/15">
+              <div className="w-full h-full bg-white p-1.5 sm:p-2 md:p-2.5 shadow-xl shadow-black/15">
                 <div className="relative w-full h-full overflow-hidden bg-neutral-100 grayscale hover:grayscale-0 transition-all duration-300">
                   <Image
                     src="/image/life-at-tphl/tplt-team06.png"
                     alt="Traditional cultural festival celebration at TPHL"
                     fill
-                    sizes="(max-width: 768px) 140px, 185px"
+                    sizes="(max-width: 768px) 140px, 190px"
                     className="object-cover object-top"
                   />
                 </div>
               </div>
-              {/* Red Pushpin */}
-              <div className="absolute top-1 right-2 sm:top-1.5 sm:right-3 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
+              {/* Red Pushpin 4 (Top-right corner, aligns with Wave Dip 4) */}
+              <div className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px] rounded-full bg-[#dc2626] border-2 border-white shadow-md z-30" />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Description & CTA */}
-        <div className="text-center max-w-xl mx-auto mt-10 sm:mt-14 md:mt-16">
-          <p className="font-sans text-xs sm:text-sm md:text-[14.5px] text-[#526058] font-normal leading-relaxed mb-6 sm:mb-8">
-            TPHL Gives Me The Space To Grow And Contribute To Real Impact. Hear
-            From The People Shaping TPHL’s Growth, Culture, And Customer
-            Experience.
-          </p>
+      {/* Bottom Description & CTA */}
+      <div className="text-center max-w-2xl mx-auto mt-6 sm:mt-8 md:mt-10 px-4">
+        <p className="font-sans text-xs sm:text-sm md:text-[14.5px] text-[#4a5550] font-normal leading-relaxed mb-6 sm:mb-8">
+          TPHL Gives Me The Space To Grow And Contribute To Real
+          <br className="hidden sm:inline" /> Impact. Hear From The People
+          Shaping TPHL’s Growth,
+          <br className="hidden sm:inline" /> Culture, And Customer Experience.
+        </p>
 
-          <Link
-            href="/career"
-            className="group inline-flex items-center justify-center px-6 sm:px-7 py-2.5 sm:py-3 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95"
-          >
-            <span>JOIN OUR TEAM</span>
-          </Link>
-        </div>
+        <Link
+          href="/career"
+          className="group inline-flex items-center justify-center px-7 sm:px-8 py-2.5 sm:py-3 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95"
+        >
+          <span>JOIN OUR TEAM</span>
+        </Link>
       </div>
     </section>
   );

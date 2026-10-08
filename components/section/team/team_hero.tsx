@@ -153,7 +153,7 @@ export function TeamHero() {
             </h1>
 
             {/* Philosophy Subtitle */}
-            <p className="font-sans text-xs sm:text-sm md:text-base lg:text-lg text-white/75 font-light leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
+            <p className="font-sans text-xs sm:text-sm md:text-base lg:text-lg text-white/75 font-normal leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
               Our Philosophy is simple, hire great people and give them the
               resources and support to do their best work
             </p>

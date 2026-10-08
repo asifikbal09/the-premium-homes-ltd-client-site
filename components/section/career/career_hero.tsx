@@ -160,7 +160,7 @@ export function CareerHero() {
             </h1>
 
             {/* Subtitle */}
-            <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-light leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
+            <p className="font-sans text-xs sm:text-sm md:text-base text-white/75 font-normal leading-relaxed max-w-xl mx-auto mt-5 sm:mt-7">
               Join a fast-growing real estate group shaping tomorrow&apos;s
               communities across the region.
               <br className="hidden sm:inline" /> We&apos;re looking for

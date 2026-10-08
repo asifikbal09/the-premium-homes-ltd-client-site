@@ -437,64 +437,6 @@ export function NavDropdownMenu({
                 </nav>
               )}
             </div>
-
-            {/* BOTTOM SECTION: Follow Us & Social Outlined Icon Buttons */}
-            <div className="shrink-0 px-6 sm:px-8 pt-4 pb-6 sm:pb-7 border-t border-white/10 mt-auto bg-black/10">
-              <div className="text-xs sm:text-sm font-medium text-white/90 mb-3 tracking-wide">
-                Follow Us
-              </div>
-              <div className="flex items-center gap-2.5">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="w-9 h-9 rounded-full border border-white/20 hover:border-[#d0a65b] bg-white/[0.02] hover:bg-[#d0a65b]/10 flex items-center justify-center text-white/80 hover:text-[#d0a65b] transition-all duration-200 active:scale-95 group"
-                >
-                  <FacebookIcon className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="w-9 h-9 rounded-full border border-white/20 hover:border-[#d0a65b] bg-white/[0.02] hover:bg-[#d0a65b]/10 flex items-center justify-center text-white/80 hover:text-[#d0a65b] transition-all duration-200 active:scale-95 group"
-                >
-                  <InstagramIcon className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="https://youtube.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="YouTube"
-                  className="w-9 h-9 rounded-full border border-white/20 hover:border-[#d0a65b] bg-white/[0.02] hover:bg-[#d0a65b]/10 flex items-center justify-center text-white/80 hover:text-[#d0a65b] transition-all duration-200 active:scale-95 group"
-                >
-                  <YoutubeIcon className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="https://linkedin.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="LinkedIn"
-                  className="w-9 h-9 rounded-full border border-white/20 hover:border-[#d0a65b] bg-white/[0.02] hover:bg-[#d0a65b]/10 flex items-center justify-center text-white/80 hover:text-[#d0a65b] transition-all duration-200 active:scale-95 group"
-                >
-                  <LinkedinIcon className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="https://tiktok.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="TikTok"
-                  className="w-9 h-9 rounded-full border border-white/20 hover:border-[#d0a65b] bg-white/[0.02] hover:bg-[#d0a65b]/10 flex items-center justify-center text-white/80 hover:text-[#d0a65b] transition-all duration-200 active:scale-95 group"
-                >
-                  <TiktokIcon className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
           </motion.aside>
         </>
       )}
@@ -594,14 +536,14 @@ export function Navbar() {
                 }
                 aria-expanded={isOpen}
                 className={cn(
-                  "group relative inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white border transition-all duration-300 shadow-sm cursor-pointer active:scale-95",
+                  "group relative inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full text-[11px] sm:text-xs  tracking-[0.14em] uppercase text-white border transition-all duration-300 shadow-sm cursor-pointer active:scale-95",
                   isOpen
                     ? "bg-white/25 border-white/40"
                     : "bg-white/10 hover:bg-white/20 border-white/20",
                 )}
               >
                 <span
-                  className="flex flex-col justify-center gap-[4.5px] w-3.5"
+                  className="flex flex-col items-center justify-center gap-[4.5px] w-3.5"
                   aria-hidden="true"
                 >
                   <span

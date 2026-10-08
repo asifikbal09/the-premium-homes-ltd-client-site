@@ -78,7 +78,7 @@ export function HomeAbout() {
 
             <Link
               href="/about"
-              className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#044133] text-[#FDFDF8] text-xs sm:text-sm font-semibold tracking-[0.14em] uppercase transition-all duration-300 hover:bg-[#055b4b] hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#044133] text-[#CFA564] text-xs sm:text-sm font-vazir-regular tracking-[0.14em] uppercase transition-all duration-300 hover:bg-[#055b4b] hover:shadow-lg hover:-translate-y-0.5"
             >
               MORE ABOUT US
             </Link>
