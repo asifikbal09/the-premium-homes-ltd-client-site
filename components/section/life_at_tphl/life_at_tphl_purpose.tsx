@@ -92,7 +92,7 @@ export function LifeAtTphlPurpose() {
               href="/career"
               className="group inline-flex items-center justify-center px-6 sm:px-7 py-2.5 sm:py-3 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95"
             >
-              <span>JOIN OUR TEAM</span>
+              <span>JOIN OUR TEAM </span>
             </Link>
           </div>
         </div>
