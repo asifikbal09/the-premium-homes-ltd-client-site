@@ -23,187 +23,8 @@ export interface ProjectData {
   under_construction?: number;
 }
 
-export const FALLBACK_PROJECTS: ProjectData[] = [
-  {
-    id: 72,
-    name: "The Premium Novera Heights",
-    slug: "the-premium-novera-heights",
-    location: "Bashundhara Residential Area",
-    community: {
-      name: "Bashundhara Residential Area",
-    },
-    price: "1 Crore - 2 Crore BDT",
-    price_range: "1 Crore - 2 Crore BDT",
-    beds: 3,
-    size: "2150 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6aae6e950801d.png",
-    description:
-      "Exclusive luxury residences designed for sophisticated modern living.",
-    status: "Ongoing",
-    under_construction: 1,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 71,
-    name: "The Premium Phoenix",
-    slug: "the-premium-phoenix",
-    location: "Bashundhara Residential Area",
-    community: {
-      name: "Bashundhara Residential Area",
-    },
-    price: "1 Crore - 2 Crore BDT",
-    price_range: "1 Crore - 2 Crore BDT",
-    beds: 3,
-    size: "2200 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a9fb63a51b90.png",
-    description:
-      "Architectural masterpiece crafted with state-of-the-art sustainability.",
-    status: "Ongoing",
-    under_construction: 1,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 69,
-    name: "The Premium Novus",
-    slug: "the-premium-novus",
-    location: "Bashundhara Residential Area",
-    community: {
-      name: "Bashundhara Residential Area",
-    },
-    price: "80 Lac - 1.5 Crore BDT",
-    price_range: "80 Lac - 1.5 Crore BDT",
-    beds: 3,
-    size: "2200 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a92ac5dd0384.png",
-    description:
-      "A sanctuary of comfort with serene views and open-plan layouts.",
-    status: "Ongoing",
-    under_construction: 1,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 55,
-    name: "The Premium Canvas of Happiness",
-    slug: "the-premium-canvas-of-happiness",
-    location: "Bashundhara Residential Area",
-    community: {
-      name: "Bashundhara Residential Area",
-    },
-    price: "1 Crore - 2 Crore BDT",
-    price_range: "1 Crore - 2 Crore BDT",
-    beds: 4,
-    size: "2705 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a93cc43c0b37.jpeg",
-    description:
-      "Sustainable living in Dhaka's most sought-after prime location.",
-    status: "Sold Out",
-    under_construction: 0,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 61,
-    name: "The Premium Serenity",
-    slug: "the-premium-serenity",
-    location: "Jolshiri Abashon",
-    community: {
-      name: "Jolshiri Abashon",
-    },
-    price: "2 Crore - 5 Crore BDT",
-    price_range: "2 Crore - 5 Crore BDT",
-    beds: 4,
-    size: "2850 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a9fb48bbe252.png",
-    description:
-      "Panoramic lake-facing residences crafted for ultimate comfort.",
-    status: "Ongoing",
-    under_construction: 1,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 62,
-    name: "TPSC Commercial",
-    slug: "tpsc-commercial",
-    location: "The Premium Smart City",
-    community: {
-      name: "The Premium Smart City",
-    },
-    price: "Above 5 Crore BDT",
-    price_range: "Above 5 Crore BDT",
-    beds: 3,
-    size: "1565 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a4f2d4393793.png",
-    description:
-      "State-of-the-art corporate offices and premium retail developments.",
-    status: "Sold Out",
-    under_construction: 0,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 66,
-    name: "TPRC Commercial",
-    slug: "tprc-commercial",
-    location: "ATI Model Society",
-    community: {
-      name: "The Premium Royal City",
-    },
-    price: "2 Crore - 5 Crore BDT",
-    price_range: "2 Crore - 5 Crore BDT",
-    beds: 3,
-    size: "1565 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6aa145a8cb2a7.jpeg",
-    description:
-      "Premier commercial hub connecting thriving business ecosystems.",
-    status: "Sold Out",
-    under_construction: 0,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 31,
-    name: "The Premium Fortune Residence",
-    slug: "the-premium-fortune-residence",
-    location: "Ashulia Model Town",
-    community: {
-      name: "Ashulia Model Town",
-    },
-    price: "50 Lac - 1 Crore BDT",
-    price_range: "50 Lac - 1 Crore BDT",
-    beds: 3,
-    size: "1000 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a2e2897953d8.png",
-    description: "Modern suburban elegance amidst nature and green landscape.",
-    status: "Sold Out",
-    under_construction: 0,
-    tag: "LUXURY COLLECTION",
-  },
-  {
-    id: 17,
-    name: "The Premium Southpoint Villa",
-    slug: "the-premium-southpoint-villa",
-    location: "Ashulia Model Town",
-    community: {
-      name: "Ashulia Model Town",
-    },
-    price: "60 Lac - 1.2 Crore BDT",
-    price_range: "60 Lac - 1.2 Crore BDT",
-    beds: 3,
-    size: "1600 sft",
-    image:
-      "https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/projects_6a2e2fab5868d.png",
-    description:
-      "Spacious architectural villa units with private balconies and amenities.",
-    status: "Sold Out",
-    under_construction: 0,
-    tag: "LUXURY COLLECTION",
-  },
-];
+export const FALLBACK_PROJECTS: ProjectData[] = [];
+
 
 function extractLocationString(
   loc: unknown,
@@ -291,9 +112,15 @@ function normalizeProject(
  */
 export async function getProjects(): Promise<ProjectData[]> {
   const baseUrl =
-    process.env.API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://api.dpremiumhomes.com/api/";
+    process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (!baseUrl) {
+    console.error(
+      "[getProjects] Environment variable API_BASE_URL or NEXT_PUBLIC_API_BASE_URL is missing.",
+    );
+    return [];
+  }
+
   const cleanBase = baseUrl.replace(/\/+$/, "");
 
   try {
@@ -303,9 +130,9 @@ export async function getProjects(): Promise<ProjectData[]> {
 
     if (!res.ok) {
       console.warn(
-        `[getProjects] API responded with ${res.status}, falling back to static projects.`,
+        `[getProjects] API responded with ${res.status} when fetching projects list.`,
       );
-      return FALLBACK_PROJECTS;
+      return [];
     }
 
     const data = await res.json();
@@ -314,16 +141,13 @@ export async function getProjects(): Promise<ProjectData[]> {
       : data?.projects || data?.data || [];
 
     if (!Array.isArray(rawList) || rawList.length === 0) {
-      return FALLBACK_PROJECTS;
+      return [];
     }
 
     return rawList.map((item) => normalizeProject(item));
   } catch (error) {
-    console.warn(
-      "[getProjects] Fetch error, falling back to static data:",
-      error,
-    );
-    return FALLBACK_PROJECTS;
+    console.error("[getProjects] Fetch error from API:", error);
+    return [];
   }
 }
 
@@ -489,8 +313,64 @@ export function normalizeProjectDetail(
 }
 
 /**
+ * Central server-side data fetching point for an individual project by SLUG.
+ * Uses environment variable for API base URL without hardcoded URLs or fallback data.
+ */
+export async function getProjectBySlug(
+  slug: string,
+): Promise<ProjectDetail | null> {
+  const cleanSlug = slug?.trim();
+  if (!cleanSlug) {
+    return null;
+  }
+
+  const baseUrl =
+    process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (!baseUrl) {
+    console.error(
+      "[getProjectBySlug] Error: Neither API_BASE_URL nor NEXT_PUBLIC_API_BASE_URL is defined in .env",
+    );
+    return null;
+  }
+
+  const cleanBase = baseUrl.replace(/\/+$/, "");
+
+  try {
+    const res = await fetch(
+      `${cleanBase}/projects/${encodeURIComponent(cleanSlug)}`,
+      {
+        next: { revalidate: 3600 },
+      },
+    );
+
+    if (!res.ok) {
+      console.warn(
+        `[getProjectBySlug] API responded with ${res.status} for slug: "${cleanSlug}"`,
+      );
+      return null;
+    }
+
+    const data = await res.json();
+    const raw = data?.project || data?.property || data?.data;
+
+    if (!raw || !raw.name) {
+      console.warn(
+        `[getProjectBySlug] No valid project data returned for slug: "${cleanSlug}"`,
+      );
+      return null;
+    }
+
+    return normalizeProjectDetail(raw);
+  } catch (error) {
+    console.error(`[getProjectBySlug] Fetch error for slug "${cleanSlug}":`, error);
+    return null;
+  }
+}
+
+/**
  * Central server-side data fetching point for an individual project by ID.
- * Directly calls https://api.dpremiumhomes.com/api/projects/get-property-by-id/?id={id}
+ * Kept for backward compatibility, strictly using environment variables.
  */
 export async function getProjectById(
   id: string | number,
@@ -501,9 +381,15 @@ export async function getProjectById(
   }
 
   const baseUrl =
-    process.env.API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://api.dpremiumhomes.com/api/";
+    process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (!baseUrl) {
+    console.error(
+      "[getProjectById] Error: Neither API_BASE_URL nor NEXT_PUBLIC_API_BASE_URL is defined in .env",
+    );
+    return null;
+  }
+
   const cleanBase = baseUrl.replace(/\/+$/, "");
 
   try {
@@ -518,22 +404,20 @@ export async function getProjectById(
       console.warn(
         `[getProjectById] API responded with ${res.status} for ID: ${numericId}`,
       );
-      const fallback = FALLBACK_PROJECTS.find((p) => p.id === numericId);
-      return fallback ? normalizeProjectDetail(fallback) : null;
+      return null;
     }
 
     const data = await res.json();
-    const raw = data?.property || data?.data;
+    const raw = data?.property || data?.project || data?.data;
 
     if (!raw || !raw.name) {
-      const fallback = FALLBACK_PROJECTS.find((p) => p.id === numericId);
-      return fallback ? normalizeProjectDetail(fallback) : null;
+      return null;
     }
 
     return normalizeProjectDetail(raw);
   } catch (error) {
-    console.warn(`[getProjectById] Fetch error for ID ${numericId}:`, error);
-    const fallback = FALLBACK_PROJECTS.find((p) => p.id === numericId);
-    return fallback ? normalizeProjectDetail(fallback) : null;
+    console.error(`[getProjectById] Fetch error for ID ${numericId}:`, error);
+    return null;
   }
 }
+

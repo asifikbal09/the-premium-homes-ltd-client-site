@@ -21,12 +21,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
   // Beds / Bathrooms / Balconies
   const bathsCount = project.beds || 3;
   const balconiesCount = project.beds || 3;
+  const projectHref = `/projects/${project.slug || project.id}`;
 
   return (
     <article className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all duration-300">
       {/* Card Image Container */}
       <Link
-        href={`/projects/${project.id}`}
+        href={projectHref}
         className="relative block w-full aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-[#f3efe9]"
       >
         {/* Luxury Collection Badge */}
@@ -53,7 +54,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="flex items-start justify-between gap-3 min-h-[56px]">
           {/* Left: Name and Location / Description */}
           <div className="flex-1 min-w-0">
-            <Link href={`/projects/${project.id}`} className="block">
+            <Link href={projectHref} className="block">
               <h3 className="font-heading text-xl sm:text-2xl font-medium text-[#14261f] group-hover:text-[#044133] transition-colors leading-snug truncate">
                 {project.name}
               </h3>
@@ -100,7 +101,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           {/* Right: DETAILS button */}
           <Link
-            href={`/projects/${project.id}`}
+            href={projectHref}
             className="inline-flex items-center justify-center px-3.5 sm:px-4 py-1.5 rounded-full border border-[#044133]/35 text-[#044133] hover:bg-[#044133] hover:text-white transition-all duration-200 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap active:scale-95 cursor-pointer shadow-2xs"
           >
             DETAILS

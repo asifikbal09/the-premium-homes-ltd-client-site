@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProjectById, getProjects } from "@/lib/projects";
+import { getProjectBySlug, getProjects } from "@/lib/projects";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProjectHero } from "@/components/section/project_detail/project_hero";
@@ -14,14 +14,14 @@ import { ArtOfLivingVideo } from "@/components/section/home/art_of_living_video"
 import { ProjectContactSection } from "@/components/section/project_detail/project_contact_section";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const project = await getProjectById(id);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     return {
@@ -39,12 +39,12 @@ export async function generateMetadata({
 }
 
 /**
- * Server Component: Loads project data from the central API point on the server.
- * Uses Next.js App Router dynamic route projects/{id}.
+ * Server Component: Loads project data by slug from the API point on the server.
+ * Uses Next.js App Router dynamic route projects/{slug}.
  */
 export default async function ProjectDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     notFound();

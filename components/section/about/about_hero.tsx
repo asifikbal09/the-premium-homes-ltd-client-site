@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { NavDropdownMenu } from "@/components/navbar";
 
 interface GalleryImage {
   id: string;
@@ -76,8 +75,6 @@ const GALLERY_IMAGES: GalleryImage[] = [
 ];
 
 export function AboutHero() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const heroNavRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Subtle interactive mouse parallax
@@ -106,44 +103,13 @@ export function AboutHero() {
     mouseY.set(0);
   };
 
-  // Close hero dropdown on ESC key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) {
-        setMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen]);
-
-  // Close hero dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (target?.closest?.("[data-navigation-drawer]")) {
-        return;
-      }
-      if (
-        heroNavRef.current &&
-        !heroNavRef.current.contains(event.target as Node)
-      ) {
-        setMenuOpen(false);
-      }
-    };
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
-
   return (
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       aria-label="About Us Hero"
-      className="relative w-full bg-[#ffffff] text-[#1f2723] overflow-hidden selection:bg-[#d0a65b]/25 pt-5 sm:pt-7 pb-12 sm:pb-16 lg:pb-20"
+      className="relative w-full bg-[#ffffff] text-[#1f2723] overflow-hidden selection:bg-[#d0a65b]/25 pt-20 sm:pt-24 lg:pt-28 pb-12 sm:pb-16 lg:pb-20"
     >
       {/* Subtle Luxury Ambient Background Light */}
       <div
@@ -154,83 +120,6 @@ export function AboutHero() {
         }}
         aria-hidden="true"
       />
-
-      {/* Top Header / Navigation Bar */}
-      <div
-        ref={heroNavRef}
-        className="relative z-40 w-full max-w-[1520px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16"
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="group relative flex items-center transition-transform duration-200 hover:scale-[1.02]"
-            aria-label="Premium Homes Home"
-          >
-            <div className="relative h-8 sm:h-9 md:h-10 w-36 sm:w-44 md:w-48">
-              <Image
-                src="/image/logo/LOGO-GREEN.png"
-                alt="Premium Homes"
-                fill
-                priority
-                sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
-                className="object-contain object-left"
-              />
-            </div>
-          </Link>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <Link
-              href="/projects"
-              className="inline-flex items-center justify-center px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium tracking-[0.14em] uppercase text-[#1f2723] border border-[#1f2723]/25 hover:border-[#1f2723]/60 hover:bg-black/[0.03] transition-all duration-200 shadow-sm active:scale-95"
-            >
-              <span>ALL PROJECT</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label={
-                menuOpen ? "Close Navigation Menu" : "Open Navigation Menu"
-              }
-              aria-expanded={menuOpen}
-              className={cn(
-                "inline-flex items-center justify-center gap-2.5 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium tracking-[0.14em] uppercase text-[#1f2723] border transition-all duration-200 shadow-sm cursor-pointer active:scale-95",
-                menuOpen
-                  ? "bg-[#1f2723]/10 border-[#1f2723]/60"
-                  : "border-[#1f2723]/25 hover:border-[#1f2723]/60 hover:bg-black/[0.03]",
-              )}
-            >
-              <span
-                className="flex flex-col justify-center gap-[4px] w-4"
-                aria-hidden="true"
-              >
-                <span
-                  className={cn(
-                    "block h-[1.5px] w-full bg-[#1f2723] transition-transform duration-200",
-                    menuOpen && "rotate-45 translate-y-[2.5px]",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "block h-[1.5px] w-full bg-[#1f2723] transition-transform duration-200",
-                    menuOpen && "-rotate-45 -translate-y-[2.5px]",
-                  )}
-                />
-              </span>
-              <span>MENU</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Dropdown Menu attached underneath header */}
-        <NavDropdownMenu
-          isOpen={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          className="mt-4 rounded-xl sm:rounded-2xl border border-black/10 shadow-2xl"
-        />
-      </div>
 
       {/* ================================================================ */}
       {/* DESKTOP HERO CANVAS (lg and above): Matches the exact visual     */}

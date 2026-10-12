@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Search, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FALLBACK_PROJECTS } from "@/lib/projects";
+import type { ProjectData } from "@/lib/projects";
 
 const emptySubscribe = () => () => {};
 
@@ -128,6 +128,9 @@ export interface NavDropdownMenuProps {
  * - Expandable sub-links with subtle chevrons.
  * - "Follow Us" with circular outlined social buttons.
  */
+// Module-level cache so we only fetch projects once for search
+let cachedProjects: ProjectData[] | null = null;
+
 export function NavDropdownMenu({
   isOpen,
   onClose,
@@ -140,8 +143,38 @@ export function NavDropdownMenu({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+  const [liveProjects, setLiveProjects] = useState<ProjectData[]>(() => cachedProjects || []);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Load live projects for search from API (cached across opens)
+  useEffect(() => {
+    if (isOpen) {
+      if (cachedProjects && cachedProjects.length > 0) {
+        setLiveProjects(cachedProjects);
+        return;
+      }
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL;
+      if (baseUrl) {
+        const cleanBase = baseUrl.replace(/\/+$/, "");
+        fetch(`${cleanBase}/projects`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            const rawList = Array.isArray(data)
+              ? data
+              : data?.projects || data?.data || [];
+            if (Array.isArray(rawList)) {
+              cachedProjects = rawList;
+              setLiveProjects(rawList);
+            }
+          })
+          .catch((err) =>
+            console.error("[NavDropdownMenu] Search projects fetch error:", err),
+          );
+      }
+    }
+  }, [isOpen]);
 
   const handleClose = React.useCallback(() => {
     setSearchQuery("");
@@ -175,13 +208,15 @@ export function NavDropdownMenu({
   const matchingProjects = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
-    return FALLBACK_PROJECTS.filter((p) => {
-      const nameMatch = p.name?.toLowerCase().includes(q);
-      const locMatch = p.location?.toLowerCase().includes(q);
-      const commMatch = p.community?.name?.toLowerCase().includes(q);
-      return nameMatch || locMatch || commMatch;
-    }).slice(0, 6);
-  }, [searchQuery]);
+    return liveProjects
+      .filter((p) => {
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const locMatch = p.location?.toLowerCase().includes(q);
+        const commMatch = p.community?.name?.toLowerCase().includes(q);
+        return nameMatch || locMatch || commMatch;
+      })
+      .slice(0, 6);
+  }, [searchQuery, liveProjects]);
 
   if (!mounted) return null;
 
@@ -198,7 +233,7 @@ export function NavDropdownMenu({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={handleClose}
-            className="fixed inset-0 z-[9998] bg-transparent cursor-default pointer-events-auto"
+            className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-[2px] cursor-default pointer-events-auto"
             aria-hidden="true"
           />
 
@@ -214,7 +249,7 @@ export function NavDropdownMenu({
             className={cn(
               "fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-[360px] sm:max-w-[400px] md:max-w-[420px] h-[100dvh] flex flex-col justify-between overflow-hidden select-none",
               // Premium glassmorphism: frosted glass with deep charcoal/emerald tone, fine left border, and ambient shadow
-              "bg-[#070e0d]/85 sm:bg-[#070e0d]/80 backdrop-blur-2xl border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]",
+              "bg-[#070e0d]/95 sm:bg-[#070e0d]/90 backdrop-blur-2xl border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]",
               className &&
                 className
                   .split(" ")
@@ -226,11 +261,11 @@ export function NavDropdownMenu({
             aria-label="Navigation Menu"
           >
             {/* TOP BAR: Brand Logo + Minimalist CLOSE Button */}
-            <div className="shrink-0 pt-6 sm:pt-8 px-6 sm:px-8 pb-3 flex items-center justify-between">
+            <div className="shrink-0 pt-6 sm:pt-8 px-6 sm:px-8 pb-3 flex items-center justify-between border-b border-white/5">
               <Link
                 href="/"
                 onClick={handleClose}
-                className="relative h-6 sm:h-7 w-28 sm:w-32 opacity-85 hover:opacity-100 transition-opacity"
+                className="relative h-6 sm:h-7 w-28 sm:w-32 opacity-90 hover:opacity-100 transition-opacity"
                 aria-label="The Premium Homes"
               >
                 <Image
@@ -246,16 +281,16 @@ export function NavDropdownMenu({
                 type="button"
                 onClick={handleClose}
                 aria-label="Close navigation menu"
-                className="group inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] uppercase text-white/80 hover:text-white transition-colors cursor-pointer"
+                className="group inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] uppercase text-white/80 hover:text-white transition-colors cursor-pointer py-1 px-1.5 -mr-1.5"
               >
                 <span>CLOSE</span>
-                <X className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90 text-white/90" />
+                <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90 text-white/90" />
               </button>
             </div>
 
             {/* SEARCH PROJECTS INPUT */}
-            <div className="shrink-0 px-6 sm:px-8 pt-3 pb-4">
-              <div className="relative flex items-center w-full py-2 border-b border-white/20 focus-within:border-[#d0a65b]/80 transition-colors">
+            <div className="shrink-0 px-6 sm:px-8 pt-4 pb-3">
+              <div className="relative flex items-center w-full py-2 border-b border-white/20 focus-within:border-[#d0a65b] transition-colors">
                 <Search className="w-4 h-4 text-white/45 shrink-0 mr-3" />
                 <input
                   type="text"
@@ -269,7 +304,7 @@ export function NavDropdownMenu({
                       handleClose();
                     }
                   }}
-                  placeholder="Search Projects"
+                  placeholder="Search Projects..."
                   className="w-full bg-transparent text-sm sm:text-base text-white placeholder:text-white/40 focus:outline-none"
                 />
                 {searchQuery && (
@@ -297,7 +332,7 @@ export function NavDropdownMenu({
                     matchingProjects.map((project) => (
                       <Link
                         key={project.id}
-                        href={`/projects/${project.id}`}
+                        href={`/projects/${project.slug || project.id}`}
                         onClick={handleClose}
                         className="group flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all"
                       >
@@ -341,7 +376,7 @@ export function NavDropdownMenu({
                 </div>
               ) : (
                 /* CLEAN NAVIGATION MENU ITEMS */
-                <nav className="flex flex-col space-y-4 sm:space-y-5 py-2 pb-8">
+                <nav className="flex flex-col space-y-4 sm:space-y-4.5 py-2 pb-6">
                   {NAV_ITEMS_CONFIG.map((item) => {
                     const isActive = pathname === item.href;
                     const isExpanded = expandedMenu === item.name;
@@ -354,7 +389,7 @@ export function NavDropdownMenu({
                               href={item.href}
                               onClick={handleClose}
                               className={cn(
-                                "group flex items-center text-lg sm:text-xl font-medium transition-all duration-200",
+                                "group flex items-center text-base sm:text-lg font-medium transition-all duration-200",
                                 isActive
                                   ? "text-[#d0a65b] font-semibold"
                                   : "text-white/90 hover:text-white"
@@ -371,7 +406,7 @@ export function NavDropdownMenu({
                                 setExpandedMenu(isExpanded ? null : item.name)
                               }
                               aria-label={`Toggle ${item.name} submenu`}
-                              className="p-1.5 -mr-1.5 text-white/40 hover:text-[#d0a65b] transition-colors cursor-pointer"
+                              className="p-2 -mr-2 text-white/40 hover:text-[#d0a65b] transition-colors cursor-pointer"
                             >
                               <ChevronRight
                                 className={cn(
@@ -392,14 +427,14 @@ export function NavDropdownMenu({
                                 transition={{ duration: 0.22, ease: "easeOut" }}
                                 className="overflow-hidden"
                               >
-                                <div className="pl-3.5 pt-2.5 pb-1 mt-1 space-y-2 border-l border-white/15 ml-1">
+                                <div className="pl-3.5 pt-2 pb-1 mt-1 space-y-2 border-l border-white/15 ml-1">
                                   {item.subItems.map((sub) => (
                                     <Link
                                       key={sub.href}
                                       href={sub.href}
                                       onClick={handleClose}
                                       className={cn(
-                                        "block text-sm sm:text-[15px] transition-colors py-1",
+                                        "block text-xs sm:text-sm transition-colors py-1",
                                         pathname === sub.href
                                           ? "text-[#d0a65b] font-medium"
                                           : "text-white/65 hover:text-white hover:translate-x-1 transition-transform"
@@ -422,7 +457,7 @@ export function NavDropdownMenu({
                         href={item.href}
                         onClick={handleClose}
                         className={cn(
-                          "group flex items-center text-lg sm:text-xl font-medium transition-all duration-200",
+                          "group flex items-center text-base sm:text-lg font-medium transition-all duration-200",
                           isActive
                             ? "text-[#d0a65b] font-semibold"
                             : "text-white/90 hover:text-white"
@@ -437,6 +472,84 @@ export function NavDropdownMenu({
                 </nav>
               )}
             </div>
+
+            {/* DRAWER FOOTER: Quick Helpline & Social Media Icons */}
+            <div className="shrink-0 px-6 sm:px-8 py-4 border-t border-white/10 bg-black/25 flex flex-col gap-3">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs">
+                <div>
+                  <span className="text-[9px] uppercase tracking-[0.14em] text-white/40 block">Hotline</span>
+                  <a
+                    href="tel:+8801900000000"
+                    className="font-medium text-[#d0a65b] hover:underline"
+                  >
+                    +880 1900-000000
+                  </a>
+                </div>
+                <div className="text-right">
+                  <span className="text-[9px] uppercase tracking-[0.14em] text-white/40 block">Inquiries</span>
+                  <a
+                    href="mailto:info@thepremiumhomes.com"
+                    className="font-medium text-white/80 hover:text-white"
+                  >
+                    info@thepremiumhomes.com
+                  </a>
+                </div>
+              </div>
+
+              {/* Follow Us Social Icons */}
+              <div className="pt-2 flex items-center justify-between border-t border-white/10">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-white/40 font-semibold">
+                  Follow Us
+                </span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://facebook.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Facebook"
+                    className="w-7 h-7 rounded-full border border-white/15 hover:border-[#d0a65b] hover:text-[#d0a65b] text-white/70 flex items-center justify-center transition-all hover:scale-105"
+                  >
+                    <FacebookIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://instagram.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
+                    className="w-7 h-7 rounded-full border border-white/15 hover:border-[#d0a65b] hover:text-[#d0a65b] text-white/70 flex items-center justify-center transition-all hover:scale-105"
+                  >
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://youtube.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="YouTube"
+                    className="w-7 h-7 rounded-full border border-white/15 hover:border-[#d0a65b] hover:text-[#d0a65b] text-white/70 flex items-center justify-center transition-all hover:scale-105"
+                  >
+                    <YoutubeIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
+                    className="w-7 h-7 rounded-full border border-white/15 hover:border-[#d0a65b] hover:text-[#d0a65b] text-white/70 flex items-center justify-center transition-all hover:scale-105"
+                  >
+                    <LinkedinIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://tiktok.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="TikTok"
+                    className="w-7 h-7 rounded-full border border-white/15 hover:border-[#d0a65b] hover:text-[#d0a65b] text-white/70 flex items-center justify-center transition-all hover:scale-105"
+                  >
+                    <TiktokIcon className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </motion.aside>
         </>
       )}
@@ -445,16 +558,26 @@ export function NavDropdownMenu({
   );
 }
 
-export function Navbar() {
+export interface NavbarProps {
+  theme?: "dark" | "light";
+}
+
+export function Navbar({ theme }: NavbarProps = {}) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
+
+  // Determine if header at scroll 0 should use light theme (green logo & dark text)
+  const isLightTop =
+    !isScrolled && (theme === "light" || pathname === "/about");
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -495,74 +618,93 @@ export function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-full opacity-0 pointer-events-none",
+          ? "bg-[#031310]/95 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.4)] border-b border-white/10 py-2.5 sm:py-3.5"
+          : "bg-transparent border-b border-transparent py-3.5 sm:py-4 md:py-5",
       )}
     >
-      {/* Floating Scrolled Header Bar */}
-      <div className="bg-[#031310]/95 backdrop-blur-md shadow-md border-b border-white/10 py-3 sm:py-3.5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="group relative flex items-center transition-transform duration-300 hover:scale-[1.02]"
-              aria-label="Premium Homes Home"
-            >
-              <div className="relative h-8 sm:h-9 w-36 sm:w-44">
-                <Image
-                  src="/image/logo/LOGO-WHITE.png"
-                  alt="Premium Homes"
-                  fill
-                  sizes="180px"
-                  className="object-contain object-left"
-                />
-              </div>
-            </Link>
-
-            <div className="flex items-center gap-2.5 sm:gap-3.5">
-              <Link
-                href="/projects"
-                className="group relative inline-flex items-center justify-center px-4 sm:px-5 py-2 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-300 shadow-sm"
-              >
-                <span>ALL PROJECT</span>
-              </Link>
-
-              {/* MENU Toggle Button */}
-              <button
-                type="button"
-                onClick={() => setIsOpen((prev) => !prev)}
-                aria-label={
-                  isOpen ? "Close Navigation Menu" : "Open Navigation Menu"
-                }
-                aria-expanded={isOpen}
-                className={cn(
-                  "group relative inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full text-[11px] sm:text-xs  tracking-[0.14em] uppercase text-white border transition-all duration-300 shadow-sm cursor-pointer active:scale-95",
-                  isOpen
-                    ? "bg-white/25 border-white/40"
-                    : "bg-white/10 hover:bg-white/20 border-white/20",
-                )}
-              >
-                <span
-                  className="flex flex-col items-center justify-center gap-[4.5px] w-3.5"
-                  aria-hidden="true"
-                >
-                  <span
-                    className={cn(
-                      "block h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
-                      isOpen && "rotate-45 translate-y-[3px]",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "block h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
-                      isOpen && "-rotate-45 -translate-y-[3px]",
-                    )}
-                  />
-                </span>
-                <span>MENU</span>
-              </button>
-            </div>
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 flex items-center justify-between">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="group relative flex items-center transition-transform duration-300 hover:scale-[1.02]"
+          aria-label="Premium Homes Home"
+        >
+          <div className="relative h-7 sm:h-8 md:h-9 w-32 sm:w-40 md:w-44">
+            <Image
+              src={
+                isLightTop
+                  ? "/image/logo/LOGO-GREEN.png"
+                  : "/image/logo/LOGO-WHITE.png"
+              }
+              alt="Premium Homes"
+              fill
+              sizes="(max-width: 640px) 130px, 180px"
+              priority
+              className="object-contain object-left"
+            />
           </div>
+        </Link>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/projects"
+            className={cn(
+              "group relative inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase transition-all duration-300 shadow-sm active:scale-95",
+              isScrolled
+                ? "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
+                : isLightTop
+                  ? "border border-[#1f2723]/30 hover:border-[#1f2723]/60 hover:bg-black/[0.04] text-[#1f2723]"
+                  : "bg-black/35 hover:bg-black/55 border border-white/25 backdrop-blur-md text-white",
+            )}
+          >
+            <span>ALL PROJECT</span>
+          </Link>
+
+          {/* MENU Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-label={
+              isOpen ? "Close Navigation Menu" : "Open Navigation Menu"
+            }
+            aria-expanded={isOpen}
+            className={cn(
+              "group relative inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase border transition-all duration-300 shadow-sm cursor-pointer active:scale-95",
+              isScrolled
+                ? isOpen
+                  ? "bg-white/25 border-white/40 text-white"
+                  : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                : isLightTop
+                  ? isOpen
+                    ? "bg-[#1f2723]/10 border-[#1f2723]/60 text-[#1f2723]"
+                    : "border-[#1f2723]/30 hover:border-[#1f2723]/60 hover:bg-black/[0.04] text-[#1f2723]"
+                  : isOpen
+                    ? "bg-black/60 border-white/40 text-white backdrop-blur-md"
+                    : "bg-black/35 hover:bg-black/55 border-white/25 backdrop-blur-md text-white",
+            )}
+          >
+            <span
+              className="flex flex-col items-center justify-center gap-[4px] w-3.5"
+              aria-hidden="true"
+            >
+              <span
+                className={cn(
+                  "block h-[1.5px] w-full rounded-full transition-transform duration-200",
+                  isLightTop ? "bg-[#1f2723]" : "bg-white",
+                  isOpen && "rotate-45 translate-y-[2.7px]",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-[1.5px] w-full rounded-full transition-transform duration-200",
+                  isLightTop ? "bg-[#1f2723]" : "bg-white",
+                  isOpen && "-rotate-45 -translate-y-[2.7px]",
+                )}
+              />
+            </span>
+            <span>MENU</span>
+          </button>
         </div>
       </div>
 

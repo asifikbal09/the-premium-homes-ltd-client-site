@@ -6,6 +6,7 @@ import { AboutProvenTrust } from "@/components/section/about/about_proven_trust"
 import { AboutFamilySlider } from "@/components/section/about/about_family_slider";
 import { AboutPrinciplesDna } from "@/components/section/about/about_principles_dna";
 import { AboutBuildingJourney } from "@/components/section/about/about_building_journey";
+import { AboutFounderTrust } from "@/components/section/about/about_founder_trust";
 
 export const metadata: Metadata = {
   title: "About Us | The Story Of A Dream | Premium Homes",
@@ -25,6 +26,8 @@ export default function AboutPage() {
 
         {/* Built On Trust, Proven By Delivery (Second Section) */}
         <AboutProvenTrust />
+
+        
 
         {/* Designed for families. Scaled for tomorrow. (Third Section - Stacked Slider) */}
         <AboutFamilySlider />

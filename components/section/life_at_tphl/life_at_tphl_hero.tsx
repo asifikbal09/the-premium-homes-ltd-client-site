@@ -4,124 +4,13 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { NavDropdownMenu } from "@/components/navbar";
 
 export function LifeAtTphlHero() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const heroNavRef = useRef<HTMLDivElement>(null);
-
-  // Close hero dropdown on ESC key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) {
-        setMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen]);
-
-  // Close hero dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (target?.closest?.("[data-navigation-drawer]")) {
-        return;
-      }
-      if (
-        heroNavRef.current &&
-        !heroNavRef.current.contains(event.target as Node)
-      ) {
-        setMenuOpen(false);
-      }
-    };
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
-
   return (
     <section
       aria-label="Life At TPHL Hero"
-      className="relative w-full bg-[#546360] text-white flex flex-col justify-between overflow-hidden"
+      className="relative w-full bg-[#546360] text-white flex flex-col justify-between overflow-hidden pt-20 sm:pt-24 lg:pt-28"
     >
-      {/* Top Header / Navigation Bar */}
-      <div
-        ref={heroNavRef}
-        className="relative z-30 w-full max-w-[1520px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pt-6 sm:pt-8"
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="group relative flex items-center transition-transform duration-200 hover:scale-[1.02]"
-            aria-label="Premium Homes Home"
-          >
-            <div className="relative h-8 sm:h-9 md:h-10 w-36 sm:w-44 md:w-48">
-              <Image
-                src="/image/logo/LOGO-WHITE.png"
-                alt="Premium Homes"
-                fill
-                priority
-                sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
-                className="object-contain object-left"
-              />
-            </div>
-          </Link>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <Link
-              href="/projects"
-              className="inline-flex items-center justify-center px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium tracking-[0.14em] uppercase text-white/90 border border-white/35 hover:border-white/60 hover:bg-white/10 transition-all duration-200 shadow-sm active:scale-95"
-            >
-              <span>ALL PROJECT</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label={
-                menuOpen ? "Close Navigation Menu" : "Open Navigation Menu"
-              }
-              aria-expanded={menuOpen}
-              className={cn(
-                "inline-flex items-center justify-center gap-2.5 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium tracking-[0.14em] uppercase text-white/90 border transition-all duration-200 shadow-sm cursor-pointer active:scale-95",
-                menuOpen
-                  ? "bg-white/20 border-white/60"
-                  : "border-white/35 hover:border-white/60 hover:bg-white/10",
-              )}
-            >
-              <span
-                className="flex flex-col justify-center gap-[4px] w-4"
-                aria-hidden="true"
-              >
-                <span
-                  className={cn(
-                    "block h-[1.5px] w-full bg-white transition-transform duration-200",
-                    menuOpen && "rotate-45 translate-y-[2.5px]",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "block h-[1.5px] w-full bg-white transition-transform duration-200",
-                    menuOpen && "-rotate-45 -translate-y-[2.5px]",
-                  )}
-                />
-              </span>
-              <span>MENU</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Dropdown Menu attached underneath header */}
-        <NavDropdownMenu
-          isOpen={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          className="mt-4 rounded-xl sm:rounded-2xl border border-white/15 shadow-2xl"
-        />
-      </div>
 
       {/* Hero Center & Lower Content */}
       <div className="relative z-10 w-full flex flex-col justify-between pt-8 sm:pt-12 md:pt-14">

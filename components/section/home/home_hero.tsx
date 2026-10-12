@@ -14,7 +14,6 @@ import {
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NavDropdownMenu } from "@/components/navbar";
 
 // --- Types & Constants ---
 interface ChatMessage {
@@ -103,7 +102,7 @@ function HeroSearchFilter() {
             setLocationOpen(false);
           }}
           className={cn(
-            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-semibold tracking-[0.14em] uppercase transition-all cursor-pointer",
+            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase transition-all cursor-pointer",
             statusOpen || selectedStatus !== "STATUS"
               ? "text-white bg-white/15"
               : "text-white/90 hover:text-white hover:bg-white/10",
@@ -180,7 +179,7 @@ function HeroSearchFilter() {
             setStatusOpen(false);
           }}
           className={cn(
-            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-semibold tracking-[0.14em] uppercase transition-all cursor-pointer",
+            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase transition-all cursor-pointer",
             locationOpen || selectedLocation !== "LOCATION"
               ? "text-white bg-white/15"
               : "text-white/90 hover:text-white hover:bg-white/10",
@@ -250,7 +249,7 @@ function HeroSearchFilter() {
         type="button"
         onClick={handleSearch}
         aria-label="Search Properties"
-        className="group relative inline-flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2.5 sm:px-4 md:px-6 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-[#6b5e4f] hover:bg-[#7b6d5c] border border-white/25 shadow-md transition-all duration-200 cursor-pointer active:scale-95 ml-0.5 sm:ml-1"
+        className="group relative inline-flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2.5 sm:px-4 md:px-6 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase text-white bg-[#6b5e4f] hover:bg-[#7b6d5c] border border-white/25 shadow-md transition-all duration-200 cursor-pointer active:scale-95 ml-0.5 sm:ml-1"
       >
         <Search className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-white/95 group-hover:scale-110 transition-transform duration-200" />
         <span className="relative z-10">SEARCH</span>
@@ -423,49 +422,15 @@ function HeroAdvisorChat() {
 
 // --- Main Hero Section Export ---
 export function HomeHero() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const heroNavRef = useRef<HTMLDivElement>(null);
-
-  // Close hero dropdown on ESC
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) {
-        setMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen]);
-
-  // Close hero dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (target?.closest?.("[data-navigation-drawer]")) {
-        return;
-      }
-      if (
-        heroNavRef.current &&
-        !heroNavRef.current.contains(event.target as Node)
-      ) {
-        setMenuOpen(false);
-      }
-    };
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
-
   return (
     <>
       <section
         id="home"
         aria-label="Hero Section"
-        className="w-full md:h-screen lg:h-max-[900px]  "
+        className="w-full min-h-[620px] md:h-screen md:max-h-[920px]"
       >
-        {/* Exact 16:9 Contained Card matching user reference on Desktop & Mobile */}
-        <div className="relative w-full md:aspect-[16/9] md:h-screen lg:h-max-[900px] xl:h-6xl overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between p-3 sm:p-6 md:p-8 lg:p-10 transition-all">
+        {/* Contained Hero Card matching luxury aesthetic on Desktop & Mobile */}
+        <div className="relative w-full h-full min-h-[620px] md:aspect-[16/9] md:h-screen md:max-h-[920px] overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-4 sm:pb-6 md:pb-8 lg:pb-10 px-3 sm:px-6 md:px-8 lg:px-10 transition-all">
           {/* Background Image Layer */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <Image
@@ -473,102 +438,23 @@ export function HomeHero() {
               alt="Premium luxury modern architectural high-rise apartments at night"
               fill
               priority
-              quality={92}
-              sizes=""
+              sizes="100vw"
+              quality={90}
               className="object-cover object-center transform scale-100 transition-transform duration-1000 ease-out"
             />
-            
 
-            {/* Exact Linear Gradient Overlay matching Figma */}
+            {/* Soft Linear Gradient Overlay for text contrast */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(180deg, #000000 0%, rgba(11, 11, 11, 0) 100%)",
+                  "linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 35%, rgba(0, 0, 0, 0.75) 100%)",
               }}
             />
           </div>
 
-          {/* TOP BAR: Logo & Navigation Controls (Directly inside 16:9 Hero Frame) */}
-          <div ref={heroNavRef} className="relative z-30 w-full">
-            <div className="flex items-center justify-between">
-              {/* Brand Logo */}
-              <Link
-                href="/"
-                className="group relative flex items-center transition-transform duration-300 hover:scale-[1.02]"
-                aria-label="Premium Homes Home"
-              >
-                <div className="relative h-4 sm:h-7 md:h-8 lg:h-9 w-20 sm:w-36 md:w-44 lg:w-48">
-                  <Image
-                    src="/image/logo/LOGO-WHITE.png"
-                    alt="Premium Homes"
-                    fill
-                    sizes="(max-width: 640px) 100px, (max-width: 768px) 180px, 200px"
-                    priority
-                    className="object-contain object-left"
-                  />
-                </div>
-              </Link>
-
-              {/* Top Right Action Pills */}
-              <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
-                {/* ALL PROJECT Button */}
-                <Link
-                  href="/projects"
-                  className="group relative inline-flex items-center justify-center px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-black/35 hover:bg-black/55 border border-white/20 hover:border-white/35 backdrop-blur-md transition-all duration-200 shadow-sm active:scale-95"
-                >
-                  <span>ALL PROJECT</span>
-                </Link>
-
-                {/* MENU Toggle Button */}
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((prev) => !prev)}
-                  aria-label={
-                    menuOpen ? "Close Navigation Menu" : "Open Navigation Menu"
-                  }
-                  aria-expanded={menuOpen}
-                  className={cn(
-                    "group relative inline-flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-5 py-0.5 sm:py-1.5 md:py-2 rounded-full text-[8px] sm:text-[11px] md:text-xs font-semibold tracking-[0.12em] uppercase text-white border backdrop-blur-md transition-all duration-200 shadow-sm cursor-pointer active:scale-95",
-                    menuOpen
-                      ? "bg-black/60 border-white/40"
-                      : "bg-black/35 hover:bg-black/55 border-white/20 hover:border-white/35",
-                  )}
-                >
-                  <span
-                    className="flex flex-col justify-center gap-[3px] sm:gap-[4px] w-2.5 sm:w-3.5"
-                    aria-hidden="true"
-                  >
-                    <span
-                      className={cn(
-                        "block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
-                        menuOpen &&
-                          "rotate-45 translate-y-[2px] sm:translate-y-[2.5px]",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "block h-[1px] sm:h-[1.5px] w-full bg-white rounded-full transition-transform duration-200",
-                        menuOpen &&
-                          "-rotate-45 -translate-y-[2px] sm:-translate-y-[2.5px]",
-                      )}
-                    />
-                  </span>
-                  <span>MENU</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Dropdown Menu attached directly beneath hero top bar */}
-            <NavDropdownMenu
-              isOpen={menuOpen}
-              onClose={() => setMenuOpen(false)}
-              className="mt-2 sm:mt-3 rounded-xl sm:rounded-2xl border border-white/20 shadow-2xl"
-            />
-          </div>
-
           {/* MIDDLE AREA: Left Headline & Right Floating Contact / Chat */}
-          <div className="relative w-full flex flex-col lg:flex-row justify-between my-1 sm:my-4 md:my-6 gap-2 sm:gap-6">
+          <div className="relative z-10 w-full flex flex-col lg:flex-row justify-between my-auto gap-4 sm:gap-6">
             {/* Left Column: Tagline & Display Headline */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
