@@ -11,6 +11,8 @@ export interface ProjectData {
   beds?: number;
   size?: string;
   image: string;
+  image2?: string;
+  type?: string;
   tag?: string | null;
   description?: string;
   hover_text?: string;
@@ -76,6 +78,11 @@ function normalizeProject(
     img = "/image/projects/projectsHero.png";
   }
 
+  let img2 = (typeof raw.image2 === "string" ? raw.image2 : "") || "";
+  if (img2 && !img2.startsWith("http")) {
+    img2 = `https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/${img2.replace(/^\/+/, "")}`;
+  }
+
   const location = extractLocationString(raw.location, raw.community);
   const desc =
     raw.description && raw.description.trim().length > 10
@@ -95,6 +102,8 @@ function normalizeProject(
     beds: raw.beds && Number(raw.beds) > 0 ? Number(raw.beds) : 3,
     size: raw.size && raw.size.trim() ? raw.size : "1600 sft",
     image: img,
+    image2: img2 || undefined,
+    type: typeof raw.type === "string" && raw.type.trim() ? raw.type.trim() : undefined,
     tag: raw.tag || "LUXURY COLLECTION",
     description: desc,
     status:

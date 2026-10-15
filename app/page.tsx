@@ -12,16 +12,33 @@ import { MobileAppSection } from "@/components/section/home/mobile_app_section";
 import { PropertyPredictionSection } from "@/components/section/team/property_prediction_section";
 import { ResidentReviews } from "@/components/section/home/resident_reviews";
 import { LatestBlogs } from "@/components/section/home/latest_blogs";
+import { getProjects } from "@/lib/projects";
 
-export default function Home() {
+export default async function Home() {
+  const projects = await getProjects();
+  const locations = Array.from(
+    new Set(
+      projects
+        .map((p) => p.location?.trim())
+        .filter(Boolean) as string[],
+    ),
+  );
+  const statuses = Array.from(
+    new Set(
+      projects
+        .map((p) => p.status?.trim())
+        .filter(Boolean) as string[],
+    ),
+  );
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
       <Navbar />
       <main className="flex-1">
-        <HomeHero />
+        <HomeHero initialLocations={locations} initialStatuses={statuses} />
         <PhilosophyPillars />
         <HomeAbout />
-        <FeaturedProjects />
+        <FeaturedProjects initialProjects={projects} />
         <SignatureDevelopments />
         <ArtOfLivingVideo />
         <CommunityGallery />

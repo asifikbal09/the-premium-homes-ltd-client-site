@@ -1,6 +1,5 @@
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 export function PropertyPredictionSection() {
   return (
@@ -51,14 +50,16 @@ export function PropertyPredictionSection() {
             </h2>
 
             {/* CTA Button */}
-            <Link
-              href="/#contact"
+            <a
+              href="https://prop-value.xyz/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative inline-flex items-center justify-center rounded-full px-7 sm:px-9 py-3 sm:py-3.5 text-[10px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-[#d0a65b] bg-[#044133] hover:bg-[#065b4b] border border-[#d0a65b]/30 shadow-md transition-all duration-300 mt-6 sm:mt-8 active:scale-95 cursor-pointer"
             >
               <span className="relative z-10 transition-transform duration-200 group-hover:scale-[1.02]">
                 TRY PROPERTY PRICE PREDICTOR
               </span>
-            </Link>
+            </a>
           </div>
         </div>
       </div>

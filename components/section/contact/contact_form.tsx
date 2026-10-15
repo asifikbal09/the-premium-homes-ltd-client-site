@@ -1,7 +1,14 @@
-﻿"use client";
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { submitContactAction, ContactActionState } from "@/app/actions/contact";
+
+const initialActionState: ContactActionState = {
+  success: false,
+};
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -12,16 +19,16 @@ export function ContactForm() {
     message: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [state, formAction, isPending] = useActionState(
+    submitContactAction,
+    initialActionState
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  useEffect(() => {
+    if (!state.timestamp) return;
 
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
+    if (state.success) {
+      toast.success(state.message || "Your message has been sent successfully!");
       setFormData({
         name: "",
         email: "",
@@ -29,9 +36,10 @@ export function ContactForm() {
         subject: "Sales Inquiry",
         message: "",
       });
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 600);
-  };
+    } else if (state.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
 
   return (
     <section
@@ -50,19 +58,24 @@ export function ContactForm() {
           </h2>
 
           <AnimatePresence>
-            {submitted && (
+            {state.success && state.message && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-6 p-4 rounded-lg bg-[#083c2f]/10 border border-[#083c2f]/20 text-[#083c2f] text-sm"
               >
-                Thank you! Your message has been sent successfully. We will get back to you shortly.
+                {state.message}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 sm:gap-y-6">
+          <form
+            action={formAction}
+            className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 sm:gap-y-6"
+          >
+            <input type="hidden" name="source" value="contact_page" />
+
             <div>
               <label
                 htmlFor="name"
@@ -72,10 +85,13 @@ export function ContactForm() {
               </label>
               <input
                 id="name"
+                name="name"
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="Enter your Name"
                 className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
               />
@@ -90,10 +106,13 @@ export function ContactForm() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="Enter your Email Address"
                 className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
               />
@@ -108,10 +127,13 @@ export function ContactForm() {
               </label>
               <input
                 id="phone"
+                name="phone"
                 type="tel"
                 required
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 placeholder="Enter your phone number"
                 className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
               />
@@ -127,9 +149,12 @@ export function ContactForm() {
               <div className="relative">
                 <select
                   id="subject"
+                  name="subject"
                   required
                   value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subject: e.target.value })
+                  }
                   className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] focus:outline-none focus:border-[#083327] focus:bg-white transition-all appearance-none cursor-pointer pr-10"
                 >
                   <option value="Sales Inquiry">Sales Inquiry</option>
@@ -138,8 +163,18 @@ export function ContactForm() {
                   <option value="General Inquiry">General Inquiry</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#4a5550]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -154,9 +189,12 @@ export function ContactForm() {
               </label>
               <textarea
                 id="message"
+                name="message"
                 rows={5}
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, message: e.target.value })
+                }
                 placeholder="Write your message here"
                 className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all resize-y"
               />
@@ -165,10 +203,17 @@ export function ContactForm() {
             <div className="col-span-1 md:col-span-2 mt-2 sm:mt-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full rounded-full py-4 px-6 bg-[#083c2f] hover:bg-[#062c22] text-[#d0a65b] text-xs sm:text-[13px] font-semibold tracking-[0.18em] uppercase transition-all duration-300 shadow-md active:scale-[0.99] flex items-center justify-center cursor-pointer disabled:opacity-75"
+                disabled={isPending}
+                className="w-full rounded-full py-4 px-6 bg-[#083c2f] hover:bg-[#062c22] text-[#d0a65b] text-xs sm:text-[13px] font-semibold tracking-[0.18em] uppercase transition-all duration-300 shadow-md active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
               >
-                {loading ? "SENDING..." : "SEND YOUR MESSAGE"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#d0a65b]" />
+                    <span>SENDING...</span>
+                  </>
+                ) : (
+                  <span>SEND YOUR MESSAGE</span>
+                )}
               </button>
             </div>
           </form>

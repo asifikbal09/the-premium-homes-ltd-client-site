@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Seaweed_Script } from "next/font/google";
 import localFont from "next/font/local";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const kVictor = localFont({
@@ -87,6 +88,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#ffffff] text-[#1f2723]">
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

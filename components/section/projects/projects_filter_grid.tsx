@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, MapPin, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectData } from "@/lib/projects";
@@ -15,6 +16,8 @@ type StatusTab = "ALL" | "ONGOING" | "COMPLETED";
 export function ProjectsFilterGrid({
   initialProjects,
 }: ProjectsFilterGridProps) {
+  const searchParams = useSearchParams();
+
   // --- States ---
   const [activeTab, setActiveTab] = useState<StatusTab>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +27,26 @@ export function ProjectsFilterGrid({
   const [visibleCount, setVisibleCount] = useState(6);
 
   const locationRef = useRef<HTMLDivElement>(null);
+
+  // Sync state with URL search params (e.g. from Home search filter)
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (statusParam) {
+      const lower = statusParam.toLowerCase();
+      if (lower.includes("ongoing")) {
+        setActiveTab("ONGOING");
+      } else if (lower.includes("complete") || lower.includes("sold")) {
+        setActiveTab("COMPLETED");
+      } else {
+        setActiveTab("ALL");
+      }
+    }
+
+    const locParam = searchParams.get("location");
+    if (locParam && locParam.trim()) {
+      setSelectedLocation(locParam.trim());
+    }
+  }, [searchParams]);
 
   // --- Debounce Implementation for Search Input ---
   useEffect(() => {
@@ -91,13 +114,12 @@ export function ProjectsFilterGrid({
 
       // 2. Location Filter
       if (selectedLocation !== "ALL") {
+        const sel = selectedLocation.toLowerCase().trim();
         const matchesLoc =
-          project.location
-            ?.toLowerCase()
-            .includes(selectedLocation.toLowerCase()) ||
-          project.community?.name
-            ?.toLowerCase()
-            .includes(selectedLocation.toLowerCase());
+          project.location?.toLowerCase().includes(sel) ||
+          sel.includes(project.location?.toLowerCase() || "") ||
+          project.community?.name?.toLowerCase().includes(sel) ||
+          sel.includes(project.community?.name?.toLowerCase() || "");
         if (!matchesLoc) return false;
       }
 

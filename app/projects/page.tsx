@@ -6,6 +6,7 @@ import { FeaturedProjectsSection } from "@/components/section/projects/featured_
 import { FeaturedProjects } from "@/components/section/home/featured_projects";
 import { PropertyPredictionSection } from "@/components/section/team/property_prediction_section";
 import { ResidentReviews } from "@/components/section/home/resident_reviews";
+import { getProjects } from "@/lib/projects";
 
 export const metadata: Metadata = {
   title: "Exclusive Properties & Projects | Premium Homes",
@@ -13,14 +14,16 @@ export const metadata: Metadata = {
     "Explore exclusive luxury residences and prime architectural developments by Premium Homes.",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
       <Navbar />
       <main className="flex-1">
         <ProjectsHero />
         <FeaturedProjectsSection />
-        <FeaturedProjects/>
+        <FeaturedProjects initialProjects={projects} />
         <ResidentReviews />
         <PropertyPredictionSection/>
       </main>

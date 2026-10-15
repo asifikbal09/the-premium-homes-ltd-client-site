@@ -123,15 +123,15 @@ export function MobileAppSection() {
           </div>
 
           {/* Right Content: Hand holding phone mockup */}
-          <div className="w-full lg:w-[52%] xl:w-[55%] flex justify-center lg:justify-end items-end px-4 sm:px-8 lg:px-0 pt-4 lg:pt-0">
-            <div className="relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[560px] xl:max-w-[620px] lg:absolute lg:bottom-3 xl:bottom-4 pointer-events-none select-none">
+          <div className="w-full lg:w-[52%] xl:w-[55%] flex lg:justify-end items-end px-4 sm:px-8 lg:px-0 pt-4 lg:pt-0">
+            <div className="relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[560px] xl:max-w-[620px] lg:absolute lg:bottom-3 xl:bottom-0 pointer-events-none select-none">
               <Image
                 src={appImage}
                 alt="Premium Homes Mobile Application Interface"
                 width={1200}
                 height={978}
                 priority
-                className="w-full h-auto object-contain md:rounded-br-[54px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+                className="w-full h-auto object-contain lg:rounded-br-[54px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
               />
             </div>
           </div>

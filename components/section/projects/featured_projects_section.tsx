@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { getProjects } from "@/lib/projects";
 import { ProjectsFilterGrid } from "./projects_filter_grid";
 
@@ -28,7 +28,9 @@ export async function FeaturedProjectsSection() {
         </div>
 
         {/* Client Interactive Filter & 3-Column Grid */}
-        <ProjectsFilterGrid initialProjects={projects} />
+        <Suspense fallback={<div className="py-12 text-center text-gray-400">Loading projects...</div>}>
+          <ProjectsFilterGrid initialProjects={projects} />
+        </Suspense>
       </div>
     </section>
   );

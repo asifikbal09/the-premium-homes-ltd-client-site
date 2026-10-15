@@ -67,7 +67,7 @@ export function LifeAtTphlJourney() {
       aria-label="More Than Work, A Shared Journey"
       className="relative w-full bg-white text-[#1f2723] py-14 sm:py-20 md:py-24 lg:py-28 overflow-hidden select-none"
     >
-      <div className="max-w-[1360] mx-auto px-4 sm:px-6">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6">
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 md:mb-14 lg:mb-16">
           <h2 className="font-heading font-normal text-3xl sm:text-4xl md:text-5xl lg:text-[56px] xl:text-[62px] text-[#054b3c] leading-[1.12] sm:leading-[1.1] tracking-tight">
@@ -105,8 +105,16 @@ export function LifeAtTphlJourney() {
                   {item.title}
                 </h3>
 
-                {/* Bottom Watermark */}
-                <span className="font-heading font-light text-2xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-[80px] text-white/20 leading-none select-none tracking-tight transition-colors duration-300 group-hover:text-white/25">
+                {/* Bottom Watermark matching Figma specs */}
+                <span
+                  style={{
+                    fontFamily: "var(--font-victor), 'K Victor Trial', serif",
+                    fontWeight: 400,
+                    lineHeight: "100%",
+                    letterSpacing: "0%",
+                  }}
+                  className="text-3xl sm:text-5xl md:text-6xl lg:text-[78px] xl:text-[105px] 2xl:text-[130px] text-white/20 select-none whitespace-nowrap transition-colors duration-300 group-hover:text-white/25 pointer-events-none -mb-1 sm:-mb-2"
+                >
                   {item.watermark}
                 </span>
               </div>

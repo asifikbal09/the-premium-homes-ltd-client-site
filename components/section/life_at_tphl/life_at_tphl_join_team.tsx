@@ -2,7 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { FileUp, CheckCircle, X } from "lucide-react";
+import { FileUp, CheckCircle, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function LifeAtTphlJoinTeam() {
   const [fullName, setFullName] = useState("");
@@ -10,6 +11,7 @@ export function LifeAtTphlJoinTeam() {
   const [email, setEmail] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,14 +41,26 @@ export function LifeAtTphlJoinTeam() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+
+    if (!resumeFile) {
+      toast.error("Please attach your resume (PDF/DOC) before submitting.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      toast.success(
+        "Application submitted successfully! Our HR team will review your resume and contact you soon."
+      );
       setFullName("");
       setPhone("");
       setEmail("");
       setResumeFile(null);
-      setIsSubmitted(false);
-    }, 4000);
+      setTimeout(() => setIsSubmitted(false), 4000);
+    }, 1000);
   };
 
   return (
@@ -199,14 +213,19 @@ export function LifeAtTphlJoinTeam() {
               <div className="pt-2 sm:pt-3">
                 <button
                   type="submit"
-                  disabled={isSubmitted}
-                  className="inline-flex items-center justify-center px-6 sm:px-7 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.16em] uppercase text-[#d0a65b] bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95 cursor-pointer disabled:opacity-75"
+                  disabled={isSubmitting || isSubmitted}
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.16em] uppercase text-[#d0a65b] bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 >
-                  <span>
-                    {isSubmitted
-                      ? "APPLICATION SUBMITTED"
-                      : "SUBMIT APPLICATION"}
-                  </span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#d0a65b]" />
+                      <span>SUBMITTING...</span>
+                    </>
+                  ) : isSubmitted ? (
+                    <span>APPLICATION SUBMITTED</span>
+                  ) : (
+                    <span>SUBMIT APPLICATION</span>
+                  )}
                 </button>
               </div>
             </form>

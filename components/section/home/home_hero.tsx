@@ -13,6 +13,7 @@ import {
   Building2,
   MapPin,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 // --- Types & Constants ---
@@ -23,21 +24,15 @@ interface ChatMessage {
   time: string;
 }
 
-const STATUS_OPTIONS = [
-  { id: "all", label: "All Status" },
-  { id: "ready", label: "Ready to Move" },
-  { id: "under-construction", label: "Under Construction" },
-  { id: "upcoming", label: "Upcoming Projects" },
-];
+const DEFAULT_STATUS_FALLBACK = ["Ongoing", "Sold Out"];
 
-const LOCATION_OPTIONS = [
-  { id: "all", label: "All Locations" },
-  { id: "uttara", label: "Uttara, Dhaka" },
-  { id: "gulshan", label: "Gulshan, Dhaka" },
-  { id: "banani", label: "Banani, Dhaka" },
-  { id: "dhanmondi", label: "Dhanmondi, Dhaka" },
-  { id: "bashundhara", label: "Bashundhara R/A" },
-  { id: "mirpur-dohs", label: "Mirpur DOHS" },
+const DEFAULT_LOCATION_FALLBACK = [
+  "Bashundhara Residential Area",
+  "The Premium Smart City",
+  "Cox's Bazar",
+  "Jolshiri Abashon",
+  "ATI Model Society",
+  "Ashulia Model Town",
 ];
 
 const INITIAL_MESSAGES: ChatMessage[] = [
@@ -56,7 +51,13 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 ];
 
 // --- Search Filter Capsule Component ---
-function HeroSearchFilter() {
+interface HeroSearchFilterProps {
+  locations?: string[];
+  statuses?: string[];
+}
+
+function HeroSearchFilter({ locations = [], statuses = [] }: HeroSearchFilterProps) {
+  const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState("STATUS");
   const [selectedLocation, setSelectedLocation] = useState("LOCATION");
   const [statusOpen, setStatusOpen] = useState(false);
@@ -85,10 +86,48 @@ function HeroSearchFilter() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Compute status options
+  const statusOptions = React.useMemo(() => {
+    const list = [{ id: "all", label: "All Status" }];
+    const source = statuses.length > 0 ? statuses : DEFAULT_STATUS_FALLBACK;
+    source.forEach((s) => {
+      const trimmed = s.trim();
+      if (trimmed && !list.some((item) => item.label.toLowerCase() === trimmed.toLowerCase())) {
+        list.push({
+          id: trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          label: trimmed,
+        });
+      }
+    });
+    return list;
+  }, [statuses]);
+
+  // Compute location options
+  const locationOptions = React.useMemo(() => {
+    const list = [{ id: "all", label: "All Locations" }];
+    const source = locations.length > 0 ? locations : DEFAULT_LOCATION_FALLBACK;
+    source.forEach((loc) => {
+      const trimmed = loc.trim();
+      if (trimmed && !list.some((item) => item.label.toLowerCase() === trimmed.toLowerCase())) {
+        list.push({
+          id: trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          label: trimmed,
+        });
+      }
+    });
+    return list;
+  }, [locations]);
+
   const handleSearch = () => {
-    const statusParam = selectedStatus !== "STATUS" ? selectedStatus : "all";
-    const locParam = selectedLocation !== "LOCATION" ? selectedLocation : "all";
-    console.log("Searching properties with:", { statusParam, locParam });
+    const params = new URLSearchParams();
+    if (selectedStatus !== "STATUS" && selectedStatus !== "All Status") {
+      params.set("status", selectedStatus);
+    }
+    if (selectedLocation !== "LOCATION" && selectedLocation !== "All Locations") {
+      params.set("location", selectedLocation);
+    }
+    const queryString = params.toString();
+    router.push(`/projects${queryString ? `?${queryString}` : ""}`);
   };
 
   return (
@@ -129,14 +168,16 @@ function HeroSearchFilter() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.96 }}
               transition={{ duration: 0.16, ease: "easeOut" }}
-              className="absolute bottom-full mb-3 left-0 min-w-[170px] sm:min-w-[200px] bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50 overflow-hidden"
+              className="absolute bottom-full mb-3 left-0 min-w-[170px] sm:min-w-[200px] max-h-60 overflow-y-auto bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50"
               role="listbox"
             >
               <div className="px-3 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#d0a65b] uppercase border-b border-white/10 mb-1 flex items-center gap-1.5">
                 <Building2 className="w-3 h-3" /> Property Status
               </div>
-              {STATUS_OPTIONS.map((item) => {
-                const isSelected = selectedStatus === item.label;
+              {statusOptions.map((item) => {
+                const isSelected =
+                  selectedStatus === item.label ||
+                  (selectedStatus === "STATUS" && item.id === "all");
                 return (
                   <li
                     key={item.id}
@@ -206,14 +247,16 @@ function HeroSearchFilter() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.96 }}
               transition={{ duration: 0.16, ease: "easeOut" }}
-              className="absolute bottom-full mb-3 left-0 min-w-[180px] sm:min-w-[210px] bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50 overflow-hidden"
+              className="absolute bottom-full mb-3 left-0 min-w-[200px] sm:min-w-[240px] max-h-60 overflow-y-auto bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50"
               role="listbox"
             >
               <div className="px-3 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#d0a65b] uppercase border-b border-white/10 mb-1 flex items-center gap-1.5">
                 <MapPin className="w-3 h-3" /> Select Location
               </div>
-              {LOCATION_OPTIONS.map((item) => {
-                const isSelected = selectedLocation === item.label;
+              {locationOptions.map((item) => {
+                const isSelected =
+                  selectedLocation === item.label ||
+                  (selectedLocation === "LOCATION" && item.id === "all");
                 return (
                   <li
                     key={item.id}
@@ -421,7 +464,15 @@ function HeroAdvisorChat() {
 }
 
 // --- Main Hero Section Export ---
-export function HomeHero() {
+interface HomeHeroProps {
+  initialLocations?: string[];
+  initialStatuses?: string[];
+}
+
+export function HomeHero({
+  initialLocations = [],
+  initialStatuses = [],
+}: HomeHeroProps) {
   return (
     <>
       <section
@@ -489,7 +540,10 @@ export function HomeHero() {
             transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-30 w-full flex justify-center mt-0.5 sm:mt-2"
           >
-            <HeroSearchFilter />
+            <HeroSearchFilter
+              locations={initialLocations}
+              statuses={initialStatuses}
+            />
           </motion.div>
         </div>
       </section>

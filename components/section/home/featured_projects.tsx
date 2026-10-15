@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { ProjectData } from "@/lib/projects";
 
-interface ProjectItem {
+export interface ProjectItem {
   id: string;
   category: string;
   title: string;
@@ -19,48 +20,155 @@ interface ProjectItem {
   href: string;
 }
 
-const FEATURED_PROJECTS: ProjectItem[] = [
+const FALLBACK_PROJECTS: ProjectItem[] = [
   {
-    id: "lumina",
-    category: "COMMERCIAL",
-    title: "The Premium Lumina",
-    location: "10/23 Bashundhara Residential Area",
+    id: "symphony",
+    category: "RESIDENTIAL",
+    title: "The Premium Symphony of Life",
+    location: "Bashundhara Residential Area",
     description:
-      "Your fairytale honeymoon awaits at our luxurious hotel. Book now for an unforgettable experience.",
+      "A residential vision where architectural elegance harmonizes with contemporary living, offering exceptional serenity.",
     cardImage: "/image/lumina.png",
     bgImage: "/image/studio6.png",
-    cardAlt: "The Premium Lumina luxury commercial estate architectural view",
+    cardAlt: "The Premium Symphony of Life",
     bgAlt: "Architectural facade backdrop",
-    href: "#lumina",
+    href: "/projects/the-premium-symphony-of-life",
   },
   {
-    id: "studio6",
+    id: "novera",
     category: "RESIDENTIAL",
-    title: "The Premium Studio Suite 6.0",
-    location: "Sector 11, Uttara, Dhaka",
+    title: "The Premium Novera Heights",
+    location: "Bashundhara Residential Area",
     description:
-      "A masterpiece of contemporary architecture featuring luxury suites with panoramic city vistas and private balconies.",
+      "An elevated lifestyle with thoughtfully designed residences, modern amenities, and refined architectural details.",
     cardImage: "/image/studio6.png",
     bgImage: "/image/lumina.png",
-    cardAlt: "The Premium Studio Suite 6.0 modern residential tower",
+    cardAlt: "The Premium Novera Heights",
     bgAlt: "Architectural facade backdrop",
-    href: "#studio6",
+    href: "/projects/the-premium-novera-heights",
+  },
+  {
+    id: "phoenix",
+    category: "RESIDENTIAL",
+    title: "The Premium Phoenix",
+    location: "Bashundhara Residential Area",
+    description:
+      "Sophisticated design, superior craftsmanship, and modern comforts create an exceptional residential experience.",
+    cardImage: "/image/lumina.png",
+    bgImage: "/image/studio6.png",
+    cardAlt: "The Premium Phoenix",
+    bgAlt: "Architectural facade backdrop",
+    href: "/projects/the-premium-phoenix",
   },
 ];
 
-export function FeaturedProjects() {
+interface FeaturedProjectsProps {
+  initialProjects?: ProjectData[];
+}
+
+export function FeaturedProjects({ initialProjects }: FeaturedProjectsProps) {
+  const [projects, setProjects] = useState<ProjectData[]>(() => {
+    return initialProjects && initialProjects.length > 0
+      ? initialProjects.slice(0, 3)
+      : [];
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
-  const currentProject = FEATURED_PROJECTS[currentIndex];
+
+  useEffect(() => {
+    if (initialProjects && initialProjects.length > 0) {
+      setProjects(initialProjects.slice(0, 3));
+      return;
+    }
+
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.API_BASE_URL ||
+      "https://api.dpremiumhomes.com/api/";
+    const cleanBase = baseUrl.replace(/\/+$/, "");
+
+    fetch(`${cleanBase}/projects`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => {
+        const rawList = Array.isArray(data)
+          ? data
+          : data?.projects || data?.data || [];
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          const list = rawList.slice(0, 3).map((item) => ({
+            id: Number(item.id) || Date.now(),
+            name: item.name || "Prestige Residence",
+            slug:
+              item.slug ||
+              (item.name
+                ? item.name.toLowerCase().replace(/\s+/g, "-")
+                : "project"),
+            location:
+              item.location || item.community?.name || "Dhaka, Bangladesh",
+            description:
+              item.description ||
+              "An exquisite address designed for modern luxury living.",
+            image: item.image
+              ? item.image.startsWith("http")
+                ? item.image
+                : `https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/${item.image.replace(/^\/+/, "")}`
+              : "/image/projects/projectsHero.png",
+            image2: item.image2
+              ? item.image2.startsWith("http")
+                ? item.image2
+                : `https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/${item.image2.replace(/^\/+/, "")}`
+              : undefined,
+            type: item.type || item.building_type || "RESIDENTIAL",
+            tag: item.tag || null,
+          }));
+          setProjects(list as ProjectData[]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching featured projects:", err);
+      });
+  }, [initialProjects]);
+
+  const displayList: ProjectItem[] =
+    projects.length > 0
+      ? projects.slice(0, 3).map((p) => {
+          const cat = (p.tag || p.type || "RESIDENTIAL").toUpperCase();
+          const slug = p.slug || String(p.id);
+          const cardImg =
+            p.image2 || p.image || "/image/projects/projectsHero.png";
+          const bgImg =
+            p.image || cardImg || "/image/projects/projectsHero.png";
+
+          return {
+            id: String(p.id),
+            category: cat,
+            title: p.name,
+            location: p.location || "Dhaka, Bangladesh",
+            description:
+              p.description ||
+              "An exquisite address designed for modern luxury living.",
+            cardImage: cardImg,
+            bgImage: bgImg,
+            cardAlt: `${p.name} luxury architecture render`,
+            bgAlt: `${p.name} backdrop view`,
+            href: `/projects/${slug}`,
+          };
+        })
+      : FALLBACK_PROJECTS;
+
+  const safeIndex = currentIndex < displayList.length ? currentIndex : 0;
+  const currentProject = displayList[safeIndex];
 
   const handlePrev = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? FEATURED_PROJECTS.length - 1 : prev - 1,
+      prev === 0 ? displayList.length - 1 : prev - 1,
     );
   };
 
   const handleNext = () => {
     setCurrentIndex((prev) =>
-      prev === FEATURED_PROJECTS.length - 1 ? 0 : prev + 1,
+      prev === displayList.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -168,53 +276,63 @@ export function FeaturedProjects() {
             </div>
 
             {/* Slider Navigation & Progress Controls */}
-            <div className="w-full flex items-center justify-center gap-2.5 sm:gap-4 mb-2.5 sm:mb-4 select-none">
-              {/* Previous / Slide 1 Button */}
+            <div className="w-full flex items-center justify-center gap-2 sm:gap-3 mb-2.5 sm:mb-4 select-none">
+              {/* Previous Button */}
               <button
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous project slide"
-                className={`inline-flex items-center gap-0.5 py-1 px-1.5 text-xs font-medium cursor-pointer transition-colors ${
-                  currentIndex === 0
-                    ? "text-[#044133] font-semibold"
-                    : "text-[#8E9792] hover:text-[#044133]"
-                }`}
+                className="inline-flex items-center p-1 text-[#8E9792] hover:text-[#044133] transition-colors cursor-pointer"
               >
-                <ChevronLeft className="w-3.5 h-3.5 -mr-0.5" />
-                <span>1</span>
+                <ChevronLeft className="w-4 h-4" />
               </button>
+
+              {/* Numbered Indicators */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {displayList.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSlide(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`text-xs sm:text-sm font-medium cursor-pointer transition-all px-1.5 py-0.5 rounded-sm ${
+                      safeIndex === idx
+                        ? "text-[#044133] font-bold scale-110"
+                        : "text-[#8E9792] hover:text-[#044133]"
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
 
               {/* Progress Track Indicator */}
               <div
                 role="progressbar"
-                aria-valuenow={currentIndex + 1}
+                aria-valuenow={safeIndex + 1}
                 aria-valuemin={1}
-                aria-valuemax={FEATURED_PROJECTS.length}
+                aria-valuemax={displayList.length}
                 aria-label="Project slide indicator"
-                onClick={() => setSlide(currentIndex === 0 ? 1 : 0)}
-                className="relative w-20 sm:w-28 h-[2.5px] bg-[#E3DFD7] rounded-full overflow-hidden cursor-pointer"
+                onClick={handleNext}
+                className="relative w-16 sm:w-20 h-[2.5px] bg-[#E3DFD7] rounded-full overflow-hidden cursor-pointer"
               >
                 <div
-                  className="absolute top-0 bottom-0 w-1/2 bg-[#044133] rounded-full transition-transform duration-300 ease-out"
+                  className="absolute top-0 bottom-0 bg-[#044133] rounded-full transition-all duration-300 ease-out"
                   style={{
-                    transform: `translateX(${currentIndex * 100}%)`,
+                    width: `${100 / displayList.length}%`,
+                    left: `${(safeIndex / displayList.length) * 100}%`,
                   }}
                 />
               </div>
 
-              {/* Next / Slide 2 Button */}
+              {/* Next Button */}
               <button
                 type="button"
                 onClick={handleNext}
                 aria-label="Next project slide"
-                className={`inline-flex items-center gap-0.5 py-1 px-1.5 text-xs font-medium cursor-pointer transition-colors ${
-                  currentIndex === 1
-                    ? "text-[#044133] font-semibold"
-                    : "text-[#8E9792] hover:text-[#044133]"
-                }`}
+                className="inline-flex items-center p-1 text-[#8E9792] hover:text-[#044133] transition-colors cursor-pointer"
               >
-                <span>2</span>
-                <ChevronRight className="w-3.5 h-3.5 -ml-0.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
@@ -226,7 +344,7 @@ export function FeaturedProjects() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.3 }}
-                className="font-sans text-[11px] sm:text-[13px] text-[#526058] leading-relaxed max-w-[290px] sm:max-w-[330px] font-normal mb-4 sm:mb-6"
+                className="font-sans text-[11px] sm:text-[13px] text-[#526058] leading-relaxed max-w-[290px] sm:max-w-[330px] font-normal mb-4 sm:mb-6 line-clamp-3"
               >
                 {currentProject.description}
               </motion.p>
