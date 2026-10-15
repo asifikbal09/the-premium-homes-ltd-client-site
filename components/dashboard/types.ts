@@ -48,6 +48,10 @@ export interface ClientFlat {
   due_payment?: string;
   discount?: string;
   slug?: string;
+  videoLink?: string;
+  videoLink2?: string;
+  moneyReceiptLink?: string;
+  purchaseDetailsLink?: string;
 }
 
 export interface ClientPayment {

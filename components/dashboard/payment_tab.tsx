@@ -21,7 +21,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { ClientPayment, ClientUser, ClientFlat } from "./types";
-import { DEFAULT_PAYMENTS, DEFAULT_FLATS } from "./dashboard_data";
 
 interface PaymentTabProps {
   payments?: ClientPayment[];
@@ -35,147 +34,18 @@ interface PaymentTabProps {
   };
   user?: ClientUser | null;
   myFlats?: ClientFlat[];
+  isLoading?: boolean;
 }
 
 type SubTab = "history" | "upcoming" | "plan" | "receipts";
 
-// Mock official transactions matching the provided design screenshot
-const SCREENSHOT_PAYMENTS: ClientPayment[] = [
-  {
-    id: "tx-1",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-2",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-3",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-4",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-5",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-6",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-  {
-    id: "tx-7",
-    invoice_no: "PH-20260815-001",
-    project: "The Premium Green Valley",
-    installment_title: "Installment Payment",
-    due_date: "15 Aug 2026",
-    payment_date: "15 Aug 2026",
-    amount: "$ 5,00,000",
-    status: "paid",
-    method: "Bank Transfer",
-  },
-];
-
-// Upcoming payments schedule
-const UPCOMING_SCHEDULE = [
-  {
-    id: "up-1",
-    title: "11th Floor Masonry & Partition Works",
-    due_date: "15 Oct 2026",
-    amount: "$ 5,00,000",
-    status: "due",
-    tag: "Immediate Due",
-  },
-  {
-    id: "up-2",
-    title: "Sanitary & Electrical Conduit Rough-in",
-    due_date: "15 Dec 2026",
-    amount: "$ 5,00,000",
-    status: "upcoming",
-    tag: "Scheduled Milestone",
-  },
-  {
-    id: "up-3",
-    title: "Floor Tiles & Interior Plastering",
-    due_date: "15 Feb 2027",
-    amount: "$ 5,00,000",
-    status: "upcoming",
-    tag: "Scheduled Milestone",
-  },
-  {
-    id: "up-4",
-    title: "Exterior Painting & Window Glazing",
-    due_date: "15 Apr 2027",
-    amount: "$ 5,00,000",
-    status: "upcoming",
-    tag: "Scheduled Milestone",
-  },
-  {
-    id: "up-5",
-    title: "Key Handover & Deed Registration",
-    due_date: "15 Jun 2027",
-    amount: "$ 5,00,000",
-    status: "upcoming",
-    tag: "Final Handover",
-  },
-];
-
-// Payment plan milestones
-const PAYMENT_PLAN_MILESTONES = [
-  { name: "Booking Money", amount: "৳ 5,00,000", status: "cleared", pct: 100 },
-  { name: "Down Payment / Land Share", amount: "৳ 15,00,000", status: "cleared", pct: 100 },
-  { name: "Basement & Piling Work", amount: "৳ 7,50,000", status: "cleared", pct: 100 },
-  { name: "1st - 5th Floor Slab Castings", amount: "৳ 7,50,000", status: "cleared", pct: 100 },
-  { name: "6th - 10th Floor Slab Castings", amount: "৳ 7,20,000", status: "cleared", pct: 100 },
-  { name: "11th Floor Masonry Works", amount: "৳ 3,56,000", status: "due", pct: 0 },
-  { name: "Electrical, Plumbing & Finishing", amount: "৳ 5,00,000", status: "pending", pct: 0 },
-];
-
-export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) {
+export function PaymentTab({
+  payments,
+  stats,
+  user,
+  myFlats,
+  isLoading = false,
+}: PaymentTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("history");
   const [selectedFlatIndex, setSelectedFlatIndex] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -191,30 +61,27 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
   const [autoPaySaved, setAutoPaySaved] = useState(false);
   const [selectedPayMethod, setSelectedPayMethod] = useState("bank");
 
-  // Determine active project flat info
-  const availableFlats = myFlats && myFlats.length > 0 ? myFlats : DEFAULT_FLATS;
-  const currentFlat = availableFlats[selectedFlatIndex] || {
-    title: "The Premium Green Valley",
-    location: "Gulshan 2, Dhaka",
-    image: "/image/progress/tph_green_valley.png",
-  };
+  // Determine active project flat info strictly from user's flats
+  const availableFlats = myFlats || [];
+  const currentFlat = availableFlats[selectedFlatIndex] || availableFlats[0] || null;
 
-  // Determine monetary values matching design
-  const totalPaid = stats?.formattedPaid || user?.total_paid || "৳ 42,20,000";
-  const outstanding = stats?.formattedDue || user?.outstanding || "৳ 3,56,000";
-  const totalExpense = stats?.formattedPrice || user?.total_expense || "৳ 50,78,000";
-  const completionPct = 70; // Static 70% per design & specification
+  // Determine monetary values strictly from live user stats
+  const totalPaid = stats?.formattedPaid || user?.total_paid || "৳ 0";
+  const outstanding = stats?.formattedDue || user?.outstanding || "৳ 0";
+  const totalExpense = stats?.formattedPrice || user?.total_expense || "৳ 0";
+  const completionPct = user?.completion !== undefined ? user.completion : 0;
 
-  // Circular SVG progress for 70%
+  // Circular SVG progress
   const radius = 22;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (circumference * completionPct) / 100;
+  const strokeDashoffset =
+    circumference - (circumference * Math.min(100, Math.max(0, completionPct))) / 100;
 
-  // Payments to show in history table
+  // Payments to show in history table (strictly real payments or empty)
   const historyPayments =
-    payments && payments.length > 0 && payments.some((p) => p.status === "paid")
+    payments && payments.length > 0
       ? payments.filter((p) => (transactionFilter === "all" ? true : p.status === transactionFilter))
-      : SCREENSHOT_PAYMENTS;
+      : [];
 
   const handleDownloadReceipt = (payment: ClientPayment) => {
     setActiveReceiptModal(payment);
@@ -264,23 +131,31 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="bg-white rounded-2xl p-2 sm:p-2.5 pr-4 border border-stone-200/80 shadow-xs hover:border-stone-300 transition-all flex items-center gap-3 cursor-pointer text-left group"
           >
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-stone-100 shrink-0 border border-stone-200/60">
-              <Image
-                src={currentFlat.image || "/image/progress/tph_green_valley.png"}
-                alt={currentFlat.title}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <span className="text-xs sm:text-sm font-bold text-stone-900 block leading-tight group-hover:text-[#044133] transition-colors">
-                {currentFlat.title}
+            {currentFlat ? (
+              <>
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-stone-100 shrink-0 border border-stone-200/60">
+                  <Image
+                    src={currentFlat.image || "/image/progress/tph_green_valley.png"}
+                    alt={currentFlat.title}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-900 block leading-tight group-hover:text-[#044133] transition-colors">
+                    {currentFlat.title}
+                  </span>
+                  <span className="text-[11px] text-stone-400 block mt-0.5">
+                    {currentFlat.location}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-xs sm:text-sm font-bold text-stone-700">
+                All Registered Properties
               </span>
-              <span className="text-[11px] text-stone-400 block mt-0.5">
-                {currentFlat.location}
-              </span>
-            </div>
+            )}
             <ChevronDown
               className={`w-4 h-4 text-[#044133] ml-1 transition-transform duration-200 shrink-0 ${
                 isDropdownOpen ? "rotate-180" : ""
@@ -289,7 +164,7 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
           </button>
 
           {/* Property Dropdown Menu */}
-          {isDropdownOpen && (
+          {isDropdownOpen && availableFlats.length > 0 && (
             <>
               <div
                 className="fixed inset-0 z-20"
@@ -344,13 +219,17 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
           <div className="w-12 h-12 rounded-full bg-[#044133] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Landmark className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <span className="text-xs text-stone-500 font-medium block">
               Total Paid
             </span>
-            <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
-              {totalPaid}
-            </span>
+            {isLoading ? (
+              <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
+            ) : (
+              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+                {totalPaid}
+              </span>
+            )}
             <span className="text-[11px] text-stone-400 block mt-0.5">
               Paid to date
             </span>
@@ -362,13 +241,17 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
           <div className="w-12 h-12 rounded-full bg-[#b91c1c] text-white flex items-center justify-center shrink-0 shadow-xs">
             <CreditCard className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <span className="text-xs text-stone-500 font-medium block">
               Outstanding
             </span>
-            <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
-              {outstanding}
-            </span>
+            {isLoading ? (
+              <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
+            ) : (
+              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+                {outstanding}
+              </span>
+            )}
             <span className="text-[11px] text-stone-400 block mt-0.5">
               Remaining Due
             </span>
@@ -380,48 +263,58 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
           <div className="w-12 h-12 rounded-full bg-[#d97706] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Layers className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <span className="text-xs text-stone-500 font-medium block">
               Total Expense
             </span>
-            <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
-              {totalExpense}
-            </span>
+            {isLoading ? (
+              <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
+            ) : (
+              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+                {totalExpense}
+              </span>
+            )}
             <span className="text-[11px] text-stone-400 block mt-0.5">
               All Project Expense
             </span>
           </div>
         </div>
 
-        {/* Card 4: Completion (Static 70%) */}
+        {/* Card 4: Completion */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-xs flex items-center gap-4 hover:shadow-sm transition-shadow">
           <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
-            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 52 52">
-              <circle
-                cx="26"
-                cy="26"
-                r={radius}
-                className="stroke-stone-100"
-                strokeWidth="4.5"
-                fill="transparent"
-              />
-              <circle
-                cx="26"
-                cy="26"
-                r={radius}
-                className="stroke-[#044133]"
-                strokeWidth="4.5"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                fill="transparent"
-              />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-stone-900">
-              {completionPct}%
-            </span>
+            {isLoading ? (
+              <div className="w-12 h-12 rounded-full bg-stone-200 animate-pulse" />
+            ) : (
+              <>
+                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 52 52">
+                  <circle
+                    cx="26"
+                    cy="26"
+                    r={radius}
+                    className="stroke-stone-100"
+                    strokeWidth="4.5"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="26"
+                    cy="26"
+                    r={radius}
+                    className="stroke-[#044133]"
+                    strokeWidth="4.5"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    fill="transparent"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-stone-900">
+                  {completionPct}%
+                </span>
+              </>
+            )}
           </div>
-          <div>
+          <div className="flex-1">
             <span className="text-lg sm:text-xl font-bold text-stone-900 block leading-tight">
               Completion
             </span>
@@ -571,40 +464,87 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100/80 text-[13px] text-stone-700">
-                    {historyPayments.map((item, idx) => (
-                      <tr
-                        key={item.id || idx}
-                        className="hover:bg-stone-50/70 transition-colors"
-                      >
-                        <td className="py-3.5 px-3 text-stone-800 font-medium whitespace-nowrap">
-                          {item.payment_date || item.due_date || "15 Aug 2026"}
-                        </td>
-                        <td className="py-3.5 px-3 font-mono text-stone-600 text-xs whitespace-nowrap">
-                          {item.invoice_no || `PH-20260815-00${idx + 1}`}
-                        </td>
-                        <td className="py-3.5 px-3 text-stone-700 whitespace-nowrap">
-                          {item.installment_title || "Installment Payment"}
-                        </td>
-                        <td className="py-3.5 px-3 font-semibold text-stone-900 whitespace-nowrap">
-                          {item.amount || "$ 5,00,000"}
-                        </td>
-                        <td className="py-3.5 px-3 text-center whitespace-nowrap">
-                          <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100/80">
-                            Paid
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-3 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadReceipt(item)}
-                            title="Download Receipt"
-                            className="p-1 text-stone-500 hover:text-[#044133] hover:scale-110 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
+                    {isLoading ? (
+                      [1, 2, 3, 4].map((n) => (
+                        <tr key={`payment-skeleton-${n}`}>
+                          <td className="py-3.5 px-3">
+                            <div className="h-4 w-20 bg-stone-200 rounded animate-pulse" />
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="h-4 w-28 bg-stone-100 rounded animate-pulse" />
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="h-4 w-32 bg-stone-200 rounded animate-pulse" />
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="h-4 w-20 bg-stone-200 rounded animate-pulse" />
+                          </td>
+                          <td className="py-3.5 px-3 text-center">
+                            <div className="h-5 w-14 bg-stone-100 rounded-full animate-pulse mx-auto" />
+                          </td>
+                          <td className="py-3.5 px-3 text-right">
+                            <div className="h-4 w-4 bg-stone-200 rounded animate-pulse ml-auto" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : historyPayments.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-stone-400">
+                          <CreditCard className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                          <p className="text-sm font-medium text-stone-600">
+                            No payment transactions recorded yet.
+                          </p>
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            Your installment receipts and payment records will appear here.
+                          </p>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      historyPayments.map((item, idx) => (
+                        <tr
+                          key={item.id || idx}
+                          className="hover:bg-stone-50/70 transition-colors"
+                        >
+                          <td className="py-3.5 px-3 text-stone-800 font-medium whitespace-nowrap">
+                            {item.payment_date || item.due_date || "—"}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-stone-600 text-xs whitespace-nowrap">
+                            {item.invoice_no || `TPHL-${idx + 1}`}
+                          </td>
+                          <td className="py-3.5 px-3 text-stone-700 whitespace-nowrap">
+                            {item.installment_title || "Payment"}
+                          </td>
+                          <td className="py-3.5 px-3 font-semibold text-stone-900 whitespace-nowrap">
+                            {item.amount}
+                          </td>
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-semibold ${
+                                item.status === "paid"
+                                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100/80"
+                                  : "bg-red-50 text-red-600 border border-red-100/80"
+                              }`}
+                            >
+                              {item.status === "paid" ? "Paid" : "Due"}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3 text-right whitespace-nowrap">
+                            {item.status === "paid" ? (
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadReceipt(item)}
+                                title="Download Receipt"
+                                className="p-1 text-stone-500 hover:text-[#044133] hover:scale-110 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-stone-300 text-xs">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -707,55 +647,53 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
                 </p>
               </div>
 
-              <div className="space-y-3.5">
-                {UPCOMING_SCHEDULE.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-stone-200/70 hover:border-stone-300 bg-stone-50/40 hover:bg-white transition-all gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-stone-900">
-                          {item.title}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            item.status === "due"
-                              ? "bg-red-50 text-red-600 border border-red-200"
-                              : "bg-stone-100 text-stone-600"
-                          }`}
-                        >
-                          {item.tag}
-                        </span>
+              {historyPayments.filter((p) => p.status === "due").length === 0 ? (
+                <div className="py-12 text-center text-stone-400">
+                  <CalendarClock className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                  <p className="text-sm font-medium text-stone-600">No scheduled upcoming dues.</p>
+                  <p className="text-xs text-stone-400 mt-0.5">All current installments for your property are cleared.</p>
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  {historyPayments.filter((p) => p.status === "due").map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-stone-200/70 hover:border-stone-300 bg-stone-50/40 hover:bg-white transition-all gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-stone-900">
+                            {item.installment_title}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-red-50 text-red-600 border border-red-200">
+                            Immediate Due
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-stone-500">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                            Due: {item.due_date}
+                          </span>
+                          <span>•</span>
+                          <span className="font-bold text-stone-900">
+                            Amount: {item.amount}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-stone-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                          Due: {item.due_date}
-                        </span>
-                        <span>•</span>
-                        <span className="font-bold text-stone-900">
-                          Amount: {item.amount}
-                        </span>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-3 self-end sm:self-auto">
-                      <button
-                        type="button"
-                        onClick={() => setIsPayModalOpen(true)}
-                        className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer ${
-                          item.status === "due"
-                            ? "bg-[#044133] text-white hover:bg-[#065442] shadow-xs"
-                            : "bg-white text-stone-700 border border-stone-200 hover:bg-stone-100"
-                        }`}
-                      >
-                        {item.status === "due" ? "Pay Now" : "Pre-Pay"}
-                      </button>
+                      <div className="flex items-center gap-3 self-end sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => setIsPayModalOpen(true)}
+                          className="px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer bg-[#044133] text-white hover:bg-[#065442] shadow-xs"
+                        >
+                          Pay Now
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -778,40 +716,47 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
                     Overall Payment Progress
                   </span>
                   <p className="text-xl font-bold text-stone-900 mt-0.5">
-                    ৳ 42,20,000 Cleared of ৳ 50,78,000
+                    {totalPaid} Cleared of {totalExpense}
                   </p>
                 </div>
                 <div className="w-full sm:w-48 bg-stone-200 h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-[#044133] h-full rounded-full w-[83%]" />
+                  <div
+                    className="bg-[#044133] h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, completionPct))}%` }}
+                  />
                 </div>
               </div>
 
               {/* Milestones List */}
-              <div className="space-y-3">
-                {PAYMENT_PLAN_MILESTONES.map((mile, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-3.5 rounded-xl border border-stone-100 hover:bg-stone-50/50 text-xs sm:text-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      {mile.status === "cleared" ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                      ) : mile.status === "due" ? (
-                        <Clock className="w-5 h-5 text-red-500 shrink-0" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-stone-300 shrink-0" />
-                      )}
-                      <div>
-                        <p className="font-semibold text-stone-900">{mile.name}</p>
-                        <p className="text-[11px] text-stone-400 capitalize">
-                          Status: {mile.status}
-                        </p>
+              {historyPayments.length === 0 ? (
+                <div className="py-8 text-center text-stone-400">
+                  <p className="text-sm font-medium text-stone-600">No payment milestones recorded yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {historyPayments.map((item, i) => (
+                    <div
+                      key={item.id || i}
+                      className="flex items-center justify-between p-3.5 rounded-xl border border-stone-100 hover:bg-stone-50/50 text-xs sm:text-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        {item.status === "paid" ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-red-500 shrink-0" />
+                        )}
+                        <div>
+                          <p className="font-semibold text-stone-900">{item.installment_title}</p>
+                          <p className="text-[11px] text-stone-400 capitalize">
+                            Status: {item.status} • {item.project}
+                          </p>
+                        </div>
                       </div>
+                      <span className="font-bold text-stone-900">{item.amount}</span>
                     </div>
-                    <span className="font-bold text-stone-900">{mile.amount}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -827,45 +772,61 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
                     Download authentic, verified payment statements stamped by The Premium Homes Ltd.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadReceipt(SCREENSHOT_PAYMENTS[0])}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#044133] text-white text-xs font-semibold hover:bg-[#065442] cursor-pointer shadow-xs transition-colors self-start sm:self-auto"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Full Statement</span>
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {SCREENSHOT_PAYMENTS.slice(0, 5).map((pay, idx) => (
-                  <div
-                    key={pay.id || idx}
-                    className="flex items-center justify-between p-4 rounded-xl border border-stone-200/70 hover:border-stone-300 bg-stone-50/30 hover:bg-stone-50 transition-colors"
+                {historyPayments.filter((p) => p.status === "paid").length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDownloadReceipt(
+                        historyPayments.filter((p) => p.status === "paid")[0]
+                      )
+                    }
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#044133] text-white text-xs font-semibold hover:bg-[#065442] cursor-pointer shadow-xs transition-colors self-start sm:self-auto"
                   >
-                    <div>
-                      <span className="font-mono text-xs text-stone-500 block">
-                        {pay.invoice_no}
-                      </span>
-                      <p className="font-semibold text-sm text-stone-900 mt-0.5">
-                        {pay.installment_title} — {pay.amount}
-                      </p>
-                      <span className="text-[11px] text-stone-400 mt-0.5 block">
-                        Cleared on {pay.payment_date} via Bank Transfer
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadReceipt(pay)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-100 cursor-pointer transition-colors"
-                    >
-                      <Download className="w-3.5 h-3.5 text-stone-500" />
-                      <span>PDF Receipt</span>
-                    </button>
-                  </div>
-                ))}
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Full Statement</span>
+                  </button>
+                )}
               </div>
+
+              {historyPayments.filter((p) => p.status === "paid").length === 0 ? (
+                <div className="py-12 text-center text-stone-400">
+                  <CreditCard className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                  <p className="text-sm font-medium text-stone-600">No payment receipts available yet.</p>
+                  <p className="text-xs text-stone-400 mt-0.5">Receipts will be generated upon transaction clearance.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {historyPayments
+                    .filter((p) => p.status === "paid")
+                    .map((pay, idx) => (
+                      <div
+                        key={pay.id || idx}
+                        className="flex items-center justify-between p-4 rounded-xl border border-stone-200/70 hover:border-stone-300 bg-stone-50/30 hover:bg-stone-50 transition-colors"
+                      >
+                        <div>
+                          <span className="font-mono text-xs text-stone-500 block">
+                            {pay.invoice_no}
+                          </span>
+                          <p className="font-semibold text-sm text-stone-900 mt-0.5">
+                            {pay.installment_title} — {pay.amount}
+                          </p>
+                          <span className="text-[11px] text-stone-400 mt-0.5 block">
+                            Cleared on {pay.payment_date || pay.due_date} via {pay.method || "Bank Transfer"}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadReceipt(pay)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-100 cursor-pointer transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5 text-stone-500" />
+                          <span>PDF Receipt</span>
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -880,39 +841,53 @@ export function PaymentTab({ payments, stats, user, myFlats }: PaymentTabProps) 
               Next Payment
             </h3>
 
-            {/* Due Date Info with Icon */}
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-full bg-[#e8f4ef] text-[#044133] flex items-center justify-center shrink-0 border border-[#b8dfce]">
-                <CalendarClock className="w-5 h-5 text-[#044133]" />
-              </div>
-              <div>
-                <span className="text-xs text-stone-400 font-medium block">
-                  Due Date
-                </span>
-                <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
-                  15 Oct 2026
-                </span>
-              </div>
-            </div>
+            {(() => {
+              const dueItem = historyPayments.find((p) => p.status === "due");
+              if (!dueItem) {
+                return (
+                  <div className="py-4 text-center">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
+                    <p className="font-semibold text-stone-900 text-sm">All Dues Cleared</p>
+                    <p className="text-xs text-stone-400 mt-0.5">No immediate installments due.</p>
+                  </div>
+                );
+              }
 
-            {/* Amount */}
-            <div className="pt-1">
-              <span className="text-xs text-stone-400 font-medium block">
-                Amount
-              </span>
-              <span className="text-2xl sm:text-3xl font-bold text-[#044133] block mt-0.5 tracking-tight">
-                $5,00,000
-              </span>
-            </div>
+              return (
+                <>
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-full bg-[#e8f4ef] text-[#044133] flex items-center justify-center shrink-0 border border-[#b8dfce]">
+                      <CalendarClock className="w-5 h-5 text-[#044133]" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-stone-400 font-medium block">
+                        Due Date
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
+                        {dueItem.due_date}
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Pay Now Button */}
-            <button
-              type="button"
-              onClick={() => setIsPayModalOpen(true)}
-              className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>Pay Now</span>
-            </button>
+                  <div className="pt-1">
+                    <span className="text-xs text-stone-400 font-medium block">
+                      Amount
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-bold text-[#044133] block mt-0.5 tracking-tight">
+                      {dueItem.amount}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPayModalOpen(true)}
+                    className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>Pay Now</span>
+                  </button>
+                </>
+              );
+            })()}
           </div>
 
           {/* Card 2: Auto Payment */}

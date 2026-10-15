@@ -46,7 +46,8 @@ export async function fetchUserPaymentInfo(
   ).replace(/\/+$/, "");
 
   try {
-    const res = await fetch(`${baseUrl}/user-payment-info?user_id=${userId}`, {
+    // Switch to GET /users/{userId} as requested
+    const res = await fetch(`${baseUrl}/users/${userId}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -55,41 +56,42 @@ export async function fetchUserPaymentInfo(
     });
 
     if (!res.ok) {
-      console.warn(`[fetchUserPaymentInfo] API returned status ${res.status}`);
+      console.warn(`[fetchUserPaymentInfo] /users/${userId} API returned status ${res.status}`);
       return null;
     }
 
     const json = await res.json();
-    if (!json?.success && !json?.data) {
+    if (!json?.success && !json?.user && !json?.data) {
       console.warn("[fetchUserPaymentInfo] API returned unsuccessful payload", json);
       return null;
     }
 
-    const payload = Array.isArray(json.data) ? json.data[0] : json.data;
-    const clientInfo = payload?.client_info || null;
-    const rawSavedProperties: any[] = clientInfo?.savedProperties || [];
-    const bookings: any[] = payload?.bookings || [];
+    // Extract user payload from /users/{id} response
+    const userPayload = json?.user || (Array.isArray(json?.data) ? json.data[0] : json?.data) || null;
+    const rawSavedProperties: any[] = userPayload?.savedProperties || userPayload?.client_info?.savedProperties || [];
+    const clientInfo = {
+      client_name: userPayload?.name || userPayload?.client_name,
+      phone: userPayload?.phone,
+      email: userPayload?.email,
+      lead_id: String(userPayload?.id || userId),
+      savedProperties: rawSavedProperties,
+    };
 
-    // Calculate aggregated stats from savedProperties as requested
+    // Calculate aggregated stats from savedProperties
     let sumPrice = 0;
     let sumPaid = 0;
     let sumDue = 0;
 
     if (rawSavedProperties.length > 0) {
-      rawSavedProperties.forEach((prop) => {
+      rawSavedProperties.forEach((prop: any) => {
         sumPrice += parseAmount(prop.price);
         sumPaid += parseAmount(prop.partial_payment);
         sumDue += parseAmount(prop.due_payment);
       });
-    } else if (bookings.length > 0 && bookings[0]?.payment_info) {
-      const payInfo = bookings[0].payment_info;
-      sumPrice = parseAmount(payInfo.total_price);
-      sumPaid = parseAmount(payInfo.total_paid);
-      sumDue = parseAmount(payInfo.total_due);
     }
 
     // Map savedProperties strictly for "My Flats"
-    const dynamicFlats: ClientFlat[] = rawSavedProperties.map((prop, idx) => ({
+    const dynamicFlats: ClientFlat[] = rawSavedProperties.map((prop: any, idx: number) => ({
       id: prop.id || `saved-flat-${idx}`,
       title: prop.name || "The Premium Green Valley",
       flatNo: prop.flatNo || "",
@@ -104,57 +106,112 @@ export async function fetchUserPaymentInfo(
       due_payment: prop.due_payment ? String(prop.due_payment) : undefined,
       discount: prop.discount ? String(prop.discount) : undefined,
       slug: prop.slug || "the-premium-green-valley",
+      videoLink: prop.videoLink,
+      videoLink2: prop.videoLink2,
+      moneyReceiptLink: prop.moneyReceiptLink,
+      purchaseDetailsLink: prop.purchaseDetailsLink,
     }));
 
-    // Extract dynamic payment history from bookings if available
+    // Extract dynamic payment history from savedProperties and any bookings
     const payments: ClientPayment[] = [];
-    if (bookings.length > 0) {
-      const b = bookings[0];
-      const projName = b?.project_info?.project_name || "The Premium Green Valley";
-      const unit = b?.project_info?.flat_name ? ` (Unit ${b.project_info.flat_name})` : "";
 
-      const landHistory = b?.payment_info?.land_share_info?.land_share_history || [];
-      landHistory.forEach((item: any, i: number) => {
+    // From savedProperties payments
+    rawSavedProperties.forEach((prop: any, idx: number) => {
+      const projName = prop.name || "The Premium Property";
+      const unit = prop.flatNo ? ` (Unit ${prop.flatNo})` : "";
+
+      if (prop.booking_money && parseAmount(prop.booking_money) > 0) {
         payments.push({
-          id: `land-${item.payment_id || i}`,
-          invoice_no: `TPHL-LND-${item.payment_id || i}`,
+          id: `bm-${prop.id || "prop"}-${idx}`,
+          invoice_no: `TPHL-BM-${prop.id || "prop"}-${idx + 1}`,
           project: `${projName}${unit}`,
-          installment_title: item.payment_type ? item.payment_type.replace(/_/g, " ").toUpperCase() : "Land Share",
-          payment_date: item.payment_date || "2024-01-01",
-          due_date: item.payment_date || "2024-01-01",
-          amount: `৳ ${parseAmount(item.amount_paid).toLocaleString("en-IN")}`,
+          installment_title: "Booking Money",
+          payment_date: prop.lastUpdated || "2024-01-01",
+          due_date: prop.lastUpdated || "2024-01-01",
+          amount: `৳ ${parseAmount(prop.booking_money).toLocaleString("en-IN")}`,
           status: "paid",
           method: "Bank Transfer",
         });
-      });
+      }
 
-      const devHistory = b?.payment_info?.development_charge_info?.development_charge_history || [];
-      devHistory.forEach((item: any, i: number) => {
+      if (prop.land_share && parseAmount(prop.land_share) > 0) {
         payments.push({
-          id: `dev-${item.payment_id || i}`,
-          invoice_no: `TPHL-DEV-${item.payment_id || i}`,
+          id: `ls-${prop.id || "prop"}-${idx}`,
+          invoice_no: `TPHL-LS-${prop.id || "prop"}-${idx + 1}`,
           project: `${projName}${unit}`,
-          installment_title: item.payment_type ? item.payment_type.replace(/_/g, " ").toUpperCase() : "Development Charge",
-          payment_date: item.payment_date || "2024-01-01",
-          due_date: item.payment_date || "2024-01-01",
-          amount: `৳ ${parseAmount(item.amount_paid).toLocaleString("en-IN")}`,
+          installment_title: "Land Share Payment",
+          payment_date: prop.lastUpdated || "2024-01-01",
+          due_date: prop.lastUpdated || "2024-01-01",
+          amount: `৳ ${parseAmount(prop.land_share).toLocaleString("en-IN")}`,
           status: "paid",
           method: "Bank Transfer",
         });
-      });
+      }
 
-      // If there's an outstanding amount, list it as due
-      if (sumDue > 0) {
+      if (prop.development_charges && parseAmount(prop.development_charges) > 0) {
         payments.push({
-          id: `due-balance`,
-          invoice_no: `TPHL-DUE-${b.booking_id || "BAL"}`,
+          id: `dev-${prop.id || "prop"}-${idx}`,
+          invoice_no: `TPHL-DEV-${prop.id || "prop"}-${idx + 1}`,
           project: `${projName}${unit}`,
-          installment_title: "Outstanding Installment Due",
-          due_date: "15 Apr 2026",
-          amount: formatTaka(sumDue),
+          installment_title: "Development Charge",
+          payment_date: prop.lastUpdated || "2024-01-01",
+          due_date: prop.lastUpdated || "2024-01-01",
+          amount: `৳ ${parseAmount(prop.development_charges).toLocaleString("en-IN")}`,
+          status: "paid",
+          method: "Bank Transfer",
+        });
+      }
+
+      if (prop.due_payment && parseAmount(prop.due_payment) > 0) {
+        payments.push({
+          id: `due-${prop.id || "prop"}-${idx}`,
+          invoice_no: `TPHL-DUE-${prop.id || "prop"}-${idx + 1}`,
+          project: `${projName}${unit}`,
+          installment_title: "Remaining Due",
+          due_date: prop.estimatedDate ? `Dec ${prop.estimatedDate}` : "15 Apr 2026",
+          amount: `৳ ${parseAmount(prop.due_payment).toLocaleString("en-IN")}`,
           status: "due",
         });
       }
+    });
+
+    // Also support any bookings if present
+    const bookings: any[] = userPayload?.bookings || [];
+    if (bookings.length > 0) {
+      bookings.forEach((b: any, bIdx: number) => {
+        const projName = b?.project_info?.project_name || "The Premium Property";
+        const unit = b?.project_info?.flat_name ? ` (Unit ${b.project_info.flat_name})` : "";
+
+        const landHistory = b?.payment_info?.land_share_info?.land_share_history || [];
+        landHistory.forEach((item: any, i: number) => {
+          payments.push({
+            id: `land-${bIdx}-${item.payment_id || i}`,
+            invoice_no: `TPHL-LND-${item.payment_id || i}`,
+            project: `${projName}${unit}`,
+            installment_title: item.payment_type ? item.payment_type.replace(/_/g, " ").toUpperCase() : "Land Share",
+            payment_date: item.payment_date || "2024-01-01",
+            due_date: item.payment_date || "2024-01-01",
+            amount: `৳ ${parseAmount(item.amount_paid).toLocaleString("en-IN")}`,
+            status: "paid",
+            method: "Bank Transfer",
+          });
+        });
+
+        const devHistory = b?.payment_info?.development_charge_info?.development_charge_history || [];
+        devHistory.forEach((item: any, i: number) => {
+          payments.push({
+            id: `dev-${bIdx}-${item.payment_id || i}`,
+            invoice_no: `TPHL-DEV-${item.payment_id || i}`,
+            project: `${projName}${unit}`,
+            installment_title: item.payment_type ? item.payment_type.replace(/_/g, " ").toUpperCase() : "Development Charge",
+            payment_date: item.payment_date || "2024-01-01",
+            due_date: item.payment_date || "2024-01-01",
+            amount: `৳ ${parseAmount(item.amount_paid).toLocaleString("en-IN")}`,
+            status: "paid",
+            method: "Bank Transfer",
+          });
+        });
+      });
     }
 
     return {
@@ -172,7 +229,78 @@ export async function fetchUserPaymentInfo(
       payments,
     };
   } catch (err) {
-    console.error("[fetchUserPaymentInfo] Error fetching user payment info:", err);
+    console.error("[fetchUserPaymentInfo] Error fetching user from /users/{id}:", err);
     return null;
   }
 }
+
+export interface ProjectNoticeItem {
+  id: string | number;
+  project_id?: string | number;
+  title: string;
+  description: string;
+  category: string;
+  date: string;
+  isUnread?: boolean;
+  image?: string | null;
+  views_count?: number;
+}
+
+export async function fetchProjectNotices(
+  projectId: string | number
+): Promise<ProjectNoticeItem[]> {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://api.dpremiumhomes.com/api"
+  ).replace(/\/+$/, "");
+
+  try {
+    const res = await fetch(`${baseUrl}/projects/${projectId}/notices`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn(`[fetchProjectNotices] Returned status ${res.status}`);
+      return [];
+    }
+
+    const json = await res.json();
+    const noticesList = json?.notices || (Array.isArray(json?.data) ? json.data : []);
+
+    if (!Array.isArray(noticesList)) return [];
+
+    return noticesList.map((item: any, idx: number) => {
+      const createdDate = item.created_at
+        ? new Date(item.created_at).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "Recent";
+
+      return {
+        id: item.id || `notice-${idx}`,
+        project_id: item.project_id || projectId,
+        title: item.title || "Project Notice",
+        description: item.description || "",
+        category: item.category || "General",
+        date: createdDate,
+        isUnread: item.isUnread ?? true,
+        image: item.image
+          ? item.image.startsWith("http")
+            ? item.image
+            : `${baseUrl.replace(/\/api$/, "")}${item.image.startsWith("/") ? "" : "/"}${item.image}`
+          : null,
+        views_count: item.views_count || 0,
+      };
+    });
+  } catch (err) {
+    console.error(`[fetchProjectNotices] Error fetching notices for project ${projectId}:`, err);
+    return [];
+  }
+}
+

@@ -25,23 +25,14 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Dynamic user data
-  const [user, setUser] = useState<ClientUser>({
-    name: "Afsar Hossen",
-    full_name: "Afsar Hossen",
-    email: "afsar.hossain@example.com",
-    avatar: "/image/team/AlfaaniShuvo.png",
-    total_paid: "৳ 42,20,000",
-    outstanding: "৳ 3,56,000",
-    total_expense: "৳ 50,78,000",
-    completion: 70, // Static per requirement
-  });
+  const [user, setUser] = useState<ClientUser | null>(null);
 
-  // Dynamic state from user-payment-info?user_id={userId}
+  // Dynamic state from /users/{userId}
   const [myFlats, setMyFlats] = useState<ClientFlat[]>([]);
   const [dynamicPayments, setDynamicPayments] = useState<ClientPayment[]>([]);
   const [dynamicStats, setDynamicStats] = useState<any>(null);
 
-  // Load authenticated user and fetch user-payment-info on mount
+  // Load authenticated user and fetch /users/{userId} on mount
   useEffect(() => {
     async function loadUserDataAndPaymentStats() {
       try {
@@ -72,48 +63,63 @@ function DashboardContent() {
           }
         }
 
-        // Determine effective user id: stored or from user object, fallback to '1' for preview
+        // Determine effective user id strictly from stored auth
         const effectiveUserId =
           storedUserId ||
           parsedUser?.id ||
-          parsedUser?.user_id ||
-          "1";
+          parsedUser?.user_id;
+
+        // If not logged in, redirect to login page (no fake fallback)
+        if (!effectiveUserId && !storedUser) {
+          router.push("/login");
+          return;
+        }
 
         if (parsedUser && typeof parsedUser === "object") {
-          setUser((prev) => ({
-            ...prev,
-            ...parsedUser,
+          setUser({
+            id: parsedUser.id || effectiveUserId,
             name:
               parsedUser.name ||
               parsedUser.full_name ||
               [parsedUser.first_name, parsedUser.last_name].filter(Boolean).join(" ") ||
-              prev.name,
-            email: parsedUser.email || prev.email,
-            avatar: parsedUser.avatar || parsedUser.image || prev.avatar,
-            completion: 70, // Static 70% per user instructions
-          }));
+              "",
+            email: parsedUser.email || "",
+            phone: parsedUser.phone || "",
+            avatar: parsedUser.avatar || parsedUser.image || "",
+            total_paid: "৳ 0",
+            outstanding: "৳ 0",
+            total_expense: "৳ 0",
+            completion: 0,
+          });
         }
 
-        // Fetch dynamic payment and property info: user-payment-info?user_id={userId}
+        // Fetch dynamic payment and property info: /users/{userId}
         if (effectiveUserId) {
           const paymentData = await fetchUserPaymentInfo(effectiveUserId);
 
           if (paymentData) {
-            // Update user stats with values computed from savedProperties:
-            // price (total_expense), partial_payment (total_paid), and due_payment (outstanding)
+            const totalPrice = paymentData.stats.totalPrice;
+            const totalPaid = paymentData.stats.totalPaid;
+            const calcCompletion =
+              totalPrice > 0
+                ? Math.min(100, Math.round((totalPaid / totalPrice) * 100))
+                : 0;
+
+            const primaryFlat = paymentData.dynamicFlats?.[0];
             setUser((prev) => ({
-              ...prev,
-              name: paymentData.clientInfo?.client_name || prev.name,
-              full_name: paymentData.clientInfo?.client_name || prev.full_name,
-              phone: paymentData.clientInfo?.phone || prev.phone,
-              email: paymentData.clientInfo?.email || prev.email,
+              ...(prev || {}),
+              name: paymentData.clientInfo?.client_name || prev?.name || "",
+              full_name: paymentData.clientInfo?.client_name || prev?.full_name || "",
+              phone: paymentData.clientInfo?.phone || prev?.phone || "",
+              email: paymentData.clientInfo?.email || prev?.email || "",
+              flat_no: primaryFlat?.flatNo ? `Unit ${primaryFlat.flatNo}` : prev?.flat_no || "",
+              building_name: primaryFlat?.title || prev?.building_name || "",
               total_paid: paymentData.stats.formattedPaid,
               outstanding: paymentData.stats.formattedDue,
               total_expense: paymentData.stats.formattedPrice,
-              completion: 70, // Static 70% completion
+              completion: calcCompletion,
             }));
 
-            // Only show savedProperties flats in "My Flats" as requested
             setMyFlats(paymentData.dynamicFlats);
             setDynamicPayments(paymentData.payments);
             setDynamicStats(paymentData.stats);
@@ -221,12 +227,13 @@ function DashboardContent() {
               stats={dynamicStats}
               user={user}
               myFlats={myFlats}
+              isLoading={isLoading}
             />
           )}
 
           {activeTab === "progress" && <ProgressTab />}
 
-          {activeTab === "notice" && <NoticeTab />}
+          {activeTab === "notice" && <NoticeTab projects={myFlats} />}
 
           {activeTab === "live-camera" && <CameraTab />}
 
@@ -235,7 +242,12 @@ function DashboardContent() {
           {activeTab === "support" && <SupportTab />}
 
           {activeTab === "profile" && (
-            <ProfileTab user={user} onUpdateUser={handleUpdateUser} />
+            <ProfileTab
+              user={user}
+              isLoading={isLoading}
+              myFlats={myFlats}
+              onUpdateUser={handleUpdateUser}
+            />
           )}
         </main>
       </div>

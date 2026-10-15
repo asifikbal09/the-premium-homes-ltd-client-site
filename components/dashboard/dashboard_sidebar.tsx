@@ -115,10 +115,10 @@ export function DashboardSidebar({
                     if (onClose) onClose();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-[13.5px] font-medium transition-all duration-200 cursor-pointer select-none text-left",
+                    "w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-[13.5px] transition-all duration-200 cursor-pointer select-none text-left",
                     isActive
-                      ? "bg-[#044133] text-white shadow-xs font-semibold"
-                      : "text-stone-600 hover:bg-stone-100/80 hover:text-stone-900"
+                      ? "bg-[#044133] text-white shadow-xs font-normal tracking-normal"
+                      : "text-stone-600 hover:bg-stone-100/80 hover:text-stone-900 font-normal"
                   )}
                 >
                   <Icon
@@ -144,10 +144,10 @@ export function DashboardSidebar({
                 if (onClose) onClose();
               }}
               className={cn(
-                "w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-[13.5px] font-medium transition-all duration-200 cursor-pointer select-none text-left",
+                "w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-[13.5px] transition-all duration-200 cursor-pointer select-none text-left",
                 activeTab === "profile"
-                  ? "bg-[#044133] text-white font-semibold"
-                  : "text-stone-600 hover:bg-stone-100/80 hover:text-stone-900"
+                  ? "bg-[#044133] text-white font-normal"
+                  : "text-stone-600 hover:bg-stone-100/80 hover:text-stone-900 font-normal"
               )}
             >
               <User

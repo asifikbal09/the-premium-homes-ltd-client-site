@@ -3,33 +3,40 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import team01 from "@/public/image/life-at-tphl/stories-team01.png";
+import team02 from "@/public/image/life-at-tphl/stories-team02.png";
+import team03 from "@/public/image/life-at-tphl/stories-team03.png";
+import team04 from "@/public/image/life-at-tphl/stories-team04.png";
+import team05 from "@/public/image/life-at-tphl/stories-team05.png";
 
-// Stage coordinate system, measured from the design (728×320).
-// Cards, pins and the wave all use it, so they scale together at every width.
-const W = 728;
-const H = 320;
+// Stage = the design frame in design px (1600 wide). Cards, pins and the wave
+// all use these coordinates, so they scale together at every screen width.
+const W = 1600;
+const H = 700;
 const pct = (v: number, of: number) => `${(v / of) * 100}%`;
 
-// x/y = card centre, w/h = unrotated size. DOM order = stacking order.
+// Exported PNGs are 1x design px, already rotated + grayscaled.
+// x/y = image centre. DOM order = stacking order.
 const CARDS = [
-  { src: "/image/life-at-tphl/tplt-team1.png", alt: "Colleagues discussing plans in the lounge", x: 194, y: 110, w: 88, h: 118, rotate: -6, gray: true, img: "object-top" },
-  { src: "/image/life-at-tphl/stories-team-award.png", alt: "Team member recognition and award ceremony", x: 87, y: 118, w: 96, h: 136, rotate: 7, gray: true, img: "object-top scale-[1.8] origin-top" },
-  { src: "/image/life-at-tphl/tplt-team06.png", alt: "Traditional cultural festival celebration at TPHL", x: 656, y: 101, w: 87, h: 104, rotate: -4, gray: true, img: "object-top" },
-  { src: "/image/life-at-tphl/tplt-team04.png", alt: "Team presentation and project review", x: 549, y: 101, w: 103, h: 130, rotate: 4, gray: true, img: "object-center" },
-  { src: "/image/life-at-tphl/stories-team-center.png", alt: "TPHL team members bonding over games at the office", x: 360, y: 171, w: 205, h: 254, rotate: 4, gray: false, img: "object-center scale-[1.12]" },
+  { img: team04, alt: "Colleagues chatting over coffee in the lounge", x: 423, y: 240 },
+  { img: team05, alt: "Team member receiving a recognition award", x: 189, y: 260 },
+  { img: team01, alt: "Festive cultural celebration at the TPHL office", x: 1434, y: 222 },
+  { img: team02, alt: "Project presentation in the TPHL boardroom", x: 1203, y: 223 },
+  { img: team03, alt: "TPHL team members bonding over games at the office", x: 790, y: 376 },
 ];
 
-// Pins sit exactly on the wave's dips (same coordinates as the path below).
-const PINS = [
-  [141, 64],
-  [285, 47],
-  [554, 43],
-  [675, 50],
-];
-
-// Quadratic arcs between pins; segments beyond 0..728 extend the string edge-to-edge on wide screens.
+// Exact wave from the design (its own 1600×149 box), shifted down WAVE_Y in the stage.
+const WAVE_Y = 20;
 const WAVE =
-  "M -364 50 Q -182 -10 0 70 Q 59.5 -1 141 64 Q 197 -9.5 285 47 Q 400.5 -25 554 43 Q 609.5 -6.5 675 50 Q 702 40 728 30 Q 910 -10 1092 60";
+  "M-12 147.932C27.5 104.432 122.5 26.0319 186.5 60.4319C266.5 103.432 272.5 146.435 348 103.433C423.5 60.4319 463 -6.06662 522.5 36.9334C582 79.9334 654.5 110.938 721 73.9357C787.5 36.9334 905 -28.5606 968.5 15.9357C1032 60.4319 1054 132.931 1147.5 103.433C1241 73.9357 1252.5 45.9322 1303 36.9334C1353.5 27.9346 1356 -0.0688858 1415.5 36.9334C1475 73.9357 1469.5 94.9335 1518 84.4346C1566.5 73.9357 1569.5 57.9311 1612.5 36.9334";
+
+// Pin x from the design; y sampled from WAVE at that x, so each pin sits on the line.
+const PINS = [
+  [310, 119.6],
+  [626, 87.0],
+  [1218, 75.2],
+  [1484, 85.3],
+];
 
 export function LifeAtTphlStories() {
   return (
@@ -48,57 +55,49 @@ export function LifeAtTphlStories() {
 
       {/* Photo stage: fixed aspect ratio, everything positioned in stage % */}
       <div
-        className="relative w-full max-w-[1440px] mx-auto"
+        className="relative w-full max-w-[1600px] mx-auto"
         style={{ aspectRatio: `${W} / ${H}` }}
       >
         <svg
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
+          viewBox={`0 ${-WAVE_Y} ${W} ${H}`}
           aria-hidden="true"
           className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
         >
           <path
             d={WAVE}
             fill="none"
-            stroke="#3f4843"
-            strokeWidth="1.5"
-            strokeDasharray="6 6"
-            strokeLinecap="round"
+            stroke="#546360"
+            strokeWidth="2"
+            strokeDasharray="12 12"
             vectorEffect="non-scaling-stroke"
           />
         </svg>
 
-        {CARDS.map((c) => (
-          <div
-            key={c.src}
-            className="absolute shadow-lg shadow-black/20 transition-[scale] duration-300 hover:scale-105 hover:z-40"
-            style={{
-              left: pct(c.x, W),
-              top: pct(c.y, H),
-              width: pct(c.w, W),
-              aspectRatio: `${c.w} / ${c.h}`,
-              transform: `translate(-50%, -50%) rotate(${c.rotate}deg)`,
-            }}
-          >
-            <div className={`relative w-full h-full overflow-hidden bg-neutral-100 ${c.gray ? "grayscale" : ""}`}>
+        {CARDS.map((c) => {
+          const w = c.img.width;
+          return (
+            <div
+              key={c.img.src}
+              className="absolute -translate-x-1/2 -translate-y-1/2 transition-[scale] duration-300 hover:scale-105 hover:z-40"
+              style={{ left: pct(c.x, W), top: pct(c.y, H), width: pct(w, W) }}
+            >
               <Image
-                src={c.src}
+                src={c.img}
                 alt={c.alt}
-                fill
-                priority={!c.gray}
-                sizes={`(max-width: 1440px) ${Math.round((c.w / W) * 100)}vw, ${Math.round((c.w / W) * 1440)}px`}
-                className={`object-cover ${c.img}`}
+                priority={c.img === team03}
+                sizes={`(max-width: ${W}px) ${Math.round((w / W) * 100)}vw, ${w}px`}
+                className="w-full h-auto"
               />
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {PINS.map(([x, y]) => (
           <span
             key={x}
             aria-hidden="true"
             className="absolute z-50 aspect-square rounded-full bg-[#e5262b] shadow-[0_1px_2px_rgba(0,0,0,0.35)] -translate-x-1/2 -translate-y-1/2"
-            style={{ left: pct(x, W), top: pct(y, H), width: "max(8px, 1.4%)" }}
+            style={{ left: pct(x, W), top: pct(y + WAVE_Y, H), width: `max(8px, ${pct(22, W)})` }}
           />
         ))}
       </div>

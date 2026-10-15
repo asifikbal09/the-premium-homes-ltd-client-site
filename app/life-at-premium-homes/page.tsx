@@ -9,6 +9,7 @@ import { LifeAtTphlJourney } from "@/components/section/life_at_tphl/life_at_tph
 import { LifeAtTphlStories } from "@/components/section/life_at_tphl/life_at_tphl_stories";
 import { LifeAtTphlTeamSays } from "@/components/section/life_at_tphl/life_at_tphl_team_says";
 import { LifeAtTphlJoinTeam } from "@/components/section/life_at_tphl/life_at_tphl_join_team";
+import { LifeAtTphlPatternStrip } from "@/components/section/life_at_tphl/life_at_tphl_pattern_strip";
 
 export const metadata: Metadata = {
   title: "Life At TPHL | Premium Homes",
@@ -30,6 +31,7 @@ export default function LifeAtPremiumHomesPage() {
         <LifeAtTphlJourney />
         <LifeAtTphlJoinTeam />
       </main>
+      <LifeAtTphlPatternStrip />
       <Footer />
     </div>
   );
