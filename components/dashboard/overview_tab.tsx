@@ -391,35 +391,6 @@ export function OverviewTab({
                     </div>
                   )}
 
-                  {/* Construction Progress Bar */}
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center justify-between text-[10.5px]">
-                      <div>
-                        <span className="text-stone-400 font-semibold tracking-wider uppercase">
-                          CONSTRUCTION
-                        </span>
-                        <p className="text-stone-800 font-semibold text-xs mt-0.5">
-                          {flat.construction_pct}% complete
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-stone-400 font-semibold tracking-wider uppercase">
-                          HANDOVER
-                        </span>
-                        <p className="text-stone-800 font-semibold text-xs mt-0.5">
-                          {flat.handover_date}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#d97706] rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(0, flat.construction_pct))}%` }}
-                      />
-                    </div>
-                  </div>
-
                   {/* Footer Price & View Project CTA */}
                   <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
                     <div>

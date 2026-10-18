@@ -235,7 +235,7 @@ function DashboardContent() {
 
           {activeTab === "notice" && <NoticeTab projects={myFlats} />}
 
-          {activeTab === "live-camera" && <CameraTab />}
+          {activeTab === "live-camera" && <CameraTab myFlats={myFlats} />}
 
           {activeTab === "refer" && <ReferTab user={user} />}
 

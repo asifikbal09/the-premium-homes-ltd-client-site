@@ -35,6 +35,7 @@ export interface SavedProperty {
 
 export interface ClientFlat {
   id: string | number;
+  project_id?: string | number;
   title: string;
   flatNo?: string;
   flatSize?: string;
@@ -93,3 +94,14 @@ export interface ReferralDetails {
   pending_referrals_count: number;
   transactions: ReferralTransaction[];
 }
+
+export interface LiveCamera {
+  id: number;
+  project_id: number;
+  project_name: string;
+  location: string;
+  camera_name: string;
+  camera_link: string;
+  status: string;
+}
+

@@ -39,7 +39,7 @@ export default async function Home() {
         <PhilosophyPillars />
         <HomeAbout />
         <FeaturedProjects initialProjects={projects} />
-        <SignatureDevelopments />
+        <SignatureDevelopments initialProjects={projects} />
         <ArtOfLivingVideo />
         <CommunityGallery />
         <FounderMessage />

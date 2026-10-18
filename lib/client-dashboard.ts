@@ -37,6 +37,59 @@ export function formatTaka(val: number): string {
   return `৳ ${val.toLocaleString("en-IN")}`;
 }
 
+export function resolveFlatLocation(prop: any, title?: string): string {
+  const direct =
+    prop?.location ||
+    prop?.project_location ||
+    prop?.project_address ||
+    prop?.address ||
+    prop?.community?.name ||
+    prop?.community ||
+    prop?.project?.location ||
+    prop?.project?.project_map_location ||
+    prop?.project_info?.location ||
+    prop?.project_info?.address ||
+    prop?.location_name ||
+    prop?.area;
+
+  if (typeof direct === "string" && direct.trim() && !direct.toLowerCase().includes("gulshan 2")) {
+    return direct.trim();
+  }
+
+  const clean = (title || prop?.name || "").toLowerCase();
+  if (
+    clean.includes("bashundhara") ||
+    clean.includes("symphony") ||
+    clean.includes("zenith") ||
+    clean.includes("novera") ||
+    clean.includes("phoenix") ||
+    clean.includes("novus") ||
+    clean.includes("lumina") ||
+    clean.includes("florence") ||
+    clean.includes("horizon") ||
+    clean.includes("canvas") ||
+    clean.includes("prestige heights") ||
+    clean.includes("armonia") ||
+    clean.includes("ariston") ||
+    clean.includes("velinor")
+  ) {
+    return "Bashundhara Residential Area";
+  }
+  if (clean.includes("nature") || clean.includes("cox")) {
+    return "Cox's Bazar";
+  }
+  if (clean.includes("bayanno") || clean.includes("jolshiri")) {
+    return "Jolshiri Abashon";
+  }
+  if (clean.includes("skyline") || clean.includes("amberleaf") || clean.includes("smart city")) {
+    return "The Premium Smart City";
+  }
+  if (clean.includes("tprc") || clean.includes("royal city") || clean.includes("ati")) {
+    return "ATI Model Society";
+  }
+  return "Ashulia Model Town";
+}
+
 export async function fetchUserPaymentInfo(
   userId: string | number
 ): Promise<UserPaymentApiResponse | null> {
@@ -93,10 +146,11 @@ export async function fetchUserPaymentInfo(
     // Map savedProperties strictly for "My Flats"
     const dynamicFlats: ClientFlat[] = rawSavedProperties.map((prop: any, idx: number) => ({
       id: prop.id || `saved-flat-${idx}`,
+      project_id: prop.project_id || prop.projectId || prop.id,
       title: prop.name || "The Premium Green Valley",
       flatNo: prop.flatNo || "",
       flatSize: prop.flatSize || "",
-      location: prop.location?.trim() ? prop.location : "Gulshan 2, Dhaka",
+      location: resolveFlatLocation(prop, prop.name || prop.title),
       image: prop.image || "/image/progress/tph_green_valley.png",
       status: "Under Construction",
       construction_pct: 72,

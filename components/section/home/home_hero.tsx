@@ -478,10 +478,10 @@ export function HomeHero({
       <section
         id="home"
         aria-label="Hero Section"
-        className="w-full min-h-[620px] md:h-screen md:max-h-[920px]"
+        className="w-full aspect-[16/9] md:aspect-auto md:h-screen md:max-h-[920px]"
       >
         {/* Contained Hero Card matching luxury aesthetic on Desktop & Mobile */}
-        <div className="relative w-full h-full min-h-[620px] md:aspect-[16/9] md:h-screen md:max-h-[920px] overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-4 sm:pb-6 md:pb-8 lg:pb-10 px-3 sm:px-6 md:px-8 lg:px-10 transition-all">
+        <div className="relative w-full h-full aspect-[16/9] md:aspect-auto md:h-screen md:max-h-[920px] overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between pt-8 sm:pt-16 md:pt-28 pb-2 sm:pb-4 md:pb-8 lg:pb-10 px-2.5 sm:px-6 md:px-8 lg:px-10 transition-all">
           {/* Background Image Layer */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <Image
@@ -505,23 +505,23 @@ export function HomeHero({
           </div>
 
           {/* MIDDLE AREA: Left Headline & Right Floating Contact / Chat */}
-          <div className="relative z-10 w-full flex flex-col lg:flex-row justify-between my-auto gap-4 sm:gap-6">
+          <div className="relative z-10 w-full flex flex-col lg:flex-row justify-between my-auto gap-2 sm:gap-6">
             {/* Left Column: Tagline & Display Headline */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col justify-end max-w-2xl pb-1 sm:pb-2 lg:pb-6"
+              className="flex flex-col justify-end max-w-2xl pb-0.5 sm:pb-2 lg:pb-6"
             >
               {/* Tagline */}
-              <div className="flex items-center gap-2 mb-0.5 sm:mb-2 md:mb-3">
-                <span className="text-[7px] sm:text-[10px] md:text-xs font-semibold tracking-[0.16em] uppercase text-white/90 drop-shadow-sm">
+              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-2 md:mb-3">
+                <span className="text-[6px] sm:text-[9px] md:text-xs font-semibold tracking-[0.16em] uppercase text-white/90 drop-shadow-sm">
                   REAL ESTATE DEVELOPMENT AGENCY
                 </span>
               </div>
 
               {/* Headline */}
-              <h1 className="font-heading font-medium text-xl sm:text-4xl md:text-6xl xl:text-[80px] 2xl:text-[90px] text-white leading-[100%] tracking-normal drop-shadow-lg select-none">
+              <h1 className="font-heading font-medium text-base sm:text-3xl md:text-6xl xl:text-[80px] 2xl:text-[90px] text-white leading-[100%] tracking-normal drop-shadow-lg select-none">
                 Shaping
                 <br />
                 Tomorrow&apos;s

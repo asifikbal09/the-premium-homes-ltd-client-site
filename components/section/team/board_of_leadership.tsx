@@ -106,13 +106,7 @@ const LEADERSHIP_GRID: GridSlot[] = [
     name: "Md. Golam Imran",
     role: "Head of Client Experience",
     image: "/image/team/MdGolamImam.png",
-  },
-  {
-    id: "lead-12",
-    name: "Md. Ejaj-Ur-Rahman",
-    role: "Deputy CEO & Director",
-    image: "/image/team/MdEjazUrRahman.png",
-  },
+  }
 ];
 
 export function BoardOfLeadership() {

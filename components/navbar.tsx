@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, ChevronRight } from "lucide-react";
+import { X, Search, ChevronRight, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectData } from "@/lib/projects";
 
@@ -34,40 +34,19 @@ export const NAV_ITEMS: NavItem[] = [
 interface NavMenuItemConfig {
   name: string;
   href: string;
-  subItems?: { name: string; href: string }[];
 }
 
 const NAV_ITEMS_CONFIG: NavMenuItemConfig[] = [
   { name: "Home", href: "/" },
-  {
-    name: "About TPHL",
-    href: "/about",
-    subItems: [
-      { name: "About Overview", href: "/about" },
-      { name: "Leadership Team", href: "/team" },
-      { name: "Frequently Asked Questions", href: "/faq" },
-    ],
-  },
-  {
-    name: "Projects",
-    href: "/projects",
-    subItems: [
-      { name: "All Projects", href: "/projects" },
-      { name: "Projects Progress", href: "/project-progress" },
-    ],
-  },
+  { name: "About TPHL", href: "/about" },
+  { name: "Leadership Team", href: "/team" },
+  { name: "Projects", href: "/projects" },
+  { name: "Projects Progress", href: "/project-progress" },
   { name: "Life At TPHL", href: "/life-at-premium-homes" },
   { name: "Careers", href: "/careers" },
   { name: "News & Events", href: "/blogs" },
-  {
-    name: "Contact Us",
-    href: "/contact",
-    subItems: [
-      { name: "Contact & Viewing", href: "/contact" },
-      { name: "Client Portal & Dashboard", href: "/dashboard" },
-    ],
-  },
-  
+  { name: "FAQ", href: "/faq" },
+  { name: "Contact Us", href: "/contact" },
 ];
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -142,10 +121,44 @@ export function NavDropdownMenu({
     () => false
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [liveProjects, setLiveProjects] = useState<ProjectData[]>(() => cachedProjects || []);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Check user login state whenever drawer opens or storage event fires
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const checkAuth = () => {
+        const token =
+          localStorage.getItem("tphl_auth_token") ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("tphl_user") ||
+          localStorage.getItem("user");
+        setIsLoggedIn(Boolean(token));
+      };
+      checkAuth();
+      window.addEventListener("storage", checkAuth);
+      return () => window.removeEventListener("storage", checkAuth);
+    }
+  }, [isOpen]);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("tphl_auth_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("tphl_user_id");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("tphl_user");
+      localStorage.removeItem("user");
+      localStorage.removeItem("tphl_auth_data");
+    } catch {
+      // ignore
+    }
+    setIsLoggedIn(false);
+    handleClose();
+    router.push("/login");
+  };
 
   // Load live projects for search from API (cached across opens)
   useEffect(() => {
@@ -178,7 +191,6 @@ export function NavDropdownMenu({
 
   const handleClose = React.useCallback(() => {
     setSearchQuery("");
-    setExpandedMenu(null);
     onClose();
   }, [onClose]);
 
@@ -233,7 +245,7 @@ export function NavDropdownMenu({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={handleClose}
-            className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-[2px] cursor-default pointer-events-auto"
+            className="fixed inset-0 z-[9998] bg-black/40 cursor-default pointer-events-auto"
             aria-hidden="true"
           />
 
@@ -376,84 +388,13 @@ export function NavDropdownMenu({
                 </div>
               ) : (
                 /* CLEAN NAVIGATION MENU ITEMS */
-                <nav className="flex flex-col space-y-4 sm:space-y-4.5 py-2 pb-6">
+                <nav className="flex flex-col space-y-3.5 sm:space-y-4 py-2 pb-6">
                   {NAV_ITEMS_CONFIG.map((item) => {
                     const isActive = pathname === item.href;
-                    const isExpanded = expandedMenu === item.name;
-
-                    if (item.subItems && item.subItems.length > 0) {
-                      return (
-                        <div key={item.name} className="flex flex-col">
-                          <div className="flex items-center justify-between">
-                            <Link
-                              href={item.href}
-                              onClick={handleClose}
-                              className={cn(
-                                "group flex items-center text-base sm:text-lg font-medium transition-all duration-200",
-                                isActive
-                                  ? "text-[#d0a65b] font-semibold"
-                                  : "text-white/90 hover:text-white"
-                              )}
-                            >
-                              <span className="group-hover:translate-x-1 transition-transform duration-200">
-                                {item.name}
-                              </span>
-                            </Link>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setExpandedMenu(isExpanded ? null : item.name)
-                              }
-                              aria-label={`Toggle ${item.name} submenu`}
-                              className="p-2 -mr-2 text-white/40 hover:text-[#d0a65b] transition-colors cursor-pointer"
-                            >
-                              <ChevronRight
-                                className={cn(
-                                  "w-4 h-4 transition-transform duration-200",
-                                  isExpanded && "rotate-90 text-[#d0a65b]"
-                                )}
-                              />
-                            </button>
-                          </div>
-
-                          {/* Smooth Accordion Submenu */}
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.22, ease: "easeOut" }}
-                                className="overflow-hidden"
-                              >
-                                <div className="pl-3.5 pt-2 pb-1 mt-1 space-y-2 border-l border-white/15 ml-1">
-                                  {item.subItems.map((sub) => (
-                                    <Link
-                                      key={sub.href}
-                                      href={sub.href}
-                                      onClick={handleClose}
-                                      className={cn(
-                                        "block text-xs sm:text-sm transition-colors py-1",
-                                        pathname === sub.href
-                                          ? "text-[#d0a65b] font-medium"
-                                          : "text-white/65 hover:text-white hover:translate-x-1 transition-transform"
-                                      )}
-                                    >
-                                      {sub.name}
-                                    </Link>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      );
-                    }
 
                     return (
                       <Link
-                        key={item.href}
+                        key={item.name}
                         href={item.href}
                         onClick={handleClose}
                         className={cn(
@@ -469,6 +410,39 @@ export function NavDropdownMenu({
                       </Link>
                     );
                   })}
+
+                  {/* Auth Action: Login or Dashboard + Logout */}
+                  <div className="pt-4 mt-2 border-t border-white/10 space-y-2.5">
+                    {isLoggedIn ? (
+                      <>
+                        <Link
+                          href="/dashboard"
+                          onClick={handleClose}
+                          className="group flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#d0a65b]/15 hover:bg-[#d0a65b] border border-[#d0a65b]/30 text-[#d0a65b] hover:text-[#044133] font-medium text-sm transition-all"
+                        >
+                          <span>Dashboard</span>
+                          <LayoutDashboard className="w-4 h-4" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-red-500/15 border border-white/10 hover:border-red-500/30 text-white/80 hover:text-red-400 font-medium text-sm transition-all cursor-pointer"
+                        >
+                          <span>Log Out</span>
+                          <LogOut className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href="/login"
+                        onClick={handleClose}
+                        className="group flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#d0a65b] hover:bg-[#b88f46] text-[#044133] font-semibold text-sm transition-all shadow-md"
+                      >
+                        <span>Login</span>
+                        <LogIn className="w-4 h-4" />
+                      </Link>
+                    )}
+                  </div>
                 </nav>
               )}
             </div>
