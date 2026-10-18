@@ -85,6 +85,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         {/* Section 7: Relevant Project */}
         <RelevantProjects
           currentProjectId={project.id}
+          priceRange={project.price_range}
           allProjects={allProjects}
         />
 

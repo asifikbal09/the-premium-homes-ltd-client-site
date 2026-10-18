@@ -1,4 +1,4 @@
-import { ClientFlat, SavedProperty, ClientPayment } from "@/components/dashboard/types";
+import { ClientFlat, SavedProperty, ClientPayment, ReferralDetails, ReferralTransaction } from "@/components/dashboard/types";
 
 export interface UserPaymentApiResponse {
   clientInfo: {
@@ -301,6 +301,61 @@ export async function fetchProjectNotices(
   } catch (err) {
     console.error(`[fetchProjectNotices] Error fetching notices for project ${projectId}:`, err);
     return [];
+  }
+}
+
+export async function fetchUserReferralDetails(
+  userId: string | number
+): Promise<ReferralDetails | null> {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://api.dpremiumhomes.com/api"
+  ).replace(/\/+$/, "");
+
+  try {
+    const endpoint = `${baseUrl}/users/${userId}/referral-details`;
+    console.log(`[fetchUserReferralDetails] Calling GET: ${endpoint}`);
+
+    const res = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn(`[fetchUserReferralDetails] API returned status ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    console.log("[fetchUserReferralDetails] Payload received:", data);
+
+    if (!data?.success && data?.referral_code === undefined) {
+      console.warn("[fetchUserReferralDetails] Unsuccessful payload", data);
+      return null;
+    }
+
+    const rawTx = data?.transactions;
+    let txList: ReferralTransaction[] = [];
+    if (Array.isArray(rawTx)) {
+      txList = rawTx;
+    } else if (rawTx && typeof rawTx === "object") {
+      txList = Object.values(rawTx);
+    }
+
+    return {
+      success: Boolean(data.success),
+      referral_code: data.referral_code || "",
+      wallet_balance: typeof data.wallet_balance === "number" ? data.wallet_balance : Number(data.wallet_balance) || 0,
+      referred_clients_count: Number(data.referred_clients_count) || 0,
+      pending_referrals_count: Number(data.pending_referrals_count) || 0,
+      transactions: txList,
+    };
+  } catch (err) {
+    console.error(`[fetchUserReferralDetails] Error fetching referral details for user ${userId}:`, err);
+    return null;
   }
 }
 

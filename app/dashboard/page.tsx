@@ -237,7 +237,7 @@ function DashboardContent() {
 
           {activeTab === "live-camera" && <CameraTab />}
 
-          {activeTab === "refer" && <ReferTab />}
+          {activeTab === "refer" && <ReferTab user={user} />}
 
           {activeTab === "support" && <SupportTab />}
 

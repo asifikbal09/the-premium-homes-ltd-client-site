@@ -74,3 +74,22 @@ export interface ClientNotice {
   description: string;
   isUnread?: boolean;
 }
+
+export interface ReferralTransaction {
+  id: number | string;
+  referred_friend?: string;
+  amount?: number;
+  status: "approved" | "pending" | "rejected" | string;
+  created_at?: string;
+  date?: string;
+  message?: string;
+}
+
+export interface ReferralDetails {
+  success: boolean;
+  referral_code: string;
+  wallet_balance: number;
+  referred_clients_count: number;
+  pending_referrals_count: number;
+  transactions: ReferralTransaction[];
+}

@@ -5,73 +5,75 @@ import Image from "next/image";
 import { Expand, X } from "lucide-react";
 
 interface SneakPeekGalleryProps {
-  images: string[];
-  projectName: string;
+  images?: string[];
+  projectName?: string;
 }
 
-export function SneakPeekGallery({
-  images,
-  projectName,
-}: SneakPeekGalleryProps) {
+// Static for now; will be made project-wise dynamic later.
+// w/h = native image size, used for proportional width + aspect ratio.
+const STATIC_GALLERY_ITEMS = [
+  { title: "Mosque", image: "/image/gelary/Frame 2147229743.png", w: 236, h: 356 },
+  { title: "Fitness Gym", image: "/image/gelary/Frame 2147229742.png", w: 300, h: 405 },
+  { title: "Lobby", image: "/image/gelary/Frame 2147229735.png", w: 400, h: 529 },
+  { title: "Parking", image: "/image/gelary/Frame 2147229736.png", w: 300, h: 406 },
+  { title: "Playground", image: "/image/gelary/Frame 2147229737.png", w: 236, h: 357 },
+];
+
+export function SneakPeekGallery({ projectName = "Residence" }: SneakPeekGalleryProps) {
   const [activeModalImage, setActiveModalImage] = useState<string | null>(null);
-
-  // Ensure we have at least 5 images for the 5-item collage
-  const defaultFallbackImages = [
-    "/image/projects/projectsHero.png",
-    "/image/prediction/predictionCard.png",
-    "/image/prediction/predictionBg.png",
-    "/image/lumina.png",
-    "/image/studio6.png",
-  ];
-
-  const galleryList =
-    images && images.length >= 3 ? images.slice(0, 5) : defaultFallbackImages;
 
   return (
     <section
       aria-label="Sneak Peek Gallery"
-      className="w-full bg-[#fbf9f5] py-16 sm:py-20 lg:py-24 border-t border-[#ede7dc]"
+      className="w-full bg-white py-16 sm:py-20 lg:py-24 border-t border-[#ede7dc]"
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
         {/* Centered Heading */}
-        <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14">
+        <div className="text-center max-w-xl mx-auto mb-12 sm:mb-16">
           <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#d0a65b] block">
-            VISUAL WALKTHROUGH
+            GALLERY
           </span>
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-normal text-[#044133] mt-1.5 tracking-tight">
-            Sneak Peek From Your Future Home
+          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-normal text-[#044133] mt-2 tracking-tight leading-tight">
+            Sneak Peek From Your <br className="hidden sm:inline" />
+            Future Home
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 font-light mt-2">
-            Immerse yourself in thoughtfully curated spaces, natural textures,
-            and refined luxury finishes.
-          </p>
         </div>
+      </div>
 
-        {/* 5-Item Gallery Strip / Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 md:gap-5">
-          {galleryList.map((img, idx) => (
+      {/* Full-width gallery row (outside max-w container) */}
+      <div className="w-full flex items-center gap-2 sm:gap-4 lg:gap-6">
+        {STATIC_GALLERY_ITEMS.map((item) => (
+          <figure
+            key={item.title}
+            style={{ flex: `${item.w} 1 0%` }}
+            className="min-w-0 group cursor-pointer"
+            onClick={() => setActiveModalImage(item.image)}
+          >
             <div
-              key={idx}
-              onClick={() => setActiveModalImage(img)}
-              className="group relative w-full aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-[#f4efe8] cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
+              className="relative w-full overflow-hidden bg-[#f4efe8]"
+              style={{ aspectRatio: `${item.w} / ${item.h}` }}
             >
               <Image
-                src={img}
-                alt={`${projectName} - Interior & Exterior Preview ${idx + 1}`}
+                src={item.image}
+                alt={item.title}
                 fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                sizes="25vw"
+                className="object-cover object-center transition-transform duration-700 group-hover:scale-103"
               />
 
-              {/* Hover overlay with expand icon */}
-              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-[#044133] shadow-md transform scale-90 group-hover:scale-100 transition-transform">
+              {/* Subtle Hover Overlay */}
+              <div className="absolute inset-0 bg-black/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#044133] shadow-sm">
                   <Expand className="w-4 h-4" />
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+
+            <figcaption className="font-heading text-xs sm:text-base text-[#14261f] font-normal mt-3 text-center">
+              {item.title}
+            </figcaption>
+          </figure>
+        ))}
       </div>
 
       {/* Lightbox Preview Modal */}
@@ -79,7 +81,7 @@ export function SneakPeekGallery({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
           onClick={() => setActiveModalImage(null)}
         >
           <div
