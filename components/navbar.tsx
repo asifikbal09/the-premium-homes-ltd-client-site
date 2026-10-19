@@ -10,7 +10,7 @@ import { X, Search, ChevronRight, LogIn, LogOut, LayoutDashboard } from "lucide-
 import { cn } from "@/lib/utils";
 import type { ProjectData } from "@/lib/projects";
 
-const emptySubscribe = () => () => {};
+const emptySubscribe = () => () => { };
 
 export interface NavItem {
   number: string;
@@ -263,10 +263,10 @@ export function NavDropdownMenu({
               // Premium glassmorphism: frosted glass with deep charcoal/emerald tone, fine left border, and ambient shadow
               "bg-[#070e0d]/95 sm:bg-[#070e0d]/90 backdrop-blur-2xl border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]",
               className &&
-                className
-                  .split(" ")
-                  .filter((c) => !c.startsWith("mt-") && !c.startsWith("rounded-"))
-                  .join(" ")
+              className
+                .split(" ")
+                .filter((c) => !c.startsWith("mt-") && !c.startsWith("rounded-"))
+                .join(" ")
             )}
             role="dialog"
             aria-modal="true"

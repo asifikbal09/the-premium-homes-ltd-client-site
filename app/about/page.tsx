@@ -7,6 +7,11 @@ import { AboutFamilySlider } from "@/components/section/about/about_family_slide
 import { AboutPrinciplesDna } from "@/components/section/about/about_principles_dna";
 import { AboutBuildingJourney } from "@/components/section/about/about_building_journey";
 import { AboutFounderTrust } from "@/components/section/about/about_founder_trust";
+import { AboutMilestones } from "@/components/section/about/about_milestones";
+import { AboutPartners } from "@/components/section/about/about_partners";
+import { LifeAtTphlStories } from "@/components/section/life_at_tphl/life_at_tphl_stories";
+import { ResidentReviews } from "@/components/section/home/resident_reviews";
+import { AboutCareerCta } from "@/components/section/about/about_career_cta";
 
 export const metadata: Metadata = {
   title: "About Us | The Story Of A Dream | Premium Homes",
@@ -27,15 +32,29 @@ export default function AboutPage() {
         {/* Built On Trust, Proven By Delivery (Second Section) */}
         <AboutProvenTrust />
 
-        
-
         {/* Designed for families. Scaled for tomorrow. (Third Section - Stacked Slider) */}
         <AboutFamilySlider />
 
-        {/* Additional sections can be added here */}
-        <AboutPrinciplesDna/>
+        {/* Milestones / Foundation Section */}
+        <AboutMilestones />
 
-        <AboutBuildingJourney/>
+        {/* Founder Trust Image Section */}
+        <AboutFounderTrust />
+
+        {/* Additional sections can be added here */}
+        <AboutPrinciplesDna />
+
+        <AboutBuildingJourney />
+
+        <LifeAtTphlStories />
+
+        {/* Our Partners / Suppliers Section */}
+        <AboutPartners />
+
+        <ResidentReviews />
+
+        {/* Career Journey CTA (Last Section) */}
+        <AboutCareerCta />
       </main>
 
       {/* Global Footer */}

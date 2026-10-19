@@ -330,10 +330,10 @@ export async function fetchProjectNotices(
     return noticesList.map((item: any, idx: number) => {
       const createdDate = item.created_at
         ? new Date(item.created_at).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
         : "Recent";
 
       return {

@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 // Top floating community cards configuration matching the 1600x1080 Figma design
 interface FloatingCard {
@@ -245,7 +246,7 @@ export function CommunityGallery() {
 
       {/* 3. Interactive Amenities Accordion with Giant Watermark Typography (1464px Figma Frame) */}
       <div className="w-full max-w-[1464px] mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-24">
-        <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6">
+        <div className="flex flex-col gap-3 sm:gap-4 md:gap-5">
           {AMENITIES.map((amenity) => {
             const isActive = activeAmenityId === amenity.id;
 
@@ -253,63 +254,61 @@ export function CommunityGallery() {
               <div
                 key={amenity.id}
                 onClick={() => setActiveAmenityId(amenity.id)}
-                className="flex flex-col md:flex-row items-start gap-4 md:gap-[40px] py-2 sm:py-3 lg:py-[10px] cursor-pointer group w-full"
+                className="flex flex-col md:flex-row items-start md:items-stretch gap-4 md:gap-[40px] py-2 sm:py-3 cursor-pointer group w-full"
               >
                 {/* Left: Image Container (Smooth height transition without layout shift) */}
                 <div
-                  className={`relative w-full md:w-[480px] lg:w-[540px] xl:w-[588px] shrink-0 overflow-hidden shadow-sm bg-neutral-100 transition-[height,opacity,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={cn(
+                    "relative w-full md:w-[480px] lg:w-[540px] xl:w-[588px] shrink-0 overflow-hidden shadow-sm bg-neutral-100 transition-[height,opacity,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
                     isActive
                       ? "h-[280px] sm:h-[400px] md:h-[480px] lg:h-[600px] opacity-100 shadow-md"
-                      : "h-[90px] sm:h-[110px] md:h-[125px] lg:h-[140px] opacity-80 group-hover:opacity-100"
-                  }`}
+                      : "h-[80px] sm:h-[95px] md:h-[110px] lg:h-[125px] opacity-80 group-hover:opacity-100"
+                  )}
                 >
                   <Image
                     src={amenity.src}
                     alt={amenity.alt}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 540px, 588px"
-                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                    priority={isActive}
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    priority
                   />
                 </div>
 
                 {/* Right: Title & Giant Watermark Typography */}
-                <div className="flex-1 flex flex-col justify-start relative w-full h-full min-h-[90px] sm:min-h-[110px] md:min-h-[125px] lg:min-h-[140px]">
+                <div className="flex-1 flex flex-col justify-between self-stretch relative w-full overflow-hidden min-h-[80px] sm:min-h-[95px] md:min-h-[110px] lg:min-h-[125px]">
                   {/* Category Title - Vertically aligned with collapsed image strip */}
-                  <div className="h-[90px] sm:h-[110px] md:h-[125px] lg:h-[140px] flex items-center">
+                  <div className="h-[80px] sm:h-[95px] md:h-[110px] lg:h-[125px] flex items-center">
                     <h3
                       style={{ fontFamily: "var(--font-victor), 'K Victor Trial', serif" }}
-                      className={`font-normal text-2xl sm:text-3xl lg:text-[36px] leading-tight transition-colors duration-300 ${
+                      className={cn(
+                        "font-normal text-2xl sm:text-3xl lg:text-[36px] leading-tight transition-colors duration-300",
                         isActive ? "text-[#05483C]" : "text-[#05483C]/70 group-hover:text-[#05483C]"
-                      }`}
+                      )}
                     >
                       {amenity.title}
                     </h3>
                   </div>
 
-                  {/* Giant Watermark Typography - Absolute positioning prevents DOM layout shifts and next-section flipping */}
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        key={`watermark-${amenity.id}`}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 0.2, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.35, ease: "easeOut" }}
-                        className="absolute left-0 top-[120px] sm:top-[150px] lg:top-[187px] bottom-0 pointer-events-none select-none overflow-hidden"
-                      >
-                        <span
-                          style={{
-                            fontFamily: "var(--font-victor), 'K Victor Trial', serif",
-                            color: "#546360",
-                          }}
-                          className="block font-normal text-[80px] sm:text-[140px] md:text-[220px] lg:text-[320px] xl:text-[400px] leading-none tracking-tight capitalize select-none"
-                        >
-                          {amenity.watermark}
-                        </span>
-                      </motion.div>
+                  {/* Giant Watermark Typography - Stretches at bottom of active row matching Figma */}
+                  <div
+                    className={cn(
+                      "w-full select-none pointer-events-none mt-auto flex items-end overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                      isActive
+                        ? "opacity-20 translate-y-0 max-h-[420px]"
+                        : "opacity-0 translate-y-6 max-h-0 pointer-events-none"
                     )}
-                  </AnimatePresence>
+                  >
+                    <span
+                      style={{
+                        fontFamily: "var(--font-victor), 'K Victor Trial', serif",
+                        color: "#546360",
+                      }}
+                      className="block font-normal text-[80px] sm:text-[140px] md:text-[200px] lg:text-[280px] xl:text-[340px] 2xl:text-[400px] leading-[0.88] tracking-tight select-none"
+                    >
+                      {amenity.watermark}
+                    </span>
+                  </div>
                 </div>
               </div>
             );

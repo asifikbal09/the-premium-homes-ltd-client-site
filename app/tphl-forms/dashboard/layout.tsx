@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { FormUserProtectedRoute } from "@/components/forms/FormUserProtectedRoute";
+import { FormPortalShell } from "@/components/forms/layout/FormPortalShell";
 
 export const metadata: Metadata = {
   title: "TPHL Forms Dashboard | The Premium Homes Ltd.",
@@ -12,5 +13,9 @@ export default function TphlFormsDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <FormUserProtectedRoute>{children}</FormUserProtectedRoute>;
+  return (
+    <FormUserProtectedRoute>
+      <FormPortalShell>{children}</FormPortalShell>
+    </FormUserProtectedRoute>
+  );
 }

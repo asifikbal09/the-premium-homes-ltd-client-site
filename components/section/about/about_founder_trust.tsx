@@ -5,59 +5,81 @@ export function AboutFounderTrust() {
   return (
     <section
       aria-label="Founder-Led Trust"
-      className="relative w-full overflow-hidden bg-[#0d0d0d] text-white py-12 sm:py-16 md:py-20 lg:py-28"
+      className="relative w-full overflow-hidden bg-[#0d0d0d] text-white"
     >
-      {/* Background Image Container */}
-      <div className="absolute inset-0 z-0">
+      {/* 1. Only the outer side edges get the ambient blur backdrop (NO blur on face) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <Image
-          src="/image/about/DolonSir_section.png"
-          alt="Mainul Hasan Dulon - Managing Director & CEO"
+          src="/image/about/DolonSir.png"
+          alt=""
           fill
           priority
-          sizes="100vw"
-          className="object-cover object-[right_top] md:object-right lg:object-[center_top] xl:object-center"
+          className="object-cover blur-3xl scale-125 opacity-75"
         />
-
-        {/* Soft dark vignette on the left to ensure 100% crisp readability of white typography while retaining room ambiance */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent md:w-[65%]" />
-        <div className="absolute inset-0 bg-black/35 md:hidden" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      {/* Content Container */}
-      <div className="relative z-10 max-w-[1440px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
-        <div className="flex flex-col items-start text-left max-w-[656px]">
-          {/* Main Title: 120px font in Figma, 500 Medium, 100% line height */}
-          <h2
-            className="font-heading font-medium text-white tracking-normal leading-[1.0] text-4xl sm:text-6xl md:text-7xl lg:text-[96px] xl:text-[120px] max-w-[656px] mb-6 sm:mb-8 md:mb-12 lg:mb-14"
-            style={{ fontWeight: 500 }}
+      {/* 2. Main 1600 x 1189 Frame Container adhering strictly to Figma box model */}
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto aspect-[1600/1189] overflow-hidden flex items-center">
+        {/* Exact Crisp Unblurred Image Box */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div
+            className="absolute"
+            style={{
+              top: "-19%",
+              left: "-8.375%",
+              width: "134.75%",
+              height: "123.05%",
+            }}
           >
-            Founder-Led
-            <br />
-            Trust
-          </h2>
+            <Image
+              src="/image/about/DolonSir.png"
+              alt="Mainul Hasan Dulon - Managing Director & CEO"
+              fill
+              priority
+              sizes="(max-width: 1600px) 135vw, 2156px"
+              className="object-cover"
+            />
+          </div>
+        </div>
 
-          {/* Quote Paragraph: 48px font in Figma, 500 Medium, 120% line height */}
-          <p
-            className="font-heading font-medium text-white tracking-normal leading-[1.2] text-lg sm:text-2xl md:text-3xl lg:text-[40px] xl:text-[48px] max-w-[656px] mb-6 sm:mb-8 md:mb-10 lg:mb-12"
-            style={{ fontWeight: 500 }}
-          >
-            At The Heart Of TPHL Is A Simple Commitment: Build Trust First, Then
-            Build Everything Else Around It. When People Believe In The Process,
-            They Believe In The Home.”
-          </p>
+        {/* Subtle dark gradient strictly on text area (NO blur on image/face) */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/60 via-black/20 to-transparent w-full max-w-[500px] pointer-events-none" />
 
-          {/* Subtle Horizontal Divider */}
-          <div className="w-full max-w-[280px] sm:max-w-[320px] h-[1px] bg-white/40 mb-4 sm:mb-5 md:mb-6" />
+        {/* Text Content Overlay adhering strictly to Figma Typography */}
+        <div className="relative z-10 w-full px-6 sm:px-10 md:px-14 lg:px-20 py-8 sm:py-12">
+          <div className="flex flex-col items-start text-left max-w-[660px]">
+            {/* 1. Title: K Victor Trial, 120px, 500, 100% Line Height */}
+            <h2
+              className="font-heading text-white font-medium capitalize text-3xl sm:text-5xl md:text-7xl lg:text-[90px] xl:text-[110px] 2xl:text-[120px] leading-[1.0] tracking-normal mb-5 sm:mb-7 md:mb-9 lg:mb-11"
+              style={{ fontWeight: 500 }}
+            >
+              Founder-Led
+              <br />
+              Trust
+            </h2>
 
-          {/* Founder Signature: Seaweed Script */}
-          <span className="font-signature font-[family-name:var(--font-seaweed-script)] text-white text-2xl sm:text-3xl md:text-4xl lg:text-[42px] leading-tight select-none mb-1 sm:mb-1.5">
-            Mainul Hasan Dulon
-          </span>
+            {/* 2. Quote: K Victor Trial, 48px, 500, 120% Line Height */}
+            <p
+              className="font-heading text-white font-medium capitalize text-base sm:text-xl md:text-2xl lg:text-[36px] xl:text-[44px] 2xl:text-[48px] leading-[1.2] tracking-normal mb-6 sm:mb-8 md:mb-10 lg:mb-12"
+              style={{ fontWeight: 500 }}
+            >
+              At the heart of TPHL is a simple commitment: build trust first, then build everything else around <br /> it. When people <br /> believe in the <br /> process, they <br /> believe in <br /> the home.”
+            </p>
 
-          {/* Founder Designation: Vazirmatn / Sans-serif */}
-          <span className="font-sans font-normal text-white/90 text-xs sm:text-sm md:text-base tracking-wide">
-            Managing Director &amp; CEO
-          </span>
+            {/* 3. Divider Line */}
+            <div className="w-full max-w-[280px] sm:max-w-[320px] h-[1px] bg-white/40 mb-3 sm:mb-4 md:mb-5" />
+
+            {/* 4. Signature: Seaweed Script, 40px, 400, 120% Line Height */}
+            <span className="font-signature font-[family-name:var(--font-seaweed-script)] text-white text-2xl sm:text-3xl md:text-[36px] lg:text-[40px] leading-[1.2] select-none mb-1">
+              Mainul Hasan Dulon
+            </span>
+
+            {/* 5. Designation: Vazirmatn, 20px, 400, 160% Line Height */}
+            <span className="font-sans font-normal text-white text-xs sm:text-sm md:text-base lg:text-[20px] leading-[1.6]">
+              Managing Director &amp; CEO
+            </span>
+          </div>
         </div>
       </div>
     </section>

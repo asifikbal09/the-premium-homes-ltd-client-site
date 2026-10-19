@@ -56,35 +56,6 @@ interface ProjectShowcase {
   href: string;
 }
 
-const SHOWCASE_PROJECTS: ProjectShowcase[] = [
-  {
-    id: "lumina",
-    category: "COMMERCIAL",
-    title: "The Premium Lumina",
-    location: "10/23 Bashundhara Residential Area",
-    description:
-      "Your fairytale honeymoon awaits at our luxurious hotel. Book now for an unforgettable experience.",
-    cardImage: "/image/lumina.png",
-    bgImage: "/image/studio6.png",
-    cardAlt: "The Premium Lumina luxury commercial estate architectural view",
-    bgAlt: "Architectural facade backdrop",
-    href: "/projects",
-  },
-  {
-    id: "studio6",
-    category: "RESIDENTIAL",
-    title: "The Premium Studio Suite 6.0",
-    location: "Sector 11, Uttara, Dhaka",
-    description:
-      "A masterpiece of contemporary architecture featuring luxury suites with panoramic city vistas and private balconies.",
-    cardImage: "/image/studio6.png",
-    bgImage: "/image/lumina.png",
-    cardAlt: "The Premium Studio Suite 6.0 modern residential tower",
-    bgAlt: "Architectural facade backdrop",
-    href: "/projects",
-  },
-];
-
 interface AuthPageContentProps {
   initialMode?: "login" | "register";
 }
@@ -132,6 +103,10 @@ export default function AuthPageContent({
     window.history.pushState(null, "", newMode === "register" ? "/register" : "/login");
   };
 
+  // Dynamic Showcase Projects State (no hardcoded fallback)
+  const [showcaseProjects, setShowcaseProjects] = useState<ProjectShowcase[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+
   // Common UI states
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -139,6 +114,96 @@ export default function AuthPageContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState<string | null>(null);
+
+  const getBaseUrl = () => {
+    return (
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.API_BASE_URL ||
+      "https://api.dpremiumhomes.com/api"
+    ).replace(/\/+$/, "");
+  };
+
+  // Load real projects from API for the right side showcase
+  useEffect(() => {
+    let isMounted = true;
+    const loadProjects = async () => {
+      try {
+        setIsLoadingProjects(true);
+        const baseUrl = getBaseUrl();
+        const res = await fetch(`${baseUrl}/projects`);
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data)
+            ? data
+            : data?.projects || data?.data || [];
+          if (Array.isArray(list) && list.length > 0 && isMounted) {
+            const mapped: ProjectShowcase[] = list.slice(4, 7).map((p: any) => {
+              let img = p.image || "";
+              if (img && !img.startsWith("http")) {
+                img = `https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/${img.replace(
+                  /^\/+/,
+                  ""
+                )}`;
+              }
+
+              let bgImg = p.image2 || p.image || "";
+              if (bgImg && !bgImg.startsWith("http")) {
+                bgImg = `https://thepremiumhomesltd.com/TPHL-ERP/public/uploads/projects/${bgImg.replace(
+                  /^\/+/,
+                  ""
+                )}`;
+              }
+              if (!bgImg) bgImg = img;
+
+              const location =
+                p.location ||
+                (typeof p.community === "object"
+                  ? p.community?.name
+                  : p.community) ||
+                "Dhaka, Bangladesh";
+              const category = (
+                p.types ||
+                p.type ||
+                p.category ||
+                "RESIDENTIAL"
+              ).toUpperCase();
+              const desc =
+                p.hover_text ||
+                p.description ||
+                `${location} — an exquisite address designed for modern luxury living.`;
+
+              return {
+                id: String(p.id || p.slug),
+                category,
+                title: p.name || "Prestige Residence",
+                location:
+                  typeof location === "string"
+                    ? location
+                    : "Dhaka, Bangladesh",
+                description: typeof desc === "string" ? desc : "",
+                cardImage: img,
+                bgImage: bgImg,
+                cardAlt: p.name || "Project View",
+                bgAlt: p.name || "Architectural Backdrop",
+                href: `/projects/${p.slug || p.id}`,
+              };
+            });
+            setShowcaseProjects(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load showcase projects:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingProjects(false);
+        }
+      }
+    };
+    loadProjects();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // OTP Modal states
   const [otpModalOpen, setOtpModalOpen] = useState(false);
@@ -172,7 +237,10 @@ export default function AuthPageContent({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const currentProject = SHOWCASE_PROJECTS[activeSlide];
+  const currentProject: ProjectShowcase | null =
+    showcaseProjects.length > 0
+      ? showcaseProjects[activeSlide] || showcaseProjects[0]
+      : null;
 
   // Forms setup
   const {
@@ -206,21 +274,14 @@ export default function AuthPageContent({
 
   const handlePrevSlide = () => {
     setActiveSlide((prev) =>
-      prev === 0 ? SHOWCASE_PROJECTS.length - 1 : prev - 1,
+      prev === 0 ? showcaseProjects.length - 1 : prev - 1
     );
   };
 
   const handleNextSlide = () => {
     setActiveSlide((prev) =>
-      prev === SHOWCASE_PROJECTS.length - 1 ? 0 : prev + 1,
+      prev === showcaseProjects.length - 1 ? 0 : prev + 1
     );
-  };
-
-  const getBaseUrl = () => {
-    return (
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "https://api.dpremiumhomes.com/api"
-    ).replace(/\/+$/, "");
   };
 
   // ==========================================
@@ -596,7 +657,7 @@ export default function AuthPageContent({
                   role="alert"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-                  <div className="flex-1 font-medium">{apiError}</div>
+                  <div className="flex-1 font-normal">{apiError}</div>
                 </motion.div>
               )}
 
@@ -610,7 +671,7 @@ export default function AuthPageContent({
                   role="status"
                 >
                   <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#044133]" />
-                  <div className="flex-1 font-medium">{apiSuccess}</div>
+                  <div className="flex-1 font-normal">{apiSuccess}</div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -648,7 +709,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="login-email"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Email Address
                       </label>
@@ -677,7 +738,7 @@ export default function AuthPageContent({
                         <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                       {loginErrors.email && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {loginErrors.email.message}
                         </p>
                       )}
@@ -687,7 +748,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="login-password"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Password
                       </label>
@@ -730,7 +791,7 @@ export default function AuthPageContent({
                         </button>
                       </div>
                       {loginErrors.password && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {loginErrors.password.message}
                         </p>
                       )}
@@ -755,7 +816,7 @@ export default function AuthPageContent({
 
                       <Link
                         href="/contact"
-                        className="text-xs sm:text-sm font-semibold text-[#044133] hover:underline transition-colors"
+                        className="text-xs sm:text-sm font-normal text-[#044133] hover:underline transition-colors"
                       >
                         Forgot password?
                       </Link>
@@ -766,7 +827,7 @@ export default function AuthPageContent({
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-semibold uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-normal uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
                       >
                         {isSubmitting ? (
                           <>
@@ -786,7 +847,7 @@ export default function AuthPageContent({
                         <button
                           type="button"
                           onClick={() => switchMode("register")}
-                          className="font-semibold text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                          className="font-normal text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
                         >
                           Register now.
                         </button>
@@ -825,7 +886,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="register-name"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Full Name
                       </label>
@@ -853,7 +914,7 @@ export default function AuthPageContent({
                         <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                       {registerErrors.name && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {registerErrors.name.message}
                         </p>
                       )}
@@ -863,7 +924,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="register-email"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Email Address
                       </label>
@@ -892,7 +953,7 @@ export default function AuthPageContent({
                         <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                       {registerErrors.email && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {registerErrors.email.message}
                         </p>
                       )}
@@ -902,7 +963,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="register-phone"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Phone Number
                       </label>
@@ -930,7 +991,7 @@ export default function AuthPageContent({
                         <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                       {registerErrors.phone && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {registerErrors.phone.message}
                         </p>
                       )}
@@ -940,7 +1001,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="register-password"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Password
                       </label>
@@ -983,7 +1044,7 @@ export default function AuthPageContent({
                         </button>
                       </div>
                       {registerErrors.password && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {registerErrors.password.message}
                         </p>
                       )}
@@ -993,7 +1054,7 @@ export default function AuthPageContent({
                     <div>
                       <label
                         htmlFor="register-purposes"
-                        className="block text-xs sm:text-sm font-medium text-stone-700 mb-1"
+                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
                       >
                         Primary Purpose
                       </label>
@@ -1028,7 +1089,7 @@ export default function AuthPageContent({
                         </div>
                       </div>
                       {registerErrors.purposes && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">
+                        <p className="mt-1 text-xs text-red-600 font-normal">
                           {registerErrors.purposes.message}
                         </p>
                       )}
@@ -1039,7 +1100,7 @@ export default function AuthPageContent({
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-semibold uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-normal uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
                       >
                         {isSubmitting ? (
                           <>
@@ -1059,7 +1120,7 @@ export default function AuthPageContent({
                         <button
                           type="button"
                           onClick={() => switchMode("login")}
-                          className="font-semibold text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                          className="font-normal text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
                         >
                           Log in.
                         </button>
@@ -1085,141 +1146,191 @@ export default function AuthPageContent({
           }}
           className="hidden lg:block lg:w-1/2 relative min-h-screen overflow-hidden bg-stone-900 select-none z-20 shadow-2xl"
         >
-          {/* Dynamic Background Image with Smooth Fade */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentProject.bgImage}
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full"
-            >
-              <Image
-                src={currentProject.bgImage}
-                alt={currentProject.bgAlt}
-                fill
-                priority
-                sizes="50vw"
-                className="object-cover object-center"
-              />
-              {/* Subtle vignette gradient for luxury feel */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/30 pointer-events-none" />
-            </motion.div>
-          </AnimatePresence>
+          {isLoadingProjects || !currentProject ? (
+            /* Skeleton Loading State (No mock/fallback data) */
+            <div className="absolute inset-0 w-full h-full">
+              {/* Shimmering backdrop skeleton */}
+              <div className="absolute inset-0 w-full h-full bg-stone-900 animate-pulse" />
 
-          {/* Floating Showcase Project Card */}
-          <div
-            className={cn(
-              "absolute bottom-8 xl:bottom-10 z-30 w-[340px] xl:w-[370px] transition-all duration-500",
-              // When on left (Register mode), dock neatly on left/right
-              isRegister
-                ? "left-8 xl:left-10"
-                : "right-8 xl:right-10",
-            )}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-5 xl:p-6 shadow-2xl border border-white/60 text-[#1f2723]"
-            >
-              {/* Category */}
-              <div className="text-center">
-                <span className="text-[10px] xl:text-[11px] font-bold tracking-[0.2em] uppercase text-[#055b4b]">
-                  {currentProject.category}
-                </span>
-              </div>
+              {/* Floating Skeleton Card */}
+              <div
+                className={cn(
+                  "absolute bottom-8 xl:bottom-10 z-30 w-[340px] xl:w-[370px]",
+                  isRegister ? "left-8 xl:left-10" : "right-8 xl:right-10",
+                )}
+              >
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl p-5 xl:p-6 shadow-2xl border border-white/60 animate-pulse">
+                  {/* Category skeleton */}
+                  <div className="h-3 w-24 bg-stone-200 rounded-full mx-auto" />
 
-              {/* Title */}
-              <h3 className="font-[family-name:var(--font-heading)] font-serif text-xl xl:text-2xl font-medium text-stone-900 text-center mt-1 leading-snug">
-                {currentProject.title}
-              </h3>
+                  {/* Title skeleton */}
+                  <div className="h-6 w-48 bg-stone-200 rounded-md mx-auto mt-2.5" />
 
-              {/* Location */}
-              <p className="text-[11px] xl:text-xs text-stone-500 text-center mt-0.5">
-                {currentProject.location}
-              </p>
+                  {/* Location skeleton */}
+                  <div className="h-3 w-36 bg-stone-200 rounded-md mx-auto mt-2" />
 
-              {/* Thumbnail Image Container */}
-              <div className="relative w-full h-[155px] xl:h-[170px] rounded-xl overflow-hidden mt-3.5 shadow-sm bg-stone-100">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentProject.cardImage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={currentProject.cardImage}
-                      alt={currentProject.cardAlt}
-                      fill
-                      sizes="350px"
-                      className="object-cover object-center"
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                  {/* Thumbnail Image Skeleton */}
+                  <div className="w-full h-[155px] xl:h-[170px] rounded-xl bg-stone-200 mt-3.5" />
 
-              {/* Navigation Slider Bar: < 1 —— 2 > */}
-              <div className="flex items-center justify-between mt-3 px-1">
-                <button
-                  type="button"
-                  onClick={handlePrevSlide}
-                  aria-label="Previous project"
-                  className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-
-                <div className="flex items-center gap-2 flex-1 px-3">
-                  <span className="text-[11px] font-semibold text-stone-700 w-2 text-center">
-                    1
-                  </span>
-
-                  {/* Progress Bar Indicator */}
-                  <div className="relative flex-1 h-[2px] bg-stone-200 rounded-full overflow-hidden">
-                    <div
-                      className={cn(
-                        "h-full bg-[#044133] transition-all duration-300 rounded-full",
-                        activeSlide === 0 ? "w-1/2" : "w-full",
-                      )}
-                    />
+                  {/* Slider bar indicator skeleton */}
+                  <div className="flex items-center justify-between mt-3 px-1">
+                    <div className="w-4 h-4 rounded-full bg-stone-200" />
+                    <div className="flex-1 mx-3 h-1.5 rounded-full bg-stone-200" />
+                    <div className="w-4 h-4 rounded-full bg-stone-200" />
                   </div>
 
-                  <span className="text-[11px] font-semibold text-stone-700 w-2 text-center">
-                    {SHOWCASE_PROJECTS.length}
-                  </span>
+                  {/* Description skeleton */}
+                  <div className="space-y-1.5 mt-3 px-1">
+                    <div className="h-2.5 w-full bg-stone-200 rounded" />
+                    <div className="h-2.5 w-4/5 bg-stone-200 rounded mx-auto" />
+                  </div>
+
+                  {/* CTA button skeleton */}
+                  <div className="mt-3.5 h-10 w-full rounded-full bg-stone-200" />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleNextSlide}
-                  aria-label="Next project"
-                  className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
               </div>
-
-              {/* Project Short Description */}
-              <p className="text-[11px] xl:text-xs text-stone-600 text-center leading-relaxed mt-2.5 px-1 line-clamp-2">
-                {currentProject.description}
-              </p>
-
-              {/* VIEW PROJECT CTA Button */}
-              <div className="mt-3.5">
-                <Link
-                  href={currentProject.href}
-                  className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-full bg-[#ede6d9] hover:bg-[#e2d8c7] active:scale-[0.99] text-[#1f2723] text-[11px] font-semibold tracking-[0.14em] uppercase transition-all duration-200 shadow-sm"
+            </div>
+          ) : (
+            <>
+              {/* Dynamic Background Image with Smooth Fade (NO dark vignette overlay, 100% clear and bright) */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentProject.bgImage}
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full"
                 >
-                  VIEW PROJECT
-                </Link>
+                  {currentProject.bgImage ? (
+                    <Image
+                      src={currentProject.bgImage}
+                      alt={currentProject.bgAlt}
+                      fill
+                      priority
+                      sizes="50vw"
+                      className="object-cover object-center"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-stone-900" />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Floating Showcase Project Card */}
+              <div
+                className={cn(
+                  "absolute bottom-8 xl:bottom-10 z-30 w-[340px] xl:w-[370px] transition-all duration-500",
+                  // When on left (Register mode), dock neatly on left/right
+                  isRegister ? "left-8 xl:left-10" : "right-8 xl:right-10",
+                )}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="bg-white/95 backdrop-blur-md rounded-2xl p-5 xl:p-6 shadow-2xl border border-white/60 text-[#1f2723]"
+                >
+                  {/* Category */}
+                  <div className="text-center">
+                    <span className="text-[10px] xl:text-[11px] font-normal tracking-[0.2em] uppercase text-[#055b4b]">
+                      {currentProject.category}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-[family-name:var(--font-heading)] font-serif text-xl xl:text-2xl font-normal text-stone-900 text-center mt-1 leading-snug">
+                    {currentProject.title}
+                  </h3>
+
+                  {/* Location */}
+                  <p className="text-[11px] xl:text-xs text-stone-500 text-center mt-0.5">
+                    {currentProject.location}
+                  </p>
+
+                  {/* Thumbnail Image Container */}
+                  <div className="relative w-full h-[155px] xl:h-[170px] rounded-xl overflow-hidden mt-3.5 shadow-sm bg-stone-100">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentProject.cardImage}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="relative w-full h-full"
+                      >
+                        {currentProject.cardImage ? (
+                          <Image
+                            src={currentProject.cardImage}
+                            alt={currentProject.cardAlt}
+                            fill
+                            sizes="350px"
+                            className="object-cover object-center"
+                          />
+                        ) : null}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Navigation Slider Bar: < 1 —— N > */}
+                  <div className="flex items-center justify-between mt-3 px-1">
+                    <button
+                      type="button"
+                      onClick={handlePrevSlide}
+                      aria-label="Previous project"
+                      className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+
+                    <div className="flex items-center gap-2 flex-1 px-3">
+                      <span className="text-[11px] font-normal text-stone-700 min-w-[14px] text-center">
+                        {activeSlide + 1}
+                      </span>
+
+                      {/* Progress Bar Indicator */}
+                      <div className="relative flex-1 h-[2px] bg-stone-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#044133] transition-all duration-300 rounded-full"
+                          style={{
+                            width: `${Math.round(((activeSlide + 1) / Math.max(showcaseProjects.length, 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+
+                      <span className="text-[11px] font-normal text-stone-700 min-w-[14px] text-center">
+                        {showcaseProjects.length}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleNextSlide}
+                      aria-label="Next project"
+                      className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Project Short Description */}
+                  <p className="text-[11px] xl:text-xs text-stone-600 text-center leading-relaxed mt-2.5 px-1 line-clamp-2">
+                    {currentProject.description}
+                  </p>
+
+                  {/* VIEW PROJECT CTA Button */}
+                  <div className="mt-3.5">
+                    <Link
+                      href={currentProject.href}
+                      className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-full bg-[#ede6d9] hover:bg-[#e2d8c7] active:scale-[0.99] text-[#1f2723] text-[11px] font-normal tracking-[0.14em] uppercase transition-all duration-200 shadow-sm"
+                    >
+                      VIEW PROJECT
+                    </Link>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
+            </>
+          )}
         </motion.div>
       </div>
 
@@ -1277,7 +1388,7 @@ export default function AuthPageContent({
                 <p className="text-xs sm:text-sm text-stone-500 mt-2 max-w-xs leading-relaxed">
                   We have sent a 6-digit verification code to
                 </p>
-                <span className="inline-block mt-1 px-3 py-1 bg-stone-100 text-[#044133] font-medium text-xs sm:text-sm rounded-full max-w-full truncate border border-stone-200">
+                <span className="inline-block mt-1 px-3 py-1 bg-stone-100 text-[#044133] font-normal text-xs sm:text-sm rounded-full max-w-full truncate border border-stone-200">
                   {registeredEmail}
                 </span>
               </div>
@@ -1290,7 +1401,7 @@ export default function AuthPageContent({
                   className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-                  <span className="font-medium flex-1">{otpError}</span>
+                  <span className="font-normal flex-1">{otpError}</span>
                 </motion.div>
               )}
 
@@ -1301,7 +1412,7 @@ export default function AuthPageContent({
                   className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[#044133] text-xs sm:text-sm flex items-start gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#044133]" />
-                  <span className="font-medium flex-1">{otpSuccess}</span>
+                  <span className="font-normal flex-1">{otpSuccess}</span>
                 </motion.div>
               )}
 
@@ -1325,7 +1436,7 @@ export default function AuthPageContent({
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       disabled={isVerifyingOtp}
                       className={cn(
-                        "w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl border bg-stone-50/60 text-stone-900 transition-all outline-none",
+                        "w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-normal rounded-xl border bg-stone-50/60 text-stone-900 transition-all outline-none",
                         digit
                           ? "border-[#044133] bg-white ring-2 ring-[#044133]/10 shadow-sm"
                           : "border-stone-200 focus:border-[#044133] focus:bg-white focus:ring-2 focus:ring-[#044133]/15",
@@ -1341,7 +1452,7 @@ export default function AuthPageContent({
                   type="button"
                   onClick={handleVerifyOtp}
                   disabled={isVerifyingOtp || otpDigits.join("").length !== 6}
-                  className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-semibold uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-normal uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isVerifyingOtp ? (
                     <>
@@ -1359,7 +1470,7 @@ export default function AuthPageContent({
                 {timeLeft > 0 ? (
                   <p className="text-xs sm:text-sm text-stone-500 font-normal flex items-center justify-center gap-1.5">
                     <span>Resend code in</span>
-                    <span className="font-semibold text-[#044133] font-mono tracking-wider bg-stone-100 px-2 py-0.5 rounded-md">
+                    <span className="font-normal text-[#044133] font-mono tracking-wider bg-stone-100 px-2 py-0.5 rounded-md">
                       {formatTimer(timeLeft)}
                     </span>
                   </p>
@@ -1372,7 +1483,7 @@ export default function AuthPageContent({
                       type="button"
                       onClick={handleResendOtp}
                       disabled={isResendingOtp}
-                      className="font-semibold text-xs sm:text-sm text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                      className="font-normal text-xs sm:text-sm text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
                       {isResendingOtp ? (
                         <>
