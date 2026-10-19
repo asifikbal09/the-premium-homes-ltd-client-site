@@ -1,11 +1,52 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function AboutProvenTrust() {
+  const [stats, setStats] = useState({
+    happy_clients: "1200+",
+    average_rating: "4.9/5",
+    satisfaction_rate: "98%",
+    ongoing_projects: "52+",
+  });
+
+  useEffect(() => {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.API_BASE_URL ||
+      "https://api.dpremiumhomes.com/api";
+    const cleanBase = baseUrl.replace(/\/+$/, "");
+
+    fetch(`${cleanBase}/about-settings`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load settings");
+        return res.json();
+      })
+      .then((data) => {
+        const settings = data?.settings || data?.data || data;
+        if (settings) {
+          setStats({
+            happy_clients:
+              settings.stats_clients || settings.happy_clients || "1200+",
+            average_rating:
+              settings.stats_rating || settings.average_rating || "4.9/5",
+            satisfaction_rate:
+              settings.stats_satisfaction ||
+              settings.satisfaction_rate ||
+              "98%",
+            ongoing_projects:
+              settings.stats_projects || settings.ongoing_projects || "52+",
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn("AboutProvenTrust: using fallback stats", err);
+      });
+  }, []);
+
   return (
     <section
       aria-label="Built On Trust, Proven By Delivery"
@@ -107,7 +148,7 @@ export function AboutProvenTrust() {
                 </Link>
               </motion.div>
 
-              {/* Bottom Stat 1: 52+ Ongoing Projects */}
+              {/* Bottom Stat 1: Ongoing Projects */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -116,7 +157,7 @@ export function AboutProvenTrust() {
                 className="mt-14"
               >
                 <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  52+
+                  {stats.ongoing_projects}
                 </span>
                 <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
                   ONGOING PROJECTS
@@ -124,7 +165,7 @@ export function AboutProvenTrust() {
               </motion.div>
             </div>
 
-            {/* Middle Column: Bottom Stat 2: 98% Satisfaction Rate */}
+            {/* Middle Column: Bottom Stat 2: Satisfaction Rate */}
             <div className="col-span-3 flex flex-col justify-end min-h-[380px]">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -133,7 +174,7 @@ export function AboutProvenTrust() {
                 transition={{ duration: 0.7, delay: 0.4 }}
               >
                 <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  98%
+                  {stats.satisfaction_rate}
                 </span>
                 <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
                   SATISFACTION RATE
@@ -141,9 +182,9 @@ export function AboutProvenTrust() {
               </motion.div>
             </div>
 
-            {/* Right Column: Upper Stats (1200+, 4.9/5) + Bottom-Right Team Lounge Image */}
+            {/* Right Column: Upper Stats (Happy Clients, Average Rating) + Bottom-Right Team Lounge Image */}
             <div className="col-span-4 flex flex-col gap-10">
-              {/* Stat 3: 1200+ Happy Clients */}
+              {/* Stat 3: Happy Clients */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -151,14 +192,14 @@ export function AboutProvenTrust() {
                 transition={{ duration: 0.7, delay: 0.3 }}
               >
                 <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  1200+
+                  {stats.happy_clients}
                 </span>
                 <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
                   HAPPY CLIENTS
                 </span>
               </motion.div>
 
-              {/* Stat 4: 4.9/5 Average Rating */}
+              {/* Stat 4: Average Rating */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -166,7 +207,7 @@ export function AboutProvenTrust() {
                 transition={{ duration: 0.7, delay: 0.35 }}
               >
                 <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  4.9/5
+                  {stats.average_rating}
                 </span>
                 <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
                   AVERAGE RATING
@@ -283,7 +324,7 @@ export function AboutProvenTrust() {
               transition={{ duration: 0.5 }}
             >
               <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                1200+
+                {stats.happy_clients}
               </span>
               <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
                 HAPPY CLIENTS
@@ -297,7 +338,7 @@ export function AboutProvenTrust() {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                4.9/5
+                {stats.average_rating}
               </span>
               <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
                 AVERAGE RATING
@@ -311,7 +352,7 @@ export function AboutProvenTrust() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                52+
+                {stats.ongoing_projects}
               </span>
               <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
                 ONGOING PROJECTS
@@ -325,7 +366,7 @@ export function AboutProvenTrust() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                98%
+                {stats.satisfaction_rate}
               </span>
               <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
                 SATISFACTION RATE

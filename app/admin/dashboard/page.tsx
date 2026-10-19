@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { AdminSidebar, AdminTab } from "@/components/admin/dashboard/AdminSidebar";
 import { DashboardOverviewTab } from "@/components/admin/dashboard/DashboardOverviewTab";
+import { AboutPageTab } from "@/components/admin/dashboard/AboutPageTab";
 import { BlogsTab } from "@/components/admin/dashboard/BlogsTab";
 import { SlidersTab } from "@/components/admin/dashboard/SlidersTab";
 import { VirtualToursTab } from "@/components/admin/dashboard/VirtualToursTab";
 import { ReviewsTab } from "@/components/admin/dashboard/ReviewsTab";
 import { LiveStreamsTab } from "@/components/admin/dashboard/LiveStreamsTab";
 import { NotificationsTab } from "@/components/admin/dashboard/NotificationsTab";
+import { ProjectNoticesTab } from "@/components/admin/dashboard/ProjectNoticesTab";
 import { AuctionsTab } from "@/components/admin/dashboard/AuctionsTab";
 import { FAQsTab } from "@/components/admin/dashboard/FAQsTab";
 import { InvestorLeadsTab } from "@/components/admin/dashboard/InvestorLeadsTab";
@@ -72,12 +74,14 @@ export default function AdminDashboardPage() {
         {/* Main Content View (100% Full Width) */}
         <main className="flex-1 p-6 md:p-8 w-full">
           {activeTab === "dashboard" && <DashboardOverviewTab />}
+          {activeTab === "about" && <AboutPageTab />}
           {activeTab === "blogs" && <BlogsTab />}
           {activeTab === "sliders" && <SlidersTab />}
           {activeTab === "virtual-tours" && <VirtualToursTab />}
           {activeTab === "reviews" && <ReviewsTab />}
           {activeTab === "live-streams" && <LiveStreamsTab />}
           {activeTab === "notifications" && <NotificationsTab />}
+          {activeTab === "project-notices" && <ProjectNoticesTab />}
           {activeTab === "auctions" && <AuctionsTab />}
           {activeTab === "faqs" && <FAQsTab />}
           {activeTab === "investor-leads" && <InvestorLeadsTab />}
@@ -85,30 +89,6 @@ export default function AdminDashboardPage() {
           {activeTab === "festival-leads" && <FestivalLeadsTab />}
           {activeTab === "contacts" && <ContactsTab />}
           {activeTab === "guest-users" && <GuestUsersTab />}
-
-          {activeTab !== "dashboard" &&
-            activeTab !== "blogs" &&
-            activeTab !== "sliders" &&
-            activeTab !== "virtual-tours" &&
-            activeTab !== "reviews" &&
-            activeTab !== "live-streams" &&
-            activeTab !== "notifications" &&
-            activeTab !== "auctions" &&
-            activeTab !== "faqs" &&
-            activeTab !== "investor-leads" &&
-            activeTab !== "brochure-leads" &&
-            activeTab !== "festival-leads" &&
-            activeTab !== "contacts" &&
-            activeTab !== "guest-users" && (
-              <div className="bg-white rounded-2xl p-8 border border-stone-200 text-center font-normal">
-                <h2 className="text-lg text-stone-800 font-normal capitalize mb-1">
-                  {activeTab.replace("-", " ")} Management
-                </h2>
-                <p className="text-xs text-stone-500 font-normal">
-                  This section is ready for custom content and tables.
-                </p>
-              </div>
-            )}
         </main>
       </div>
     </div>

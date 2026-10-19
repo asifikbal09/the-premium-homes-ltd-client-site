@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   LayoutDashboard,
-  Building2,
   FileText,
   ImageIcon,
   Eye,
@@ -17,33 +16,32 @@ import {
   Sparkles,
   UserCheck,
   Users,
-  Settings,
   LogOut,
   X,
   Bell,
+  Megaphone,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminUser } from "@/context/AdminAuthContext";
 
 export type AdminTab =
   | "dashboard"
+  | "about"
   | "blogs"
   | "sliders"
   | "virtual-tours"
   | "reviews"
   | "live-streams"
   | "notifications"
+  | "project-notices"
   | "auctions"
   | "faqs"
   | "investor-leads"
   | "brochure-leads"
   | "festival-leads"
   | "contacts"
-  | "guest-users"
-  | "projects"
-  | "submissions"
-  | "users"
-  | "settings";
+  | "guest-users";
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -56,11 +54,13 @@ interface AdminSidebarProps {
 
 const NAV_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "about", label: "About Page", icon: Info },
   { id: "blogs", label: "Blogs", icon: FileText },
   { id: "sliders", label: "Sliders", icon: ImageIcon },
   { id: "virtual-tours", label: "Virtual Tours", icon: Eye },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "project-notices", label: "Project Notices", icon: Megaphone },
   { id: "auctions", label: "Auctions", icon: Gavel },
   { id: "faqs", label: "FAQs", icon: HelpCircle },
   { id: "investor-leads", label: "Investor Leads", icon: Briefcase },
@@ -68,10 +68,6 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
   { id: "festival-leads", label: "Festival Leads", icon: Sparkles },
   { id: "contacts", label: "Contacts", icon: Users },
   { id: "guest-users", label: "Guest Users List", icon: UserCheck },
-  { id: "projects", label: "Projects", icon: Building2 },
-  { id: "submissions", label: "Form Submissions", icon: FileText },
-  { id: "users", label: "Users & Roles", icon: Users },
-  { id: "settings", label: "Settings", icon: Settings },
 ];
 
 export function AdminSidebar({
