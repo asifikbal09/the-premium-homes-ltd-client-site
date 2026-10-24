@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export function TermsHero() {
@@ -28,9 +29,16 @@ export function TermsHero() {
             className="max-w-4xl mx-auto px-2"
           >
             {/* Eyebrow Breadcrumb */}
-            <span className="inline-block text-[#d0a65b] font-medium text-xs sm:text-[13px] tracking-[0.24em] uppercase mb-4 sm:mb-5">
-              COMPANY POLICY / TERMS &amp; CONDITIONS
-            </span>
+            <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-[13px] tracking-[0.24em] uppercase mb-4 sm:mb-5 font-medium">
+              <Link
+                href="/company-policy"
+                className="text-[#d0a65b] hover:text-[#f3d99c] hover:underline underline-offset-4 transition-colors"
+              >
+                COMPANY POLICY
+              </Link>
+              <span className="text-[#d0a65b]/50">/</span>
+              <span className="text-[#d0a65b]">TERMS &amp; CONDITIONS</span>
+            </div>
 
             {/* Display Headline */}
             <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl lg:text-[76px] font-normal text-white leading-[1.08] sm:leading-[1.05] tracking-tight">
