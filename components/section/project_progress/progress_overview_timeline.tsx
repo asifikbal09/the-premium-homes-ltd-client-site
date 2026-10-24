@@ -11,48 +11,93 @@ export interface TimelineMilestone {
   date: string;
 }
 
-const DEFAULT_MILESTONES: TimelineMilestone[] = [
-  {
-    id: "1",
-    title: "Foundation",
-    status: "COMPLETED",
-    date: "Jan 2025",
-  },
-  {
-    id: "2",
-    title: "Structure",
-    status: "COMPLETED",
-    date: "Mar 2025",
-  },
-  {
-    id: "3",
-    title: "Brick & Plaster",
-    status: "IN PROGRESS",
-    date: "Jun 2026",
-  },
-  {
-    id: "4",
-    title: "Interior & Finishing",
-    status: "UPCOMING",
-    date: "Oct 2026",
-  },
-  {
-    id: "5",
-    title: "Handover",
-    status: "UPCOMING",
-    date: "Dec 2027",
-  },
-];
-
 interface ProgressOverviewTimelineProps {
   overviewText?: string;
   milestones?: TimelineMilestone[];
+  workCategoryProgress?: Record<string, string | undefined>;
+  constructionStart?: string;
+  expectedHandover?: string;
+}
+
+function parsePct(val?: string | number): number {
+  if (typeof val === "number") return val;
+  if (!val) return 0;
+  const num = parseFloat(String(val).replace(/%/g, "").trim());
+  return isNaN(num) ? 0 : num;
+}
+
+function getStatusFromPct(pct: number): "COMPLETED" | "IN PROGRESS" | "UPCOMING" {
+  if (pct >= 100) return "COMPLETED";
+  if (pct > 0) return "IN PROGRESS";
+  return "UPCOMING";
 }
 
 export function ProgressOverviewTimeline({
-  overviewText = "TPH Green Valley is designed to offer a perfect balance of modern architecture, green space and world class amenities. Every detail of this project is crafted to create a community where life feels better every day.",
-  milestones = DEFAULT_MILESTONES,
+  overviewText,
+  milestones,
+  workCategoryProgress,
+  constructionStart,
+  expectedHandover,
 }: ProgressOverviewTimelineProps) {
+  const dynamicMilestones: TimelineMilestone[] = React.useMemo(() => {
+    if (milestones && milestones.length > 0) return milestones;
+
+    if (workCategoryProgress) {
+      const struct = parsePct(workCategoryProgress.structural_work);
+      const brick = parsePct(workCategoryProgress.brick_work);
+      const plaster = parsePct(workCategoryProgress.plaster_work);
+      const elec = parsePct(workCategoryProgress.electrical_work);
+      const plumb = parsePct(workCategoryProgress.plumbing_work);
+      const tiles = parsePct(workCategoryProgress.tiles_work);
+      const paint = parsePct(workCategoryProgress.paint_work);
+
+      const brickPlaster = Math.max(brick, plaster);
+      const mep = Math.max(elec, plumb);
+
+      return [
+        {
+          id: "1",
+          title: "Structural Work",
+          status: getStatusFromPct(struct),
+          date: struct > 0 ? `${struct}% Achieved` : (constructionStart || "Phase 1"),
+        },
+        {
+          id: "2",
+          title: "Brick & Plaster",
+          status: getStatusFromPct(brickPlaster),
+          date: brickPlaster > 0 ? `${brickPlaster}% Achieved` : "Phase 2",
+        },
+        {
+          id: "3",
+          title: "MEP & Electrical",
+          status: getStatusFromPct(mep),
+          date: mep > 0 ? `${mep}% Achieved` : "Phase 3",
+        },
+        {
+          id: "4",
+          title: "Tiles & Interior",
+          status: getStatusFromPct(tiles),
+          date: tiles > 0 ? `${tiles}% Achieved` : "Phase 4",
+        },
+        {
+          id: "5",
+          title: "Paint & Finishing",
+          status: getStatusFromPct(paint),
+          date: paint > 0 ? `${paint}% Achieved` : "Phase 5",
+        },
+        {
+          id: "6",
+          title: "Handover",
+          status: paint >= 100 ? "IN PROGRESS" : "UPCOMING",
+          date: expectedHandover || "Scheduled",
+        },
+      ];
+    }
+
+    return [];
+  }, [milestones, workCategoryProgress, constructionStart, expectedHandover]);
+
+  if (dynamicMilestones.length === 0 && !overviewText) return null;
   return (
     <section
       aria-label="Project Overview and Timeline"
@@ -83,7 +128,7 @@ export function ProgressOverviewTimeline({
               />
 
               {/* Milestones */}
-              {milestones.map((milestone) => {
+              {dynamicMilestones.map((milestone) => {
                 const isCompleted = milestone.status === "COMPLETED";
                 const isInProgress = milestone.status === "IN PROGRESS";
                 const isUpcoming = milestone.status === "UPCOMING";

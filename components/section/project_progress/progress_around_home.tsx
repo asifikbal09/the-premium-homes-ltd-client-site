@@ -72,7 +72,15 @@ const CATEGORIES = [
 
 type CategoryId = (typeof CATEGORIES)[number]["id"];
 
-export function ProgressAroundHome() {
+interface ProgressAroundHomeProps {
+  location?: string;
+  projectName?: string;
+}
+
+export function ProgressAroundHome({
+  location,
+  projectName = "The Project",
+}: ProgressAroundHomeProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryId>("school");
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
 
@@ -85,10 +93,10 @@ export function ProgressAroundHome() {
         {/* Section Header */}
         <div className="mb-8 sm:mb-10">
           <span className="inline-block text-[#d0a65b] font-medium text-xs sm:text-[13px] tracking-[0.22em] uppercase mb-2 sm:mb-3">
-            NEARBY LOCATIONS
+            {location ? `NEARBY LOCATIONS — ${location.toUpperCase()}` : "NEARBY LOCATIONS"}
           </span>
           <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-normal text-[#083327] tracking-tight">
-            See What&apos;s Around The Home
+            See What&apos;s Around {projectName}
           </h2>
         </div>
 

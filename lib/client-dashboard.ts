@@ -144,27 +144,85 @@ export async function fetchUserPaymentInfo(
     }
 
     // Map savedProperties strictly for "My Flats"
-    const dynamicFlats: ClientFlat[] = rawSavedProperties.map((prop: any, idx: number) => ({
-      id: prop.id || `saved-flat-${idx}`,
-      project_id: prop.project_id || prop.projectId || prop.id,
-      title: prop.name || "The Premium Green Valley",
-      flatNo: prop.flatNo || "",
-      flatSize: prop.flatSize || "",
-      location: resolveFlatLocation(prop, prop.name || prop.title),
-      image: prop.image || "/image/progress/tph_green_valley.png",
-      status: "Under Construction",
-      construction_pct: 72,
-      handover_date: prop.estimatedDate ? `Dec ${prop.estimatedDate}` : "Dec 2027",
-      price: prop.price ? `৳ ${prop.price}` : formatTaka(parseAmount(prop.price)),
-      partial_payment: prop.partial_payment ? String(prop.partial_payment) : undefined,
-      due_payment: prop.due_payment ? String(prop.due_payment) : undefined,
-      discount: prop.discount ? String(prop.discount) : undefined,
-      slug: prop.slug || "the-premium-green-valley",
-      videoLink: prop.videoLink,
-      videoLink2: prop.videoLink2,
-      moneyReceiptLink: prop.moneyReceiptLink,
-      purchaseDetailsLink: prop.purchaseDetailsLink,
-    }));
+    const dynamicFlats: ClientFlat[] = rawSavedProperties.map((prop: any, idx: number) => {
+      const booking = parseAmount(prop.booking_money);
+      const rawLand = parseAmount(prop.land_share);
+      const regMoney = parseAmount(prop.registration_money || prop.registration);
+      const devCharge = parseAmount(prop.development_charges || prop.development_charge);
+      const totalPrice = parseAmount(prop.price);
+      const totalPaid = parseAmount(prop.partial_payment);
+
+      let totalLandShare = rawLand;
+      if (rawLand > 0 && booking > 0) {
+        if (totalPrice > 0 && Math.abs(totalPrice - (rawLand + booking + devCharge)) < Math.abs(totalPrice - (rawLand + devCharge))) {
+          totalLandShare = rawLand + booking;
+        } else {
+          totalLandShare = rawLand;
+        }
+      } else if (rawLand === 0 && booking > 0) {
+        totalLandShare = booking + regMoney;
+      }
+
+      let landShareDue = 0;
+      if (prop.land_share_due !== undefined && prop.land_share_due !== null) {
+        landShareDue = parseAmount(prop.land_share_due);
+      } else {
+        landShareDue = totalPaid >= totalLandShare ? 0 : Math.max(0, totalLandShare - totalPaid);
+      }
+
+      const totalDevCharge = devCharge > 0 ? devCharge : (totalPrice > totalLandShare ? (totalPrice - totalLandShare) : 0);
+      let devChargeDue = 0;
+      if (prop.development_charges_due !== undefined && prop.development_charges_due !== null) {
+        devChargeDue = parseAmount(prop.development_charges_due);
+      } else {
+        if (landShareDue > 0) {
+          devChargeDue = totalDevCharge;
+        } else {
+          const paidForDev = Math.max(0, totalPaid - totalLandShare);
+          devChargeDue = paidForDev >= totalDevCharge ? 0 : Math.max(0, totalDevCharge - paidForDev);
+        }
+      }
+
+      const perEmi = parseAmount(prop.per_emi_amount || prop.emi_amount);
+      const totalEmi = parseInt(String(prop.total_emi || prop.total_installments || 0), 10);
+      let paidEmiCount = 0;
+      if (prop.paid_emi !== undefined && prop.paid_emi !== null) {
+        paidEmiCount = Math.min(totalEmi, parseInt(String(prop.paid_emi), 10));
+      } else if (perEmi > 0 && totalEmi > 0) {
+        const paidAfterDev = Math.max(0, totalPaid - (totalLandShare + totalDevCharge));
+        paidEmiCount = Math.min(totalEmi, Math.floor(paidAfterDev / perEmi));
+      }
+
+      return {
+        id: `flat-${prop.id || "prop"}-${idx}`,
+        project_id: prop.project_id || prop.projectId || prop.id,
+        title: prop.name || "The Premium Green Valley",
+        flatNo: prop.flatNo || "",
+        flatSize: prop.flatSize || "",
+        location: resolveFlatLocation(prop, prop.name || prop.title),
+        image: prop.image || "/image/progress/tph_green_valley.png",
+        status: "Under Construction",
+        construction_pct: parseAmount(prop.construction_pct || prop.progress) || 0,
+        handover_date: prop.estimatedDate ? `Dec ${prop.estimatedDate}` : "Dec 2027",
+        price: prop.price ? `৳ ${prop.price}` : formatTaka(parseAmount(prop.price)),
+        partial_payment: prop.partial_payment ? String(prop.partial_payment) : undefined,
+        due_payment: prop.due_payment ? String(prop.due_payment) : undefined,
+        discount: prop.discount ? String(prop.discount) : undefined,
+        booking_money: prop.booking_money ? String(prop.booking_money) : undefined,
+        land_share: totalLandShare > 0 ? String(totalLandShare) : (prop.land_share ? String(prop.land_share) : undefined),
+        development_charges: totalDevCharge > 0 ? String(totalDevCharge) : (prop.development_charges ? String(prop.development_charges) : undefined),
+        land_share_due: landShareDue,
+        development_charges_due: devChargeDue,
+        per_emi_amount: perEmi > 0 ? perEmi : undefined,
+        total_emi: totalEmi > 0 ? totalEmi : undefined,
+        paid_emi: paidEmiCount,
+        slug: prop.slug || "the-premium-green-valley",
+        videoLink: prop.videoLink,
+        videoLink2: prop.videoLink2,
+        moneyReceiptLink: prop.moneyReceiptLink,
+        purchaseDetailsLink: prop.purchaseDetailsLink,
+      };
+    });
 
     // Extract dynamic payment history from savedProperties and any bookings
     const payments: ClientPayment[] = [];
@@ -173,57 +231,226 @@ export async function fetchUserPaymentInfo(
     rawSavedProperties.forEach((prop: any, idx: number) => {
       const projName = prop.name || "The Premium Property";
       const unit = prop.flatNo ? ` (Unit ${prop.flatNo})` : "";
+      const flatId = `flat-${prop.id || "prop"}-${idx}`;
+      const flatNo = prop.flatNo || "";
 
-      if (prop.booking_money && parseAmount(prop.booking_money) > 0) {
-        payments.push({
-          id: `bm-${prop.id || "prop"}-${idx}`,
-          invoice_no: `TPHL-BM-${prop.id || "prop"}-${idx + 1}`,
-          project: `${projName}${unit}`,
-          installment_title: "Booking Money",
-          payment_date: prop.lastUpdated || "2024-01-01",
-          due_date: prop.lastUpdated || "2024-01-01",
-          amount: `৳ ${parseAmount(prop.booking_money).toLocaleString("en-IN")}`,
-          status: "paid",
-          method: "Bank Transfer",
-        });
+      const booking = parseAmount(prop.booking_money);
+      const rawLand = parseAmount(prop.land_share);
+      const regMoney = parseAmount(prop.registration_money || prop.registration);
+      const devCharge = parseAmount(prop.development_charges || prop.development_charge);
+      const totalPrice = parseAmount(prop.price);
+      const totalPaid = parseAmount(prop.partial_payment);
+      const totalDue = parseAmount(prop.due_payment);
+
+      // 1. Stage 1: Landshare Money (Booking Money + Registration Money = Landshare Money)
+      let totalLandShare = rawLand;
+      if (rawLand > 0 && booking > 0) {
+        if (totalPrice > 0 && Math.abs(totalPrice - (rawLand + booking + devCharge)) < Math.abs(totalPrice - (rawLand + devCharge))) {
+          totalLandShare = rawLand + booking;
+        } else {
+          totalLandShare = rawLand;
+        }
+      } else if (rawLand === 0 && booking > 0) {
+        totalLandShare = booking + regMoney;
       }
 
-      if (prop.land_share && parseAmount(prop.land_share) > 0) {
-        payments.push({
-          id: `ls-${prop.id || "prop"}-${idx}`,
-          invoice_no: `TPHL-LS-${prop.id || "prop"}-${idx + 1}`,
-          project: `${projName}${unit}`,
-          installment_title: "Land Share Payment",
-          payment_date: prop.lastUpdated || "2024-01-01",
-          due_date: prop.lastUpdated || "2024-01-01",
-          amount: `৳ ${parseAmount(prop.land_share).toLocaleString("en-IN")}`,
-          status: "paid",
-          method: "Bank Transfer",
-        });
+      let landShareDue = 0;
+      let landSharePaid = 0;
+      if (prop.land_share_due !== undefined && prop.land_share_due !== null) {
+        landShareDue = parseAmount(prop.land_share_due);
+        landSharePaid = Math.max(0, totalLandShare - landShareDue);
+      } else {
+        if (totalPaid >= totalLandShare) {
+          landSharePaid = totalLandShare;
+          landShareDue = 0;
+        } else {
+          landSharePaid = totalPaid;
+          landShareDue = Math.max(0, totalLandShare - totalPaid);
+        }
       }
 
-      if (prop.development_charges && parseAmount(prop.development_charges) > 0) {
-        payments.push({
-          id: `dev-${prop.id || "prop"}-${idx}`,
-          invoice_no: `TPHL-DEV-${prop.id || "prop"}-${idx + 1}`,
-          project: `${projName}${unit}`,
-          installment_title: "Development Charge",
-          payment_date: prop.lastUpdated || "2024-01-01",
-          due_date: prop.lastUpdated || "2024-01-01",
-          amount: `৳ ${parseAmount(prop.development_charges).toLocaleString("en-IN")}`,
-          status: "paid",
-          method: "Bank Transfer",
-        });
+      if (totalLandShare > 0) {
+        if (landShareDue <= 0) {
+          payments.push({
+            id: `ls-${prop.id || "prop"}-${idx}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-LS-${prop.id || "prop"}-${idx + 1}`,
+            project: `${projName}${unit}`,
+            installment_title: "Land Share Payment",
+            payment_date: prop.lastUpdated || "2024-01-01",
+            due_date: prop.lastUpdated || "2024-01-01",
+            amount: formatTaka(totalLandShare),
+            status: "paid",
+            stage: "land_share",
+            method: "Bank Transfer",
+          });
+        } else {
+          if (landSharePaid > 0) {
+            payments.push({
+              id: `ls-paid-${prop.id || "prop"}-${idx}`,
+              flat_id: flatId,
+              flat_no: flatNo,
+              invoice_no: `TPHL-LS-${prop.id || "prop"}-${idx + 1}`,
+              project: `${projName}${unit}`,
+              installment_title: "Land Share Payment (Partial)",
+              payment_date: prop.lastUpdated || "2024-01-01",
+              due_date: prop.lastUpdated || "2024-01-01",
+              amount: formatTaka(landSharePaid),
+              status: "paid",
+              stage: "land_share",
+              method: "Bank Transfer",
+            });
+          }
+          payments.push({
+            id: `ls-due-${prop.id || "prop"}-${idx}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-LS-DUE-${prop.id || "prop"}-${idx + 1}`,
+            project: `${projName}${unit}`,
+            installment_title: "Land Share Payment Due",
+            due_date: prop.estimatedDate ? `15 Dec ${prop.estimatedDate}` : "15 May 2025",
+            amount: formatTaka(landShareDue),
+            status: "due",
+            stage: "land_share",
+          });
+        }
       }
 
-      if (prop.due_payment && parseAmount(prop.due_payment) > 0) {
+      // 2. Stage 2: Development Charge (Comes after Land Share)
+      const totalDevCharge = devCharge > 0 ? devCharge : (totalPrice > totalLandShare ? (totalPrice - totalLandShare) : 0);
+      let devChargePaid = 0;
+      let devChargeDue = 0;
+      if (prop.development_charges_due !== undefined && prop.development_charges_due !== null) {
+        devChargeDue = parseAmount(prop.development_charges_due);
+        devChargePaid = Math.max(0, totalDevCharge - devChargeDue);
+      } else {
+        if (landShareDue > 0) {
+          devChargePaid = 0;
+          devChargeDue = totalDevCharge;
+        } else {
+          const paidForDev = Math.max(0, totalPaid - totalLandShare);
+          if (paidForDev >= totalDevCharge) {
+            devChargePaid = totalDevCharge;
+            devChargeDue = 0;
+          } else {
+            devChargePaid = paidForDev;
+            devChargeDue = Math.max(0, totalDevCharge - paidForDev);
+          }
+        }
+      }
+
+      if (totalDevCharge > 0) {
+        if (devChargeDue <= 0) {
+          payments.push({
+            id: `dev-${prop.id || "prop"}-${idx}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-DEV-${prop.id || "prop"}-${idx + 1}`,
+            project: `${projName}${unit}`,
+            installment_title: "Development Charge",
+            payment_date: prop.lastUpdated || "2024-03-01",
+            due_date: prop.lastUpdated || "2024-03-01",
+            amount: formatTaka(totalDevCharge),
+            status: "paid",
+            stage: "development",
+            method: "Bank Transfer",
+          });
+        } else {
+          if (devChargePaid > 0) {
+            payments.push({
+              id: `dev-paid-${prop.id || "prop"}-${idx}`,
+              flat_id: flatId,
+              flat_no: flatNo,
+              invoice_no: `TPHL-DEV-${prop.id || "prop"}-${idx + 1}`,
+              project: `${projName}${unit}`,
+              installment_title: "Development Charge (Partial)",
+              payment_date: prop.lastUpdated || "2024-03-01",
+              due_date: prop.lastUpdated || "2024-03-01",
+              amount: formatTaka(devChargePaid),
+              status: "paid",
+              stage: "development",
+              method: "Bank Transfer",
+            });
+          }
+          payments.push({
+            id: `dev-due-${prop.id || "prop"}-${idx}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-DEV-DUE-${prop.id || "prop"}-${idx + 1}`,
+            project: `${projName}${unit}`,
+            installment_title: "Development Charge Due",
+            due_date: prop.estimatedDate ? `15 Oct ${prop.estimatedDate}` : "15 Aug 2025",
+            amount: formatTaka(devChargeDue),
+            status: landShareDue > 0 ? "upcoming" : "due",
+            stage: "development",
+          });
+        }
+      }
+
+      // 3. Stage 3: EMI Installments (Begins after Development Charge is completed)
+      const perEmi = parseAmount(prop.per_emi_amount || prop.emi_amount);
+      const totalEmi = parseInt(String(prop.total_emi || prop.total_installments || 0), 10);
+
+      if (perEmi > 0 && totalEmi > 0) {
+        let paidEmiCount = 0;
+        if (prop.paid_emi !== undefined && prop.paid_emi !== null) {
+          paidEmiCount = Math.min(totalEmi, parseInt(String(prop.paid_emi), 10));
+        } else {
+          const paidAfterDev = Math.max(0, totalPaid - (totalLandShare + totalDevCharge));
+          paidEmiCount = Math.min(totalEmi, Math.floor(paidAfterDev / perEmi));
+        }
+
+        // Paid EMIs
+        for (let e = 1; e <= paidEmiCount; e++) {
+          payments.push({
+            id: `emi-${prop.id || "prop"}-${idx}-${e}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-EMI-${prop.id || "prop"}-${idx + 1}-${e}`,
+            project: `${projName}${unit}`,
+            installment_title: `Installment #${e} (EMI ${e} of ${totalEmi})`,
+            payment_date: prop.lastUpdated || "2024-04-01",
+            due_date: prop.lastUpdated || "2024-04-01",
+            amount: formatTaka(perEmi),
+            status: "paid",
+            stage: "emi",
+            emi_number: e,
+            total_emi: totalEmi,
+            method: "Bank Transfer",
+          });
+        }
+
+        // Next due EMI
+        if (paidEmiCount < totalEmi) {
+          const nextEmiNumber = paidEmiCount + 1;
+          const isEmiDueNow = landShareDue <= 0 && devChargeDue <= 0;
+          payments.push({
+            id: `emi-due-${prop.id || "prop"}-${idx}-${nextEmiNumber}`,
+            flat_id: flatId,
+            flat_no: flatNo,
+            invoice_no: `TPHL-EMI-${prop.id || "prop"}-${idx + 1}-${nextEmiNumber}`,
+            project: `${projName}${unit}`,
+            installment_title: `Installment #${nextEmiNumber} (EMI ${nextEmiNumber} of ${totalEmi})`,
+            due_date: prop.estimatedDate ? `15 Nov ${prop.estimatedDate}` : "15 Next Month",
+            amount: formatTaka(perEmi),
+            status: isEmiDueNow ? "due" : "upcoming",
+            stage: "emi",
+            emi_number: nextEmiNumber,
+            total_emi: totalEmi,
+          });
+        }
+      } else if (landShareDue <= 0 && devChargeDue <= 0 && totalDue > 0) {
+        // Fallback generic due if no EMI breakdown is configured
         payments.push({
           id: `due-${prop.id || "prop"}-${idx}`,
+          flat_id: flatId,
+          flat_no: flatNo,
           invoice_no: `TPHL-DUE-${prop.id || "prop"}-${idx + 1}`,
           project: `${projName}${unit}`,
           installment_title: "Remaining Due",
           due_date: prop.estimatedDate ? `Dec ${prop.estimatedDate}` : "15 Apr 2026",
-          amount: `৳ ${parseAmount(prop.due_payment).toLocaleString("en-IN")}`,
+          amount: formatTaka(totalDue),
           status: "due",
         });
       }
@@ -410,6 +637,50 @@ export async function fetchUserReferralDetails(
   } catch (err) {
     console.error(`[fetchUserReferralDetails] Error fetching referral details for user ${userId}:`, err);
     return null;
+  }
+}
+
+export interface AppNotification {
+  id: number | string;
+  type?: string;
+  title: string;
+  message: string;
+  image?: string | null;
+  link?: string;
+  requiresAuth?: boolean;
+  timestamp: number;
+}
+
+export async function fetchNotifications(): Promise<AppNotification[]> {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://api.dpremiumhomes.com/api"
+  ).replace(/\/+$/, "");
+
+  try {
+    const res = await fetch(`${baseUrl}/notifications`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn(`[fetchNotifications] API returned status ${res.status}`);
+      return [];
+    }
+
+    const json = await res.json();
+    const list: AppNotification[] = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.data)
+        ? json.data
+        : [];
+
+    // Newest first
+    return list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  } catch (err) {
+    console.error("[fetchNotifications] Error fetching notifications:", err);
+    return [];
   }
 }
 

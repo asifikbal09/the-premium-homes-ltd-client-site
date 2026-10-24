@@ -213,3 +213,31 @@ textarea {
 .animate-luxury-shimmer {
   animation: luxury-shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
+
+/* Custom Luxury Glass Pill Button for Navbar
+   Figma's "Plus lighter" #171717 fill adds ~9% light onto the backdrop;
+   CSS background-blend-mode can't blend with the backdrop, so a translucent
+   white tint approximates it while keeping the button see-through. */
+.nav-pill-btn {
+  border-radius: 100px;
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09)),
+    rgba(24, 24, 24, 0.15);
+  box-shadow:
+    3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.9) inset,
+    2px 2px 0.5px -2px rgba(63, 63, 63, 0.6) inset,
+    -2px -2px 0.5px -2px rgba(115, 113, 113, 0.6) inset,
+    0 0 0 1px rgba(208, 208, 208, 0.35) inset,
+    0 0 8px 0 rgba(242, 242, 242, 0.08) inset,
+    0 0 2px 0 rgba(0, 0, 0, 0.1),
+    0 1px 8px 0 rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #ffffff;
+}
+
+.nav-pill-btn:hover {
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)),
+    rgba(24, 24, 24, 0.15);
+}

@@ -151,17 +151,17 @@ export function OverviewTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         {/* Card 1: Total Paid */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-xs flex items-center gap-4 hover:shadow-sm transition-shadow">
-          <div className="w-12 h-12 rounded-full bg-[#044133] text-white flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-[#054B3C] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Landmark className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Total Paid
             </span>
             {isLoading ? (
               <div className="h-6 w-28 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {totalPaid}
               </span>
             )}
@@ -177,13 +177,13 @@ export function OverviewTab({
             <CreditCard className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Outstanding
             </span>
             {isLoading ? (
               <div className="h-6 w-28 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {outstanding}
               </span>
             )}
@@ -199,13 +199,13 @@ export function OverviewTab({
             <Layers className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Total Expense
             </span>
             {isLoading ? (
               <div className="h-6 w-28 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {totalExpense}
               </span>
             )}
@@ -235,7 +235,7 @@ export function OverviewTab({
                     cx="26"
                     cy="26"
                     r={radius}
-                    className="stroke-[#044133]"
+                    className="stroke-[#054B3C]"
                     strokeWidth="4.5"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -243,18 +243,18 @@ export function OverviewTab({
                     fill="transparent"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-stone-900">
+                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#054B3C]">
                   {completionPct}%
                 </span>
               </>
             )}
           </div>
           <div className="flex-1">
-            <span className="text-lg sm:text-xl font-bold text-stone-900 block leading-tight">
-              Completion
+            <span className="text-lg sm:text-xl font-bold text-[#054B3C] block leading-tight">
+              Payment Completion
             </span>
             <span className="text-[11px] text-stone-400 block mt-0.5">
-              Overall Progress
+              Total Price Cleared
             </span>
           </div>
         </div>

@@ -21,6 +21,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { ClientPayment, ClientUser, ClientFlat } from "./types";
+import { parseAmount, formatTaka } from "@/lib/client-dashboard";
 
 interface PaymentTabProps {
   payments?: ClientPayment[];
@@ -65,11 +66,82 @@ export function PaymentTab({
   const availableFlats = myFlats || [];
   const currentFlat = availableFlats[selectedFlatIndex] || availableFlats[0] || null;
 
-  // Determine monetary values strictly from live user stats
-  const totalPaid = stats?.formattedPaid || user?.total_paid || "৳ 0";
-  const outstanding = stats?.formattedDue || user?.outstanding || "৳ 0";
-  const totalExpense = stats?.formattedPrice || user?.total_expense || "৳ 0";
-  const completionPct = user?.completion !== undefined ? user.completion : 0;
+  // Payments for the selected flat (filter strictly by unique flat_id, flat_no, or invoice suffix)
+  const flatPayments = React.useMemo(() => {
+    if (!payments || payments.length === 0) return [];
+    if (!currentFlat) return payments;
+
+    const matched = payments.filter((p) => {
+      // 1. Strict match by unique flat_id
+      if (p.flat_id && currentFlat.id && String(p.flat_id) === String(currentFlat.id)) {
+        return true;
+      }
+      // 2. Strict match by flat_no (when both specify flat_no)
+      if (
+        p.flat_no &&
+        currentFlat.flatNo &&
+        String(p.flat_no).trim().toLowerCase() === String(currentFlat.flatNo).trim().toLowerCase()
+      ) {
+        return true;
+      }
+      // 3. Match by invoice number suffix (e.g. -58-1 for index 0, -58-2 for index 1)
+      if (p.invoice_no && p.invoice_no.endsWith(`-${selectedFlatIndex + 1}`)) {
+        return true;
+      }
+      // 4. Match unit text in project string
+      if (currentFlat.flatNo && p.project && p.project.includes(`Unit ${currentFlat.flatNo}`)) {
+        return true;
+      }
+      return false;
+    });
+
+    return matched;
+  }, [payments, currentFlat, selectedFlatIndex]);
+
+  // Compute flat-wise monetary values strictly for the currently selected flat
+  const flatPrice = React.useMemo(() => {
+    if (currentFlat?.price) {
+      const p = parseAmount(currentFlat.price);
+      if (p > 0) return p;
+    }
+    return stats?.totalPrice || 0;
+  }, [currentFlat, stats]);
+
+  const flatPaid = React.useMemo(() => {
+    if (currentFlat?.partial_payment) {
+      const p = parseAmount(currentFlat.partial_payment);
+      if (p > 0) return p;
+    }
+    const sum = flatPayments
+      .filter((p) => p.status === "paid")
+      .reduce((acc, p) => acc + parseAmount(p.amount), 0);
+    if (sum > 0) return sum;
+    return stats?.totalPaid || 0;
+  }, [currentFlat, flatPayments, stats]);
+
+  const flatDue = React.useMemo(() => {
+    if (currentFlat?.due_payment) {
+      const d = parseAmount(currentFlat.due_payment);
+      if (d > 0) return d;
+    }
+    const sum = flatPayments
+      .filter((p) => p.status === "due")
+      .reduce((acc, p) => acc + parseAmount(p.amount), 0);
+    if (sum > 0) return sum;
+    if (flatPrice > 0 && flatPaid > 0) return Math.max(0, flatPrice - flatPaid);
+    return stats?.totalDue || 0;
+  }, [currentFlat, flatPayments, flatPrice, flatPaid, stats]);
+
+  const completionPct = React.useMemo(() => {
+    if (flatPrice > 0) {
+      return Math.min(100, Math.round((flatPaid / flatPrice) * 100));
+    }
+    return user?.completion !== undefined ? user.completion : 0;
+  }, [flatPrice, flatPaid, user]);
+
+  const totalPaid = currentFlat ? formatTaka(flatPaid) : (stats?.formattedPaid || user?.total_paid || "৳ 0");
+  const outstanding = currentFlat ? formatTaka(flatDue) : (stats?.formattedDue || user?.outstanding || "৳ 0");
+  const totalExpense = currentFlat ? formatTaka(flatPrice) : (stats?.formattedPrice || user?.total_expense || "৳ 0");
 
   // Circular SVG progress
   const radius = 22;
@@ -77,10 +149,10 @@ export function PaymentTab({
   const strokeDashoffset =
     circumference - (circumference * Math.min(100, Math.max(0, completionPct))) / 100;
 
-  // Payments to show in history table (strictly real payments or empty)
+  // Payments to show in history table (strictly real flat payments filtered by transactionFilter)
   const historyPayments =
-    payments && payments.length > 0
-      ? payments.filter((p) => (transactionFilter === "all" ? true : p.status === transactionFilter))
+    flatPayments && flatPayments.length > 0
+      ? flatPayments.filter((p) => (transactionFilter === "all" ? true : p.status === transactionFilter))
       : [];
 
   const handleDownloadReceipt = (payment: ClientPayment) => {
@@ -145,9 +217,11 @@ export function PaymentTab({
                 <div>
                   <span className="text-xs sm:text-sm font-bold text-stone-900 block leading-tight group-hover:text-[#044133] transition-colors">
                     {currentFlat.title}
+                    {currentFlat.flatNo ? ` — Unit ${currentFlat.flatNo}` : ""}
                   </span>
                   <span className="text-[11px] text-stone-400 block mt-0.5">
                     {currentFlat.location}
+                    {currentFlat.flatSize ? ` • ${currentFlat.flatSize}` : ""}
                   </span>
                 </div>
               </>
@@ -196,8 +270,14 @@ export function PaymentTab({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate">{flat.title}</p>
-                      <p className="text-[10px] text-stone-400 truncate">{flat.location}</p>
+                      <p className="text-xs font-bold truncate">
+                        {flat.title}
+                        {flat.flatNo ? ` — Unit ${flat.flatNo}` : ""}
+                      </p>
+                      <p className="text-[10px] text-stone-400 truncate">
+                        {flat.location}
+                        {flat.flatSize ? ` • ${flat.flatSize}` : ""}
+                      </p>
                     </div>
                     {selectedFlatIndex === idx && (
                       <Check className="w-4 h-4 text-[#044133] shrink-0" />
@@ -216,17 +296,17 @@ export function PaymentTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         {/* Card 1: Total Paid */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200/70 shadow-xs flex items-center gap-4 hover:shadow-sm transition-shadow">
-          <div className="w-12 h-12 rounded-full bg-[#044133] text-white flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-[#054B3C] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Landmark className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Total Paid
             </span>
             {isLoading ? (
               <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {totalPaid}
               </span>
             )}
@@ -242,13 +322,13 @@ export function PaymentTab({
             <CreditCard className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Outstanding
             </span>
             {isLoading ? (
               <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {outstanding}
               </span>
             )}
@@ -264,18 +344,18 @@ export function PaymentTab({
             <Layers className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-stone-500 font-medium block">
+            <span className="text-xs text-[#054B3C]/80 font-semibold block">
               Total Expense
             </span>
             {isLoading ? (
               <div className="h-6 w-24 bg-stone-200 rounded animate-pulse mt-1" />
             ) : (
-              <span className="text-lg sm:text-xl font-bold text-stone-900 block mt-0.5">
+              <span className="text-lg sm:text-xl font-bold text-[#054B3C] block mt-0.5">
                 {totalExpense}
               </span>
             )}
             <span className="text-[11px] text-stone-400 block mt-0.5">
-              All Project Expense
+              {currentFlat ? "Flat Total Price" : "All Project Expense"}
             </span>
           </div>
         </div>
@@ -300,7 +380,7 @@ export function PaymentTab({
                     cx="26"
                     cy="26"
                     r={radius}
-                    className="stroke-[#044133]"
+                    className="stroke-[#054B3C]"
                     strokeWidth="4.5"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -308,18 +388,18 @@ export function PaymentTab({
                     fill="transparent"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-stone-900">
+                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#054B3C]">
                   {completionPct}%
                 </span>
               </>
             )}
           </div>
           <div className="flex-1">
-            <span className="text-lg sm:text-xl font-bold text-stone-900 block leading-tight">
-              Completion
+            <span className="text-lg sm:text-xl font-bold text-[#054B3C] block leading-tight">
+              Payment Completion
             </span>
             <span className="text-[11px] text-stone-400 block mt-0.5">
-              Overall Progress
+              Total Price Cleared
             </span>
           </div>
         </div>
@@ -396,7 +476,7 @@ export function PaymentTab({
                     Payment History
                   </h2>
                   <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                    A Complete record of your payments for the {currentFlat.title}.
+                    A Complete record of your payments for {currentFlat ? `${currentFlat.title}${currentFlat.flatNo ? ` (Unit ${currentFlat.flatNo})` : ""}` : "your property"}.
                   </p>
                 </div>
 
@@ -512,7 +592,24 @@ export function PaymentTab({
                             {item.invoice_no || `TPHL-${idx + 1}`}
                           </td>
                           <td className="py-3.5 px-3 text-stone-700 whitespace-nowrap">
-                            {item.installment_title || "Payment"}
+                            <div className="flex items-center gap-2">
+                              <span>{item.installment_title || "Payment"}</span>
+                              {item.stage === "land_share" && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60">
+                                  Land Share
+                                </span>
+                              )}
+                              {item.stage === "development" && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+                                  Development
+                                </span>
+                              )}
+                              {item.stage === "emi" && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-[#054B3C] border border-emerald-200/60">
+                                  EMI
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="py-3.5 px-3 font-semibold text-stone-900 whitespace-nowrap">
                             {item.amount}
@@ -522,10 +619,12 @@ export function PaymentTab({
                               className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-semibold ${
                                 item.status === "paid"
                                   ? "bg-emerald-50 text-emerald-600 border border-emerald-100/80"
-                                  : "bg-red-50 text-red-600 border border-red-100/80"
+                                  : item.status === "due"
+                                  ? "bg-red-50 text-red-600 border border-red-100/80"
+                                  : "bg-stone-100 text-stone-600 border border-stone-200/80"
                               }`}
                             >
-                              {item.status === "paid" ? "Paid" : "Due"}
+                              {item.status === "paid" ? "Paid" : item.status === "due" ? "Due" : "Upcoming"}
                             </span>
                           </td>
                           <td className="py-3.5 px-3 text-right whitespace-nowrap">
@@ -647,7 +746,7 @@ export function PaymentTab({
                 </p>
               </div>
 
-              {historyPayments.filter((p) => p.status === "due").length === 0 ? (
+              {historyPayments.filter((p) => p.status === "due" || p.status === "upcoming").length === 0 ? (
                 <div className="py-12 text-center text-stone-400">
                   <CalendarClock className="w-8 h-8 mx-auto mb-2 text-stone-300" />
                   <p className="text-sm font-medium text-stone-600">No scheduled upcoming dues.</p>
@@ -655,7 +754,7 @@ export function PaymentTab({
                 </div>
               ) : (
                 <div className="space-y-3.5">
-                  {historyPayments.filter((p) => p.status === "due").map((item) => (
+                  {historyPayments.filter((p) => p.status === "due" || p.status === "upcoming").map((item) => (
                     <div
                       key={item.id}
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-stone-200/70 hover:border-stone-300 bg-stone-50/40 hover:bg-white transition-all gap-4"
@@ -665,8 +764,12 @@ export function PaymentTab({
                           <span className="font-semibold text-sm text-stone-900">
                             {item.installment_title}
                           </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-red-50 text-red-600 border border-red-200">
-                            Immediate Due
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            item.status === "due"
+                              ? "bg-red-50 text-red-600 border border-red-200"
+                              : "bg-blue-50 text-blue-600 border border-blue-200"
+                          }`}>
+                            {item.status === "due" ? "Immediate Due" : "Upcoming Milestone"}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-stone-500">
@@ -842,50 +945,250 @@ export function PaymentTab({
             </h3>
 
             {(() => {
-              const dueItem = historyPayments.find((p) => p.status === "due");
-              if (!dueItem) {
+              // 1. Resolve flat lifecycle metrics
+              const rawLandDue = currentFlat?.land_share_due !== undefined ? parseAmount(currentFlat.land_share_due) : 0;
+              const dueLandPayment = historyPayments.find((p) => p.stage === "land_share" && p.status === "due");
+              const isLandDue = rawLandDue > 0 || !!dueLandPayment;
+
+              const rawDevDue = currentFlat?.development_charges_due !== undefined ? parseAmount(currentFlat.development_charges_due) : 0;
+              const dueDevPayment = historyPayments.find((p) => p.stage === "development" && p.status === "due");
+              const isDevDue = !isLandDue && (rawDevDue > 0 || !!dueDevPayment);
+
+              const perEmi = parseAmount(currentFlat?.per_emi_amount);
+              const totalEmi = parseInt(String(currentFlat?.total_emi || 0), 10);
+              const paidEmi = currentFlat?.paid_emi !== undefined 
+                ? parseInt(String(currentFlat.paid_emi), 10) 
+                : historyPayments.filter((p) => p.stage === "emi" && p.status === "paid").length;
+              const remainingEmi = Math.max(0, totalEmi - paidEmi);
+              const isEmiActive = !isLandDue && !isDevDue && totalEmi > 0 && perEmi > 0;
+
+              // Priority 1: Land Share is due
+              if (isLandDue) {
+                const amount = dueLandPayment?.amount || formatTaka(rawLandDue);
+                const dueDate = dueLandPayment?.due_date || (currentFlat?.handover_date ? `15 ${currentFlat.handover_date}` : "15 May 2025");
                 return (
-                  <div className="py-4 text-center">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
-                    <p className="font-semibold text-stone-900 text-sm">All Dues Cleared</p>
-                    <p className="text-xs text-stone-400 mt-0.5">No immediate installments due.</p>
-                  </div>
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80">
+                        Land Share Stage
+                      </span>
+                      <span className="text-xs text-stone-400 font-medium">Stage 1 of 3</span>
+                    </div>
+
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
+                        <CalendarClock className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-stone-400 font-medium block">
+                          Due Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
+                          {dueDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
+                      <span className="text-xs text-stone-400 font-medium block">
+                        Land Share Due Amount
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-bold text-[#054B3C] block mt-0.5 tracking-tight">
+                        {amount}
+                      </span>
+                      <span className="text-[11px] text-stone-400 block mt-1">
+                        Covers booking & land registration money
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPayModalOpen(true)}
+                      className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <span>Pay Now</span>
+                    </button>
+                  </>
                 );
               }
 
-              return (
-                <>
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-full bg-[#e8f4ef] text-[#044133] flex items-center justify-center shrink-0 border border-[#b8dfce]">
-                      <CalendarClock className="w-5 h-5 text-[#044133]" />
+              // Priority 2: Development Charge is due (Land Share is cleared)
+              if (isDevDue) {
+                const amount = dueDevPayment?.amount || formatTaka(rawDevDue);
+                const dueDate = dueDevPayment?.due_date || (currentFlat?.handover_date ? `15 ${currentFlat.handover_date}` : "15 Aug 2025");
+                return (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200/80">
+                        Development Charge Stage
+                      </span>
+                      <span className="text-xs text-stone-400 font-medium">Stage 2 of 3</span>
                     </div>
-                    <div>
+
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-200">
+                        <CalendarClock className="w-5 h-5 text-blue-700" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-stone-400 font-medium block">
+                          Due Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
+                          {dueDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
                       <span className="text-xs text-stone-400 font-medium block">
-                        Due Date
+                        Development Charge Due
                       </span>
-                      <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
-                        {dueItem.due_date}
+                      <span className="text-2xl sm:text-3xl font-bold text-[#054B3C] block mt-0.5 tracking-tight">
+                        {amount}
+                      </span>
+                      <span className="text-[11px] text-stone-400 block mt-1">
+                        Structural & architectural construction charges
                       </span>
                     </div>
-                  </div>
 
-                  <div className="pt-1">
-                    <span className="text-xs text-stone-400 font-medium block">
-                      Amount
-                    </span>
-                    <span className="text-2xl sm:text-3xl font-bold text-[#044133] block mt-0.5 tracking-tight">
-                      {dueItem.amount}
-                    </span>
-                  </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsPayModalOpen(true)}
+                      className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <span>Pay Now</span>
+                    </button>
+                  </>
+                );
+              }
 
-                  <button
-                    type="button"
-                    onClick={() => setIsPayModalOpen(true)}
-                    className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>Pay Now</span>
-                  </button>
-                </>
+              // Priority 3: EMI Stage (Land Share & Development Charge are cleared)
+              if (isEmiActive && remainingEmi > 0) {
+                const nextEmiNumber = Math.min(totalEmi, paidEmi + 1);
+                const dueEmiPayment = historyPayments.find((p) => p.stage === "emi" && p.status === "due");
+                const dueDate = dueEmiPayment?.due_date || "15 Next Month";
+                const emiProgressPct = Math.min(100, Math.round((paidEmi / totalEmi) * 100));
+
+                return (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50 text-[#054B3C] border border-emerald-200/80">
+                        Monthly EMI Stage
+                      </span>
+                      <span className="text-xs text-stone-400 font-medium">Stage 3 of 3</span>
+                    </div>
+
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-full bg-[#e8f4ef] text-[#044133] flex items-center justify-center shrink-0 border border-[#b8dfce]">
+                        <CalendarClock className="w-5 h-5 text-[#044133]" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-stone-400 font-medium block">
+                          Installment #{nextEmiNumber} Due Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
+                          {dueDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
+                      <span className="text-xs text-stone-400 font-medium block">
+                        Per EMI Amount
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-bold text-[#054B3C] block mt-0.5 tracking-tight">
+                        {formatTaka(perEmi)}
+                      </span>
+                    </div>
+
+                    {/* EMI Breakdown Card: কত দিয়েছে, কত বাকি আছে */}
+                    <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200/70 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-stone-700">EMI Progress</span>
+                        <span className="font-bold text-[#054B3C]">{paidEmi} of {totalEmi} Completed ({emiProgressPct}%)</span>
+                      </div>
+
+                      {/* Mini Progress Bar */}
+                      <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#054B3C] h-full rounded-full transition-all duration-500"
+                          style={{ width: `${emiProgressPct}%` }}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-stone-200/60 text-xs">
+                        <div>
+                          <span className="text-[11px] text-stone-400 block">কত কিস্তি দিয়েছে</span>
+                          <span className="font-bold text-emerald-700 block mt-0.5">
+                            {paidEmi} কিস্তি ({formatTaka(paidEmi * perEmi)})
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-stone-400 block">কত বাকি আছে</span>
+                          <span className="font-bold text-red-600 block mt-0.5">
+                            {remainingEmi} কিস্তি ({formatTaka(remainingEmi * perEmi)})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPayModalOpen(true)}
+                      className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <span>Pay EMI Now</span>
+                    </button>
+                  </>
+                );
+              }
+
+              // Fallback: Generic Due Item if present
+              const genericDue = historyPayments.find((p) => p.status === "due");
+              if (genericDue) {
+                return (
+                  <>
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-full bg-[#e8f4ef] text-[#044133] flex items-center justify-center shrink-0 border border-[#b8dfce]">
+                        <CalendarClock className="w-5 h-5 text-[#044133]" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-stone-400 font-medium block">
+                          Due Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-stone-900 block mt-0.5">
+                          {genericDue.due_date}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
+                      <span className="text-xs text-stone-400 font-medium block">
+                        {genericDue.installment_title}
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-bold text-[#054B3C] block mt-0.5 tracking-tight">
+                        {genericDue.amount}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPayModalOpen(true)}
+                      className="w-full py-3.5 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-white text-sm font-semibold tracking-wide shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <span>Pay Now</span>
+                    </button>
+                  </>
+                );
+              }
+
+              // All Dues Cleared
+              return (
+                <div className="py-4 text-center">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
+                  <p className="font-semibold text-stone-900 text-sm">All Dues Cleared</p>
+                  <p className="text-xs text-stone-400 mt-0.5">No immediate installments due for this property.</p>
+                </div>
               );
             })()}
           </div>

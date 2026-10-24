@@ -623,14 +623,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/projects"
-            className={cn(
-              "group relative inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase transition-all duration-300 shadow-sm active:scale-95",
-              isScrolled
-                ? "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
-                : isLightTop
-                  ? "border border-[#1f2723]/30 hover:border-[#1f2723]/60 hover:bg-black/[0.04] text-[#1f2723]"
-                  : "bg-black/35 hover:bg-black/55 border border-white/25 backdrop-blur-md text-white",
-            )}
+            className="nav-pill-btn group relative inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase transition-all duration-300 active:scale-95 text-white"
           >
             <span>ALL PROJECT</span>
           </Link>
@@ -643,20 +636,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
               isOpen ? "Close Navigation Menu" : "Open Navigation Menu"
             }
             aria-expanded={isOpen}
-            className={cn(
-              "group relative inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase border transition-all duration-300 shadow-sm cursor-pointer active:scale-95",
-              isScrolled
-                ? isOpen
-                  ? "bg-white/25 border-white/40 text-white"
-                  : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
-                : isLightTop
-                  ? isOpen
-                    ? "bg-[#1f2723]/10 border-[#1f2723]/60 text-[#1f2723]"
-                    : "border-[#1f2723]/30 hover:border-[#1f2723]/60 hover:bg-black/[0.04] text-[#1f2723]"
-                  : isOpen
-                    ? "bg-black/60 border-white/40 text-white backdrop-blur-md"
-                    : "bg-black/35 hover:bg-black/55 border-white/25 backdrop-blur-md text-white",
-            )}
+            className="nav-pill-btn group relative inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-normal tracking-[0.14em] uppercase transition-all duration-300 cursor-pointer active:scale-95 text-white"
           >
             <span
               className="flex flex-col items-center justify-center gap-[4px] w-3.5"
@@ -664,15 +644,13 @@ export function Navbar({ theme }: NavbarProps = {}) {
             >
               <span
                 className={cn(
-                  "block h-[1.5px] w-full rounded-full transition-transform duration-200",
-                  isLightTop ? "bg-[#1f2723]" : "bg-white",
+                  "block h-[1.5px] w-full rounded-full bg-white transition-transform duration-200",
                   isOpen && "rotate-45 translate-y-[2.7px]",
                 )}
               />
               <span
                 className={cn(
-                  "block h-[1.5px] w-full rounded-full transition-transform duration-200",
-                  isLightTop ? "bg-[#1f2723]" : "bg-white",
+                  "block h-[1.5px] w-full rounded-full bg-white transition-transform duration-200",
                   isOpen && "-rotate-45 -translate-y-[2.7px]",
                 )}
               />

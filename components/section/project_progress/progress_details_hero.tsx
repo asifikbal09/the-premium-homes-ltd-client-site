@@ -7,24 +7,27 @@ import { MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProgressDetailsHeroProps {
-  projectName?: string;
-  location?: string;
+  projectName: string;
+  location: string;
   tagline?: string;
   progressPercentage?: number;
   expectedHandover?: string;
+  status?: string;
 }
 
 export function ProgressDetailsHero({
-  projectName = "TPH Green Valley",
-  location = "Bashundhara R/A, Dhaka",
-  tagline = "A thoughtfully designed community for modern living.",
-  progressPercentage = 65,
-  expectedHandover = "Dec 2027",
+  projectName,
+  location,
+  tagline,
+  progressPercentage = 0,
+  expectedHandover,
+  status = "ONGOING PROJECT",
 }: ProgressDetailsHeroProps) {
   // SVG Circular Gauge calculation
   const radius = 22;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+  const safePct = Math.min(100, Math.max(0, progressPercentage));
+  const strokeDashoffset = circumference - (safePct / 100) * circumference;
 
   return (
     <section
@@ -48,16 +51,18 @@ export function ProgressDetailsHero({
             {/* Left Content */}
             <div className="max-w-2xl">
               <span className="inline-block text-[#d0a65b] font-medium text-xs sm:text-[13px] tracking-[0.22em] uppercase mb-3 sm:mb-4">
-                ONGOING PROJECT
+                {status}
               </span>
 
               <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-[68px] font-normal text-white leading-[1.08] tracking-tight">
                 {projectName}
               </h1>
 
-              <p className="font-sans text-sm sm:text-base text-white/80 font-light mt-3 sm:mt-4 leading-relaxed">
-                {tagline}
-              </p>
+              {tagline && (
+                <p className="font-sans text-sm sm:text-base text-white/80 font-light mt-3 sm:mt-4 leading-relaxed">
+                  {tagline}
+                </p>
+              )}
 
               <div className="flex items-center gap-2 text-xs sm:text-sm text-white/70 mt-4 sm:mt-5">
                 <MapPin className="h-4 w-4 text-[#d0a65b] shrink-0" />

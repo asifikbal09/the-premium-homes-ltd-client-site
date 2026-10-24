@@ -31,6 +31,11 @@ export interface SavedProperty {
   booking_money?: string;
   land_share?: string;
   development_charges?: string;
+  per_emi_amount?: string | number;
+  total_emi?: string | number;
+  paid_emi?: string | number;
+  land_share_due?: string | number;
+  development_charges_due?: string | number;
 }
 
 export interface ClientFlat {
@@ -53,10 +58,20 @@ export interface ClientFlat {
   videoLink2?: string;
   moneyReceiptLink?: string;
   purchaseDetailsLink?: string;
+  booking_money?: string;
+  land_share?: string;
+  development_charges?: string;
+  per_emi_amount?: string | number;
+  total_emi?: string | number;
+  paid_emi?: string | number;
+  land_share_due?: string | number;
+  development_charges_due?: string | number;
 }
 
 export interface ClientPayment {
   id: string;
+  flat_id?: string | number;
+  flat_no?: string;
   invoice_no: string;
   project: string;
   installment_title: string;
@@ -65,6 +80,9 @@ export interface ClientPayment {
   amount: string;
   status: "paid" | "due" | "upcoming";
   method?: string;
+  stage?: "land_share" | "development" | "emi";
+  emi_number?: number;
+  total_emi?: number;
 }
 
 export interface ClientNotice {

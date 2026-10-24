@@ -64,7 +64,7 @@ export function ProjectDetailNavbar() {
           <div className="flex items-center gap-2.5 sm:gap-3.5">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-200"
+              className="nav-pill-btn inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-white transition-all duration-200 active:scale-95"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>ALL PROJECTS</span>
@@ -75,12 +75,7 @@ export function ProjectDetailNavbar() {
               onClick={() => setIsOpen((prev) => !prev)}
               aria-label={isOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
               aria-expanded={isOpen}
-              className={cn(
-                "inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white border transition-all duration-200 cursor-pointer active:scale-95",
-                isOpen
-                  ? "bg-white/25 border-white/40"
-                  : "bg-white/10 hover:bg-white/20 border-white/20",
-              )}
+              className="nav-pill-btn inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white transition-all duration-200 cursor-pointer active:scale-95"
             >
               <span className="flex flex-col justify-center gap-[4px] w-3" aria-hidden="true">
                 <span

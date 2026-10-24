@@ -17,14 +17,14 @@ interface GalleryImage {
 }
 
 const GALLERY_IMAGES: GalleryImage[] = [
-  // 1. Top-Left: Team lunch / meeting table under glass globe lamps
+  // 1. Far-Left: Office meeting
   {
     id: "hero-lunch",
     src: "/image/about/about_hero05.png",
     alt: "TPHL team gathering and lunch discussion",
     className:
-      "top-[4%] left-[2%] w-[16%] xl:w-[15.5%] max-w-[220px] min-w-[150px] aspect-[4/5]",
-    floatOffset: -10,
+      "top-[22%] left-[2%] w-[14%] xl:w-[13.5%] max-w-[205px] min-w-[140px] aspect-[4/5]",
+    floatOffset: -8,
     floatDuration: 6.2,
     delay: 0.15,
   },
@@ -34,7 +34,7 @@ const GALLERY_IMAGES: GalleryImage[] = [
     src: "/image/about/about_hero04.png",
     alt: "TPHL architects and project directors analyzing master plan scale model",
     className:
-      "top-[26%] left-[17%] w-[17%] xl:w-[16.5%] max-w-[240px] min-w-[165px] aspect-[4/5]",
+      "top-[32%] left-[17.5%] w-[15.5%] xl:w-[15%] max-w-[230px] min-w-[155px] aspect-[4/5]",
     floatOffset: 8,
     floatDuration: 7.1,
     delay: 0.35,
@@ -45,8 +45,8 @@ const GALLERY_IMAGES: GalleryImage[] = [
     src: "/image/about/about_hero03.png",
     alt: "TPHL milestone celebration and team cake cutting",
     className:
-      "top-[0%] left-[38.5%] w-[24%] xl:w-[23%] max-w-[330px] min-w-[225px] aspect-[4/5] z-10",
-    floatOffset: -12,
+      "top-[10%] left-[38.5%] w-[21.5%] xl:w-[21%] max-w-[320px] min-w-[220px] aspect-[4/5] z-10",
+    floatOffset: -10,
     floatDuration: 8.0,
     delay: 0.05,
   },
@@ -56,8 +56,8 @@ const GALLERY_IMAGES: GalleryImage[] = [
     src: "/image/about/about_hero02.png",
     alt: "Excellence in Leadership recognition and award presentation ceremony",
     className:
-      "top-[6%] left-[64%] w-[16.5%] xl:w-[16%] max-w-[230px] min-w-[155px] aspect-[4/5]",
-    floatOffset: 10,
+      "top-[14%] left-[62%] w-[14.5%] xl:w-[14%] max-w-[215px] min-w-[150px] aspect-[4/5]",
+    floatOffset: 9,
     floatDuration: 6.6,
     delay: 0.25,
   },
@@ -67,8 +67,8 @@ const GALLERY_IMAGES: GalleryImage[] = [
     src: "/image/about/about_hero01.png",
     alt: "TPHL team festival and cultural celebration in traditional attire",
     className:
-      "top-[32%] right-[2%] w-[16%] xl:w-[15.5%] max-w-[220px] min-w-[150px] aspect-[4/5]",
-    floatOffset: -8,
+      "top-[36%] right-[2.5%] w-[14%] xl:w-[13.5%] max-w-[205px] min-w-[140px] aspect-[4/5]",
+    floatOffset: -7,
     floatDuration: 7.4,
     delay: 0.45,
   },
@@ -159,10 +159,10 @@ export function AboutHero() {
                     ease: "easeInOut",
                   }}
                   whileHover={{
-                    scale: 1.04,
+                    scale: 1.03,
                     transition: { duration: 0.3, ease: "easeOut" },
                   }}
-                  className="relative w-full h-full rounded-2xl xl:rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.12)] hover:shadow-[0_24px_55px_rgba(4,65,51,0.2)] border border-black/[0.06] bg-neutral-100 transition-all duration-300"
+                  className="relative w-full h-full rounded-md overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_16px_36px_rgba(4,65,51,0.16)] border border-black/[0.05] bg-neutral-100 transition-all duration-300"
                 >
                   <Image
                     src={img.src}
@@ -172,47 +172,47 @@ export function AboutHero() {
                     priority={img.id === "hero-cake"}
                     className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Lower Row: Narrative & CTA (Left) + Editorial Heading (Center-Right) */}
-        <div className="grid grid-cols-12 gap-8 items-end relative -mt-36 xl:-mt-40 2xl:-mt-44 z-20 pointer-events-none">
+        {/* Lower Row: Narrative & CTA (Left) + Editorial Heading (Center-Right under cake image) */}
+        <div className="grid grid-cols-12 gap-8 items-end relative -mt-28 xl:-mt-32 2xl:-mt-36 z-20 pointer-events-none">
           {/* Bottom Left: Mission Copy & Join Our Team Button */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="col-span-5 pointer-events-auto pb-4 xl:pb-6"
+            className="col-span-5 xl:col-span-4 pointer-events-auto pb-2 xl:pb-4"
           >
-            <p className="font-sans text-[13px] xl:text-[14px] leading-relaxed text-[#526058] max-w-[380px] mb-6">
+            <p className="font-sans text-[13px] xl:text-[14px] leading-relaxed text-[#526058] max-w-[360px] mb-5">
               TPHL Is Shaping Accessible Premium Living In Bangladesh Through
               Honest Communication, Structured Buying Journeys, And Homes
               Designed Around Real Families.
             </p>
             <Link
               href="/careers"
-              className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#044133] hover:bg-[#055b4b] text-[#fdfdf8] text-xs font-semibold tracking-[0.14em] uppercase transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:scale-95 group"
+              className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#044133] hover:bg-[#055b4b] text-[#fdfdf8] text-xs font-semibold tracking-[0.14em] uppercase transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:scale-95 group"
             >
               <span>JOIN OUR TEAM</span>
             </Link>
           </motion.div>
 
-          {/* Center-Right Headline: "Story Of A Dream" */}
+          {/* Center-Right Headline: "Story Of A Dream" - aligned directly under the center cake photo */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="col-span-7 flex flex-col items-start justify-end pointer-events-auto"
+            className="col-span-7 xl:col-span-8 flex flex-col items-start justify-end pointer-events-auto pl-2 xl:pl-6"
           >
             <h1 className="font-heading text-[#044133] font-normal leading-[0.88] xl:leading-[0.86] tracking-[-0.02em] select-none">
-              <span className="block text-[80px] xl:text-[104px] 2xl:text-[124px]">
+              <span className="block text-[72px] xl:text-[96px] 2xl:text-[116px]">
                 Story Of
               </span>
-              <span className="block text-[80px] xl:text-[104px] 2xl:text-[124px]">
+              <span className="block text-[72px] xl:text-[96px] 2xl:text-[116px]">
                 A Dream
               </span>
             </h1>
@@ -250,7 +250,7 @@ export function AboutHero() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="shrink-0 snap-center w-[230px] sm:w-[270px] aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-black/10 relative bg-neutral-100"
+                className="shrink-0 snap-center w-[230px] sm:w-[270px] aspect-[4/5] rounded-md overflow-hidden shadow-md border border-black/10 relative bg-neutral-100"
               >
                 <Image
                   src={img.src}

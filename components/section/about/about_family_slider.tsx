@@ -229,7 +229,7 @@ export function AboutFamilySlider() {
                       else if (info.offset.x > 45) handlePrev();
                     }}
                     className={cn(
-                      "absolute bottom-0 left-1/2 -translate-x-1/2 h-full rounded-2xl overflow-hidden select-none border border-black/[0.06] bg-[#eae5dc] will-change-transform",
+                      "absolute bottom-0 left-1/2 -translate-x-1/2 h-full rounded-md overflow-hidden select-none border border-black/[0.06] bg-[#eae5dc] will-change-transform",
                       isFront
                         ? "cursor-grab active:cursor-grabbing"
                         : "cursor-pointer hover:border-black/20 transition-colors"
@@ -261,7 +261,7 @@ export function AboutFamilySlider() {
               })
             ) : (
               /* Fallback static layout while mounting on client */
-              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-black/[0.06] bg-[#eae5dc]">
+              <div className="relative w-full h-full rounded-md overflow-hidden shadow-2xl border border-black/[0.06] bg-[#eae5dc]">
                 <Image
                   src={SLIDES[0].src}
                   alt={SLIDES[0].alt}

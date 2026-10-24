@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, Sparkles, Bell, Menu } from "lucide-react";
+import { Search, Sparkles, Menu } from "lucide-react";
 import { ClientUser } from "./types";
+import { NotificationBell } from "./notification_bell";
 import profile from "@/public/image/profile.png"
 
 interface DashboardHeaderProps {
@@ -20,7 +21,6 @@ export function DashboardHeader({
   onOpenMobileMenu,
   searchQuery,
   setSearchQuery,
-  onNotificationClick,
   onSparklesClick,
 }: DashboardHeaderProps) {
   const [greeting, setGreeting] = useState("Good morning");
@@ -40,7 +40,7 @@ export function DashboardHeader({
 
 
   return (
-    <header className="sticky top-0 z-30 h-[76px] bg-white border-b border-stone-200/80 px-4 sm:px-8 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 h-[76px] shrink-0 bg-white border-b border-stone-200/80 px-4 sm:px-8 flex items-center justify-between gap-4">
       {/* Left: Mobile Menu Toggle + Search Bar */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
@@ -79,19 +79,8 @@ export function DashboardHeader({
           <Sparkles className="w-4 h-4 text-[#f7e7cb]" />
         </button>
 
-        {/* Notification Bell with Badge */}
-        <button
-          type="button"
-          onClick={onNotificationClick}
-          aria-label="View notifications"
-          title="8 New Updates"
-          className="relative w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200/80 active:scale-95 text-stone-600 flex items-center justify-center transition-all cursor-pointer"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
-            8
-          </span>
-        </button>
+        {/* Notification Bell with Dropdown */}
+        <NotificationBell />
 
         {/* User Profile Pill */}
         <div className="flex items-center gap-2.5 pl-1 sm:pl-2 border-l border-stone-200">

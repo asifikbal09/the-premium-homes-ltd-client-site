@@ -64,12 +64,12 @@ export function DashboardSidebar({
 
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-[265px] bg-white border-r border-stone-200/80 flex flex-col  transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto shrink-0",
+          "fixed top-0 bottom-0 left-0 z-50 w-[270px] h-screen bg-white border-r border-stone-200/80 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:z-30 shrink-0 overflow-y-auto",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Top: Logo & Close Button (Mobile) */}
-        <div>
+        <div className="flex flex-col shrink-0">
           <div className="h-[76px] px-6 flex items-center justify-between border-b border-stone-100">
             <Link
               href="/"
@@ -135,7 +135,7 @@ export function DashboardSidebar({
         </div>
 
         {/* Lower Navigation & Promo Card */}
-        <div className="p-4 space-y-4">
+        <div className="flex-1 flex flex-col gap-3 p-4 min-h-0">
           <div className="pt-2 border-t border-stone-100 space-y-1">
             <button
               type="button"
@@ -170,21 +170,17 @@ export function DashboardSidebar({
           </div>
 
           {/* Bottom Card: Find Your Dream Home */}
-          <div className="relative rounded-2xl overflow-hidden p-5 text-center text-white shadow-md bg-stone-900 min-h-[170px] flex flex-col justify-end items-center">
-            {/* Background architectural image */}
-            <div className="absolute inset-0 z-0">
-              <Image
-                src="/image/home_hero_bg.png"
-                alt="Find Your Dream Home"
-                fill
-                sizes="250px"
-                className="object-cover object-center opacity-45 brightness-75"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#021b15]/95 via-[#021b15]/70 to-transparent" />
-            </div>
+          <div
+            className="relative flex-1 min-h-[220px] w-full rounded-xl overflow-hidden px-4 pt-6 text-center text-white shadow-lg flex flex-col items-center bg-[#d3d3d3] bg-cover bg-no-repeat bg-bottom"
+            style={{
+              backgroundImage: "url('/image/home_hero_bg.png')",
+            }}
+          >
+            {/* Dark top fading to show buildings at bottom */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0b1020] via-[#0b1020]/70 to-transparent z-0 pointer-events-none" />
 
-            <div className="relative z-10 space-y-3">
-              <h4 className="font-serif text-[15px] font-medium leading-snug tracking-tight text-white/95">
+            <div className="relative z-10 flex flex-col items-center space-y-4 w-full">
+              <h4 className="font-heading text-[16px] sm:text-[18px] md:text-[20px] font-medium leading-[1.1] tracking-tight text-white capitalize">
                 Find Your
                 <br />
                 Dream Home With
@@ -194,7 +190,7 @@ export function DashboardSidebar({
 
               <Link
                 href="/projects"
-                className="inline-block px-5 py-2 rounded-full text-[11px] font-bold tracking-[0.14em] uppercase text-stone-900 bg-[#dfb775] hover:bg-[#ebd097] active:scale-95 transition-all shadow-sm"
+                className="w-[140px] h-[36px] flex items-center justify-center rounded-full text-xs font-bold tracking-[0.14em] uppercase text-[#2F3233] bg-[#CFA866] hover:bg-[#dfb775] active:scale-95 transition-all shadow-[0_7px_21px_rgba(207,168,102,0.3)] backdrop-blur-[50px]"
               >
                 READ MORE
               </Link>

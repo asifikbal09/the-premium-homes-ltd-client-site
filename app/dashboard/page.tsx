@@ -186,7 +186,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#f8faf9] text-[#1f2723]">
+    <div className="h-screen flex overflow-hidden bg-[#f8faf9] text-[#1f2723]">
       {/* 1. Left Sidebar Navigation */}
       <DashboardSidebar
         activeTab={activeTab}
@@ -197,7 +197,7 @@ function DashboardContent() {
       />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Top Header Bar */}
         <DashboardHeader
           user={user}
@@ -231,7 +231,13 @@ function DashboardContent() {
             />
           )}
 
-          {activeTab === "progress" && <ProgressTab />}
+          {activeTab === "progress" && (
+            <ProgressTab
+              myFlats={myFlats}
+              user={user}
+              isLoading={isLoading}
+            />
+          )}
 
           {activeTab === "notice" && <NoticeTab projects={myFlats} />}
 

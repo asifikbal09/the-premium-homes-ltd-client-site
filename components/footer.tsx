@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { FloatingContactButtons } from "./floating_contact_buttons";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -244,6 +245,7 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <FloatingContactButtons />
     </footer>
   );
 }
