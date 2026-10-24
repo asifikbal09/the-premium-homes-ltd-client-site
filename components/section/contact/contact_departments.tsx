@@ -34,7 +34,7 @@ export function ContactDepartments() {
   return (
     <section
       aria-label="Departments"
-      className="w-full bg-[#f6f2ea] pb-16 sm:pb-24 md:pb-32 px-4 sm:px-6 lg:px-8"
+      className="w-full bg-[#f6f2ea] pb-16 pt-16 sm:pb-24 md:pb-32 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
@@ -43,7 +43,7 @@ export function ContactDepartments() {
             <span className="block text-xs sm:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#083327] mb-3">
               DEPARTMENTS
             </span>
-            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-normal text-[#083327] tracking-tight leading-[1.12]">
+            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-normal text-[#054B3C] tracking-tight leading-[1.12]">
               Find The Right Department
             </h2>
           </div>
