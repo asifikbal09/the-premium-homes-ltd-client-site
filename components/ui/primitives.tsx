@@ -102,7 +102,38 @@ type PillProps = {
   size?: "md" | "lg";
   /** Curtain hover: a curved gold fill rises from the bottom and the label turns green. */
   arrow?: boolean;
+  /** Renders a button instead of a link, for in-page actions like "load more". */
+  onClick?: () => void;
 };
+
+/** Link to `href`, or a plain button when the pill runs an action. */
+function PillTarget({
+  href,
+  onClick,
+  className,
+  children,
+}: {
+  href: string;
+  onClick?: () => void;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (onClick)
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {children}
+      </button>
+    );
+  return (
+    <Link
+      href={href}
+      {...(href.startsWith("http") && { target: "_blank", rel: "noopener noreferrer" })}
+      className={className}
+    >
+      {children}
+    </Link>
+  );
+}
 
 /** All-caps label that rolls up as one line on hover, replaced by its green twin from below. */
 function RollingLabel({ text }: { text: string }) {
@@ -133,15 +164,16 @@ export function GreenPill({
   href = "#",
   size = "md",
   arrow = false,
+  onClick,
 }: PillProps) {
   if (arrow) {
     // Figma pill. On hover a gold curtain with a curved top edge rises from the
     // bottom and fills the pill while the label rolls up into its green twin.
     const h = size === "md" ? "h-[42px]" : "h-[56px]";
     return (
-      <Link
+      <PillTarget
         href={href}
-        {...(href.startsWith("http") && { target: "_blank", rel: "noopener noreferrer" })}
+        onClick={onClick}
         className={cn(
           "group relative inline-flex shrink-0 items-center overflow-hidden rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold",
           size === "lg" &&
@@ -163,13 +195,13 @@ export function GreenPill({
             "absolute -inset-x-[20%] top-[-100%] h-[300%] translate-y-[70%] rounded-[50%] bg-gold transition-[translate] duration-[600ms] ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:translate-y-0",
           )}
         />
-      </Link>
+      </PillTarget>
     );
   }
   return (
-    <Link
+    <PillTarget
       href={href}
-      {...(href.startsWith("http") && { target: "_blank", rel: "noopener noreferrer" })}
+      onClick={onClick}
       className={cn(
         "press inline-flex shrink-0 items-center rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold hover:tracking-[2.6px]",
         size === "md"
@@ -179,7 +211,7 @@ export function GreenPill({
       )}
     >
       <span className="trim leading-[1.7]">{children}</span>
-    </Link>
+    </PillTarget>
   );
 }
 

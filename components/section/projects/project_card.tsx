@@ -1,112 +1,130 @@
 "use client";
 
-import React, { useState } from "react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Home, Bath, Columns, MapPin } from "lucide-react";
+import { useState } from "react";
+import { HoverShutter } from "@/components/ui/hover_shutter";
 import type { ProjectData } from "@/lib/projects";
+import { SPRING } from "@/lib/utils";
 
-interface ProjectCardProps {
-  project: ProjectData;
+const FALLBACK_IMAGE = "/image/projects/projectsHero.png";
+
+function Spec({ icon, children }: { icon: string; children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-1">
+      <Image src={`/projects/icons/${icon}.svg`} alt="" width={16} height={16} className="size-4 shrink-0" />
+      <span className="trim whitespace-nowrap text-[13px] uppercase leading-none text-sage">
+        {children}
+      </span>
+    </span>
+  );
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+/**
+ * Figma "Featured Project" card. Fades up as it scrolls in, a beat after the card to its left; cards
+ * mounted or dropped by a filter enter and leave on the grid's layout animation. On hover the
+ * second photo opens over the first with the shutter and the rule draws across in green.
+ */
+export function ProjectCard({
+  project,
+  index = 0,
+  armed = true,
+}: {
+  project: ProjectData;
+  /** Position in the grid, for the stagger across a row. */
+  index?: number;
+  /** Mount the hover photo only once a mouse has entered the grid. */
+  armed?: boolean;
+}) {
   const [imgSrc, setImgSrc] = useState(project.image);
-
-  // Formatted SQFT
-  const sqft = project.size
-    ? project.size.toUpperCase().replace(/\s*SQFT|\s*SFT/i, "") + " SQFT"
-    : "1600 SQFT";
-
-  // Beds / Bathrooms / Balconies
-  const bathsCount = project.beds || 3;
-  const balconiesCount = project.beds || 3;
-  const projectHref = `/projects/${project.slug || project.id}`;
-  const location = project.location || project.community?.name;
+  const href = `/projects/${project.slug || project.id}`;
+  const blurb = project.hover_text || project.description;
 
   return (
-    <article className="group flex flex-col bg-white">
-      {/* Card Image (whole area links to details) */}
+    <motion.article
+      layout
+      initial={{ opacity: 0.001, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+      exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.3 } }}
+      transition={{ ...SPRING, delay: (index % 3) * 0.12 }}
+      className="group flex flex-col gap-4"
+    >
       <Link
-        href={projectHref}
+        href={href}
         aria-label={`View details of ${project.name}`}
-        className="relative block w-full aspect-[4/3] overflow-hidden bg-[#f3efe9]"
+        className="zoom-frame relative block aspect-[466/336]"
       >
-        <Image
-          src={imgSrc}
-          alt={project.name}
-          fill
-          // ponytail: source is a 1600x600 banner cropped to 4:3, so only ~half its width
-          // is visible; request ~2x the card width. Revert to normal sizes once ERP has proper card images.
-          sizes="(max-width: 768px) 200vw, 100vw"
-          quality={90}
-          className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-          onError={() => setImgSrc("/image/projects/projectsHero.png")}
-        />
-
-        {/* Luxury Collection Badge */}
-        <span className="absolute top-3 sm:top-3.5 left-3 sm:left-3.5 z-10 inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-semibold tracking-[0.14em] uppercase text-white bg-black/45 backdrop-blur-md border border-white/20">
-          {project.tag || "LUXURY COLLECTION"}
-        </span>
-
-        {/* Circular PROJECT DETAILS badge, revealed on hover */}
-        <span className="absolute bottom-5 right-5 z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-center text-white text-[10px] sm:text-[11px] font-normal tracking-widest uppercase leading-tight opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300">
-          Project
-          <br />
-          Details
-        </span>
+        <div className="absolute inset-0">
+          <Image
+            src={imgSrc}
+            alt={project.name}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            className="object-cover"
+            onError={() => setImgSrc(FALLBACK_IMAGE)}
+          />
+        </div>
+        {project.image2 && (
+          <HoverShutter
+            src={project.image2}
+            armed={armed}
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          />
+        )}
+        {project.tag && (
+          <span className="glass-light absolute left-4 top-4 inline-flex h-[27px] items-center overflow-hidden rounded-full bg-[rgba(10,30,40,0.14)] px-[11px] text-[10px] font-medium uppercase tracking-[1.33px] text-white backdrop-blur-[4px]">
+            <span className="trim leading-[1.7]">{project.tag}</span>
+          </span>
+        )}
       </Link>
 
-      {/* Card Body */}
-      <div className="flex flex-col flex-1 pt-4">
-        {/* Title & Description on Left, Starting from & Price on Right */}
+      <div className="flex flex-col gap-3.5">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <Link href={projectHref} className="block">
-              <h3 className="font-heading text-xl sm:text-2xl font-normal text-[#044133] leading-snug truncate">
-                {project.name}
-              </h3>
-            </Link>
-            <p className="text-xs text-gray-500 font-light mt-1 line-clamp-2 leading-relaxed max-w-sm">
-              {project.description ||
-                `${project.location} — designed for modern living`}
+          <div className="flex min-w-0 flex-col gap-[11px]">
+            <h3 className="trim truncate font-display text-[24px] font-medium capitalize leading-[1.5] text-green">
+              <Link href={href}>{project.name}</Link>
+            </h3>
+            {blurb && (
+              <p className="line-clamp-2 max-w-[238px] text-[12px] leading-[1.4] text-sage">
+                {blurb}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-[11px] leading-[1.5]">
+            <p className="trim text-right text-[12px] tracking-[-0.24px] text-[#667085]">
+              Starting from
+            </p>
+            <p className="trim whitespace-nowrap text-[14px] tracking-[-0.14px] text-ink">
+              {project.price_range || project.price}
             </p>
           </div>
+        </div>
 
-          <div className="text-right shrink-0">
-            <span className="block text-[11px] text-gray-400 font-light">
-              Starting from
-            </span>
-            <span className="block text-sm sm:text-base font-normal text-[#14261f] mt-0.5 whitespace-nowrap">
-              {project.price_range || project.price || "Contact for Price"}
-            </span>
+        <div className="flex flex-col gap-4">
+          <span className="relative block h-px w-full overflow-hidden bg-stone-2/40">
+            <span className="absolute inset-0 origin-left scale-x-0 bg-green transition-transform duration-700 ease-out-expo group-hover:scale-x-100" />
+          </span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+              {project.size && <Spec icon="house">{project.size}</Spec>}
+              {project.beds ? <Spec icon="balcony">{project.beds} BHK</Spec> : null}
+              {project.building_type && (
+                <span className="trim whitespace-nowrap text-[13px] uppercase leading-none text-sage">
+                  {project.building_type}
+                </span>
+              )}
+            </div>
+            <Link
+              href={`${href}#contact`}
+              className="press inline-flex shrink-0 items-center rounded-full border-[0.666px] border-[#e0d1b6] bg-white px-4 py-3 text-[12px] font-medium uppercase text-green hover:border-green"
+            >
+              <span className="trim leading-[1.7]">Contact now</span>
+            </Link>
           </div>
         </div>
-
-        {/* Specs Row */}
-        <div className="border-t border-[#ede7dc] mt-4 pt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-700">
-          <span className="inline-flex items-center gap-1.5">
-            <Home className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
-            {sqft}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Bath className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
-            {bathsCount} BATHROOM
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Columns className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
-            {balconiesCount} BALCONY
-          </span>
-        </div>
-
-        {/* Location Row */}
-        {location && (
-          <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-gray-600">
-            <MapPin className="w-4 h-4 text-gray-500 shrink-0" strokeWidth={1.5} />
-            <span className="truncate">{location}</span>
-          </p>
-        )}
       </div>
-    </article>
+    </motion.article>
   );
 }

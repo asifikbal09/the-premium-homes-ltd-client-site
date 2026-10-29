@@ -262,7 +262,7 @@ export function Words({
   );
 }
 
-/** Paragraph whose words ink in as it scrolls through the viewport. */
+/** Paragraph whose words ink in as it scrolls through the viewport. A "\n" in `text` forces a line break. */
 export function InkScrub({
   text,
   className,
@@ -281,16 +281,17 @@ export function InkScrub({
   });
   const words = text.split(" ");
   return (
-    <p ref={ref} className={className} style={style} aria-label={text}>
+    <p ref={ref} className={className} style={style} aria-label={text.replace(/\n/g, " ")}>
       {indent}
       {words.map((w, i) => (
-        <InkWord
-          key={i}
-          word={w}
-          i={i}
-          total={words.length}
-          progress={scrollYProgress}
-        />
+        <Fragment key={i}>
+          {w.split("\n").map((part, j) => (
+            <Fragment key={j}>
+              {j > 0 && <br />}
+              <InkWord word={part} i={i} total={words.length} progress={scrollYProgress} />
+            </Fragment>
+          ))}
+        </Fragment>
       ))}
     </p>
   );
@@ -325,12 +326,16 @@ function InkWord({
 /** Rolls a number up to `value` once in view, preserving a suffix like "+". */
 const WHEEL_FACES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]; // trailing 0 so 9 → 0 wraps without a jump
 
-/** One odometer wheel: a strip of digit faces slid by a continuous index. */
-function Wheel({ index }: { index: MotionValue<number> }) {
+/**
+ * One odometer wheel: a strip of digit faces slid by a continuous index. The wheel is as wide as
+ * the digit it lands on, so proportional figures keep their natural spacing ("1200", not "1 200").
+ */
+function Wheel({ index, digit }: { index: MotionValue<number>; digit: number }) {
   const y = useTransform(index, (v) => `${-v}em`);
   return (
-    <span className="relative inline-block h-[1em] overflow-hidden align-top">
-      <motion.span style={{ y }} className="flex flex-col">
+    <span className="relative inline-block h-[1em] leading-none [overflow-y:clip]">
+      <span className="invisible">{digit}</span>
+      <motion.span style={{ y }} className="absolute left-1/2 top-0 flex -translate-x-1/2 flex-col items-center">
         {WHEEL_FACES.map((n, i) => (
           <span key={i} className="block h-[1em] leading-none">
             {n}
@@ -385,7 +390,7 @@ export function Counter({
           digit={Math.floor(target / 10 ** place) % 10}
         />
       ))}
-      {suffix}
+      <span className="inline-block h-[1em] leading-none">{suffix}</span>
     </span>
   );
 }
@@ -402,7 +407,7 @@ function OdometerWheel({
     progress,
     (p) => (Math.min(Math.max(p, 0), 1) * (10 + digit)) % 10,
   );
-  return <Wheel index={index} />;
+  return <Wheel index={index} digit={digit} />;
 }
 
 /**

@@ -8,7 +8,42 @@ import { GreenPill } from "@/components/ui/primitives";
 
 const PRICE_PREDICTOR_URL = "https://prop-value.xyz/";
 
-export function HomeCta() {
+type CtaImage = {
+  src: string;
+  alt: string;
+  className?: string;
+  /** Figma crop of the photo inside its frame; fills the frame when left out. */
+  crop?: React.CSSProperties;
+};
+
+/** The home defaults: the tower at dusk over the house, opening the price predictor. */
+const HOME_BACKGROUND: CtaImage = {
+  src: "/home/img/cta-bg.jpg",
+  alt: "",
+  // Figma "image" layer, 2032 wide, offset -216.
+  crop: { left: "-24.78%", top: "-0.28%", width: "170.57%", height: "237.26%" },
+};
+const HOME_CARD: CtaImage = { src: "/home/img/cta-base.jpg", alt: "Premium Homes tower surrounded by trees at dusk" };
+
+/**
+ * A photo card over a full-bleed backdrop. The About page reuses it for the career call to action
+ * by passing its own copy, button and images.
+ */
+export function HomeCta({
+  id = "contact",
+  eyebrow = "Start Your Journey",
+  title = "Find Your Next Address with TPH",
+  cta = { label: "try property price predictor", href: PRICE_PREDICTOR_URL },
+  background = HOME_BACKGROUND,
+  card = HOME_CARD,
+}: {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  cta?: { label: string; href: string };
+  background?: CtaImage;
+  card?: CtaImage;
+}) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -22,30 +57,22 @@ export function HomeCta() {
 
   return (
     <section
-      id="contact"
+      id={id}
       ref={ref}
       className="relative isolate flex h-[clamp(720px,59.375vw,950px)] items-center justify-center overflow-hidden bg-[#e6e4e0] px-4"
     >
-      {/* Background house — Figma "image" layer, 2032 wide, offset -216 */}
+      {/* Backdrop, drifting against the scroll */}
       <motion.div
         style={{ y: bgY }}
         className="absolute -z-10 inset-y-[-6%] left-[-13.5%] w-[127%]"
       >
-        <div
-          className="absolute"
-          style={{
-            left: "-24.78%",
-            top: "-0.28%",
-            width: "170.57%",
-            height: "237.26%",
-          }}
-        >
+        <div className="absolute" style={background.crop ?? { inset: 0 }}>
           <Image
-            src="/home/img/cta-bg.jpg"
-            alt=""
+            src={background.src}
+            alt={background.alt}
             fill
-            sizes="220vw"
-            className="object-cover"
+            sizes={background.crop ? "220vw" : "130vw"}
+            className={background.className ?? "object-cover"}
           />
         </div>
         <div className="absolute inset-0 bg-black/20" />
@@ -71,11 +98,11 @@ export function HomeCta() {
             <div className="zoom-frame relative size-full">
               <div className="absolute inset-0">
                 <Image
-                  src="/home/img/cta-base.jpg"
-                  alt="Premium Homes tower surrounded by trees at dusk"
+                  src={card.src}
+                  alt={card.alt}
                   fill
                   sizes="592px"
-                  className="object-cover"
+                  className={card.className ?? "object-cover"}
                 />
               </div>
             </div>
@@ -89,20 +116,20 @@ export function HomeCta() {
                 delay={0.7}
                 className="text-[14px] font-medium uppercase leading-[1.5] tracking-[0.32px] text-gold md:text-[16px]"
               >
-                Start Your Journey
+                {eyebrow}
               </Appear>
               <Words
                 as="h2"
                 play={play}
                 delay={0.85}
                 mask
-                text="Find Your Next Address with TPH"
+                text={title}
                 className="max-w-[426px] font-display text-[30px] font-medium capitalize leading-[1.22] text-green md:text-[36px] md:leading-[44px]"
               />
             </div>
             <Appear preset="lift" play={play} delay={1.25}>
-              <GreenPill href={PRICE_PREDICTOR_URL} size="lg" arrow>
-                try property price predictor
+              <GreenPill href={cta.href} size="lg" arrow>
+                {cta.label}
               </GreenPill>
             </Appear>
           </div>

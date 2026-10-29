@@ -1,36 +1,29 @@
-import React, { Suspense } from "react";
-import { getProjects } from "@/lib/projects";
+import { Suspense } from "react";
+import { Eyebrow, Heading } from "@/components/ui/primitives";
+import type { ProjectData } from "@/lib/projects";
 import { ProjectsFilterGrid } from "./projects_filter_grid";
 
-/**
- * Main Featured Projects Section (Server Component)
- * Loads project data from the central API point on the server,
- * renders the section header, and hydrates the client filterable grid.
- */
-export async function FeaturedProjectsSection() {
-  const projects = await getProjects();
-
+/** Figma "Featured Project": section header over the filterable grid of every project from the API. */
+export function FeaturedProjectsSection({ projects }: { projects: ProjectData[] }) {
   return (
     <section
       id="featured-projects"
-      aria-label="Featured Projects"
-      className="w-full bg-white py-14 sm:py-20 lg:py-24"
+      aria-label="Featured projects"
+      className="bg-white pb-12 pt-16 md:pt-[120px]"
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
-        {/* Section Header */}
-        <div className="mb-8 sm:mb-10">
-          <span className="inline-block text-[#C49C57] font-semibold text-xs sm:text-sm tracking-[0.2em] uppercase">
-            FEATURED PROJECT
-          </span>
-          <h2 className="font-heading text-3xl sm:text-5xl md:text-6xl font-normal text-[#044133] mt-2 tracking-tight">
+      <div className="shell">
+        <div className="flex max-w-[835px] flex-col gap-4">
+          <Eyebrow>Featured Project</Eyebrow>
+          <Heading size={64} min={40} leading={1.1} mask>
             Featured Project
-          </h2>
+          </Heading>
         </div>
-
-        {/* Client Interactive Filter & 3-Column Grid */}
-        <Suspense fallback={<div className="py-12 text-center text-gray-400">Loading projects...</div>}>
-          <ProjectsFilterGrid initialProjects={projects} />
-        </Suspense>
+        <div className="mt-10 md:mt-12">
+          {/* useSearchParams needs a Suspense boundary on a statically rendered page. */}
+          <Suspense>
+            <ProjectsFilterGrid initialProjects={projects} />
+          </Suspense>
+        </div>
       </div>
     </section>
   );

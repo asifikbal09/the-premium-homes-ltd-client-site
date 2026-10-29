@@ -1,379 +1,139 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { Appear, Counter, Shutter } from "@/components/ui/motion";
+import { GreenPill, Heading } from "@/components/ui/primitives";
+import { DrawnRule } from "./drawn_rule";
 
+/** Figma "Built on trust" frame: 1600 × 1393. */
+const W = 1600;
+const H = 1393;
+const pct = (v: number, of: number) => `${(v / of) * 100}%`;
+
+const COPY =
+  "At TPHL (The Premium Homes Ltd.), trust is not a claim, it’s our foundation. From transparent dealings to on-time delivery, every decision we make is guided by our commitment to quality, integrity, and the confidence of our customers.";
+
+const STATS = [
+  { value: "1200+", label: "Happy clients", x: 928, y: 569 },
+  { value: "4.9/5", label: "Average rating", x: 928, y: 831 },
+  { value: "52+", label: "Ongoing projects", x: 70, y: 1092 },
+  { value: "98%", label: "Satisfaction rate", x: 532, y: 1092 },
+];
+
+const PHOTOS = [
+  { src: "/image/about/second_section03.png", alt: "Patterned screen beside a sea-view lounge", x: 197.55, y: 160, w: 192.28, h: 253.57, drift: 70 },
+  { src: "/image/about/second_section02.png", alt: "Double-height lobby with a chandelier", x: 1235.36, y: 286.59, w: 175.49, h: 210.75, drift: 110 },
+  { src: "/image/about/second_section01.png", alt: "TPHL advisers talking with clients", x: 1177, y: 1075, w: 343, h: 232, drift: 50 },
+];
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-start gap-[2.5px] whitespace-nowrap">
+      <Counter
+        value={value}
+        className="font-display font-normal leading-none text-green text-[clamp(52px,9.25vw,148px)]"
+      />
+      <Appear as="p" preset="lift" delay={0.4} className="text-[clamp(14px,1.125vw,18px)] uppercase leading-[1.4] text-sage">
+        {label}
+      </Appear>
+    </div>
+  );
+}
+
+/**
+ * Heading masks up, the photos open with the shutter and drift at their own pace as the section
+ * scrolls, the rule draws across, and each figure rolls up on its odometer as it comes into view.
+ */
 export function AboutProvenTrust() {
-  const [stats, setStats] = useState({
-    happy_clients: "1200+",
-    average_rating: "4.9/5",
-    satisfaction_rate: "98%",
-    ongoing_projects: "52+",
-  });
-
-  useEffect(() => {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      process.env.API_BASE_URL ||
-      "https://api.dpremiumhomes.com/api";
-    const cleanBase = baseUrl.replace(/\/+$/, "");
-
-    fetch(`${cleanBase}/about-settings`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load settings");
-        return res.json();
-      })
-      .then((data) => {
-        const settings = data?.settings || data?.data || data;
-        if (settings) {
-          setStats({
-            happy_clients:
-              settings.stats_clients || settings.happy_clients || "1200+",
-            average_rating:
-              settings.stats_rating || settings.average_rating || "4.9/5",
-            satisfaction_rate:
-              settings.stats_satisfaction ||
-              settings.satisfaction_rate ||
-              "98%",
-            ongoing_projects:
-              settings.stats_projects || settings.ongoing_projects || "52+",
-          });
-        }
-      })
-      .catch((err) => {
-        console.warn("AboutProvenTrust: using fallback stats", err);
-      });
-  }, []);
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const drifts = [
+    useTransform(scrollYProgress, [0, 1], [PHOTOS[0].drift, -PHOTOS[0].drift]),
+    useTransform(scrollYProgress, [0, 1], [PHOTOS[1].drift, -PHOTOS[1].drift]),
+    useTransform(scrollYProgress, [0, 1], [PHOTOS[2].drift, -PHOTOS[2].drift]),
+  ];
 
   return (
-    <section
-      aria-label="Built On Trust, Proven By Delivery"
-      className="relative w-full bg-[#ffffff] text-[#1f2723] overflow-hidden py-16 sm:py-20 lg:py-28 selection:bg-[#d0a65b]/20"
-    >
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
-        {/* ========================================================= */}
-        {/* DESKTOP LAYOUT (lg and above): Matches the exact visual   */}
-        {/* composition from the design reference                     */}
-        {/* ========================================================= */}
-        <div className="hidden lg:block relative w-full">
-          {/* Top Row: Title flanked by Image 3 (left) and Image 2 (right) */}
-          <div className="grid grid-cols-12 gap-8 items-start mb-12 xl:mb-16">
-            {/* Top-Left Image: Timber screen & daybed overlooking sea */}
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
-              className="col-span-3 pt-6"
-            >
-              <div className="relative w-full max-w-[240px] aspect-[3/4] rounded-2xl overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:shadow-[0_22px_45px_rgba(4,65,51,0.15)] border border-black/[0.05] transition-shadow duration-300">
-                <Image
-                  src="/image/about/second_section03.png"
-                  alt="Architectural terrace and daybed overlooking panoramic ocean views"
-                  fill
-                  sizes="260px"
-                  className="object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-            </motion.div>
-
-            {/* Center Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="col-span-6 flex flex-col items-center text-center pt-2"
-            >
-              <h2 className="font-heading text-5xl xl:text-[68px] 2xl:text-[76px] font-normal text-[#044133] leading-[1.06] tracking-tight">
-                Built On Trust
-                <br />
-                Proven By Delivery
-              </h2>
-            </motion.div>
-
-            {/* Top-Right Image: Grand vaulted ceiling hotel lobby */}
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
-              className="col-span-3 flex justify-end pt-12 xl:pt-16"
-            >
-              <div className="relative w-full max-w-[220px] aspect-[3/4] rounded-2xl overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:shadow-[0_22px_45px_rgba(4,65,51,0.15)] border border-black/[0.05] transition-shadow duration-300">
-                <Image
-                  src="/image/about/second_section02.png"
-                  alt="Grand architectural lobby with vaulted ceiling and crystal chandeliers"
-                  fill
-                  sizes="240px"
-                  className="object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Lower Grid: Narrative & CTA (Left) + Stats & Bottom-Right Image */}
-          <div className="grid grid-cols-12 gap-8 items-start">
-            {/* Left Column: Narrative Copy & Explore Projects Button */}
-            <div className="col-span-5 flex flex-col justify-between min-h-[380px]">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: 0.25 }}
-                className="max-w-[360px]"
-              >
-                {/* Decorative horizontal accent indicator */}
-                <div className="relative w-full mb-5">
-                  <div className="w-10 h-[3px] bg-[#1f2723]" />
-                  <div className="w-full h-[1px] bg-[#E8E2D2] -mt-[1px]" />
-                </div>
-
-                <p className="font-sans text-[13px] xl:text-[14px] leading-relaxed text-[#526058] mb-7">
-                  At TPHL (The Premium Homes Ltd.), Trust Is Not A Claim, It&apos;s
-                  Our Foundation. From Transparent Dealings To On-Time Delivery,
-                  Every Decision We Make Is Guided By Our Commitment To Quality,
-                  Integrity, And The Confidence Of Our Customers.
-                </p>
-
-                <Link
-                  href="/projects"
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#044133] hover:bg-[#055b4b] text-[#fdfdf8] text-xs font-semibold tracking-[0.14em] uppercase transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
-                >
-                  EXPLORE PROJECTS
-                </Link>
-              </motion.div>
-
-              {/* Bottom Stat 1: Ongoing Projects */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: 0.35 }}
-                className="mt-14"
-              >
-                <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  {stats.ongoing_projects}
-                </span>
-                <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
-                  ONGOING PROJECTS
-                </span>
-              </motion.div>
-            </div>
-
-            {/* Middle Column: Bottom Stat 2: Satisfaction Rate */}
-            <div className="col-span-3 flex flex-col justify-end min-h-[380px]">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-              >
-                <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  {stats.satisfaction_rate}
-                </span>
-                <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
-                  SATISFACTION RATE
-                </span>
-              </motion.div>
-            </div>
-
-            {/* Right Column: Upper Stats (Happy Clients, Average Rating) + Bottom-Right Team Lounge Image */}
-            <div className="col-span-4 flex flex-col gap-10">
-              {/* Stat 3: Happy Clients */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-              >
-                <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  {stats.happy_clients}
-                </span>
-                <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
-                  HAPPY CLIENTS
-                </span>
-              </motion.div>
-
-              {/* Stat 4: Average Rating */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: 0.35 }}
-              >
-                <span className="block font-heading text-6xl xl:text-7xl 2xl:text-[84px] font-normal text-[#044133] leading-none mb-2">
-                  {stats.average_rating}
-                </span>
-                <span className="block font-sans text-xs font-semibold tracking-[0.18em] uppercase text-[#526058]">
-                  AVERAGE RATING
-                </span>
-              </motion.div>
-
-              {/* Bottom-Right Image: Team conversation in lounge */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 25 }}
-                whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
-                className="mt-4"
-              >
-                <div className="relative w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.08)] hover:shadow-[0_22px_45px_rgba(4,65,51,0.15)] border border-black/[0.05] transition-shadow duration-300">
-                  <Image
-                    src="/image/about/second_section01.png"
-                    alt="TPHL executives and team members discussing in comfortable lounge"
-                    fill
-                    sizes="340px"
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-              </motion.div>
-            </div>
-          </div>
+    <section ref={ref} aria-label="Built on trust, proven by delivery" className="relative overflow-hidden bg-white">
+      {/* Desktop: the Figma frame, every box placed as a share of 1600 × 1393. */}
+      <div className="relative mx-auto hidden aspect-[1600/1393] w-full max-w-[1600px] lg:block">
+        <div className="absolute inset-x-0 flex justify-center" style={{ top: pct(75, H) }}>
+          <Heading size={72} min={48} leading={1.1} mask className="w-[37.4%] text-center">
+            Built on trust proven by delivery
+          </Heading>
         </div>
 
-        {/* ========================================================= */}
-        {/* MOBILE & TABLET LAYOUT (< lg): Fluid, structured & clean   */}
-        {/* ========================================================= */}
-        <div className="lg:hidden flex flex-col gap-10">
-          {/* Header */}
+        {PHOTOS.map((p, i) => (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="text-center"
+            key={p.src}
+            className="absolute"
+            style={{ left: pct(p.x, W), top: pct(p.y, H), width: pct(p.w, W), aspectRatio: `${p.w} / ${p.h}`, y: drifts[i] }}
           >
-            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-normal text-[#044133] leading-tight">
-              Built On Trust
-              <br />
-              Proven By Delivery
-            </h2>
+            <Shutter delay={0.1 * i} className="relative size-full">
+              <Image src={p.src} alt={p.alt} fill sizes="22vw" className="object-cover" />
+            </Shutter>
           </motion.div>
+        ))}
 
-          {/* Image Reel / Gallery */}
-          <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory -mx-5 px-5 sm:-mx-8 sm:px-8">
-            <div className="shrink-0 snap-center w-[220px] sm:w-[260px] aspect-[3/4]  overflow-hidden relative shadow-md bg-neutral-100">
-              <Image
-                src="/image/about/second_section03.png"
-                alt="Architectural terrace"
-                fill
-                sizes="260px"
-                className="object-cover"
-              />
-            </div>
-            <div className="shrink-0 snap-center w-[220px] sm:w-[260px] aspect-[3/4]  overflow-hidden relative shadow-md bg-neutral-100">
-              <Image
-                src="/image/about/second_section02.png"
-                alt="Grand lobby"
-                fill
-                sizes="260px"
-                className="object-cover"
-              />
-            </div>
-            <div className="shrink-0 snap-center w-[220px] sm:w-[260px] aspect-[3/4]  overflow-hidden relative shadow-md bg-neutral-100">
-              <Image
-                src="/image/about/second_section01.png"
-                alt="TPHL lounge discussion"
-                fill
-                sizes="260px"
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Narrative & Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="flex flex-col items-start gap-5 max-w-lg"
-          >
-            <div className="relative w-full max-w-[280px]">
-              <div className="w-10 h-[3px] bg-[#1f2723]" />
-              <div className="w-full h-[1px] bg-[#E8E2D2] -mt-[1px]" />
-            </div>
-
-            <p className="font-sans text-sm leading-relaxed text-[#526058]">
-              At TPHL (The Premium Homes Ltd.), Trust Is Not A Claim, It&apos;s
-              Our Foundation. From Transparent Dealings To On-Time Delivery,
-              Every Decision We Make Is Guided By Our Commitment To Quality,
-              Integrity, And The Confidence Of Our Customers.
-            </p>
-
-            <Link
-              href="/projects"
-              className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#044133] hover:bg-[#055b4b] text-[#fdfdf8] text-xs font-semibold tracking-[0.14em] uppercase transition-all duration-300 shadow-md active:scale-95"
-            >
-              EXPLORE PROJECTS
-            </Link>
-          </motion.div>
-
-          {/* 4 Stats Grid on Mobile */}
-          <div className="grid grid-cols-2 gap-6 pt-4 border-t border-[#E8E2D2]">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                {stats.happy_clients}
-              </span>
-              <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
-                HAPPY CLIENTS
-              </span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                {stats.average_rating}
-              </span>
-              <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
-                AVERAGE RATING
-              </span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                {stats.ongoing_projects}
-              </span>
-              <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
-                ONGOING PROJECTS
-              </span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <span className="block font-heading text-4xl sm:text-5xl font-normal text-[#044133] leading-none mb-1.5">
-                {stats.satisfaction_rate}
-              </span>
-              <span className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-[#526058]">
-                SATISFACTION RATE
-              </span>
-            </motion.div>
-          </div>
+        <div className="absolute" style={{ left: pct(80, W), top: pct(548, H), width: pct(568.44, W) }}>
+          <DrawnRule tone="light" />
         </div>
+        <Appear
+          as="p"
+          preset="lift"
+          className="absolute text-[clamp(15px,1.125vw,18px)] capitalize leading-[1.4] text-sage"
+          style={{ left: pct(80, W), top: pct(583.27, H), width: pct(587.76, W) }}
+        >
+          {COPY}
+        </Appear>
+        <div className="absolute" style={{ left: pct(80, W), top: pct(745, H) }}>
+          <Appear preset="lift" delay={0.15}>
+            <GreenPill href="/projects" arrow className="h-12 px-[29px] text-[16px] text-white">
+              explore projects
+            </GreenPill>
+          </Appear>
+        </div>
+
+        {STATS.map((s) => (
+          <div key={s.label} className="absolute" style={{ left: pct(s.x, W), top: pct(s.y, H) }}>
+            <Stat {...s} />
+          </div>
+        ))}
+      </div>
+
+      {/* Phones and tablets: the same parts in reading order. */}
+      <div className="shell flex flex-col gap-10 py-16 lg:hidden">
+        <Heading size={72} min={40} leading={1.1} mask className="text-center">
+          Built on trust proven by delivery
+        </Heading>
+        <div className="grid grid-cols-2 gap-4">
+          {PHOTOS.slice(0, 2).map((p) => (
+            <Shutter key={p.src} className="relative aspect-[192/254]">
+              <Image src={p.src} alt={p.alt} fill sizes="50vw" className="object-cover" />
+            </Shutter>
+          ))}
+        </div>
+        <div className="flex flex-col gap-6">
+          <DrawnRule tone="light" />
+          <Appear as="p" preset="lift" className="text-[16px] capitalize leading-[1.4] text-sage">
+            {COPY}
+          </Appear>
+          <Appear preset="lift" delay={0.15}>
+            <GreenPill href="/projects" arrow className="h-12 px-[29px] text-[16px] text-white">
+              explore projects
+            </GreenPill>
+          </Appear>
+        </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10">
+          {STATS.map((s) => (
+            <Stat key={s.label} {...s} />
+          ))}
+        </div>
+        <Shutter className="relative aspect-[343/232]">
+          <Image src={PHOTOS[2].src} alt={PHOTOS[2].alt} fill sizes="100vw" className="object-cover" />
+        </Shutter>
       </div>
     </section>
   );

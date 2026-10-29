@@ -3,9 +3,9 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProjectsHero } from "@/components/section/projects/projects_hero";
 import { FeaturedProjectsSection } from "@/components/section/projects/featured_projects_section";
-import { FeaturedProjects } from "@/components/section/home/featured_projects";
-import { PropertyPredictionSection } from "@/components/section/team/property_prediction_section";
-import { ResidentReviews } from "@/components/section/home/resident_reviews";
+import { SignatureDevelopments } from "@/components/section/home/signature_developments";
+import { HomeTestimonials } from "@/components/section/home/home_testimonials";
+import { HomeCta } from "@/components/section/home/home_cta";
 import { getProjects } from "@/lib/projects";
 
 export const metadata: Metadata = {
@@ -18,16 +18,17 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-      <main className="flex-1">
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-white text-sage">
         <ProjectsHero />
-        <FeaturedProjectsSection />
-        <FeaturedProjects initialProjects={projects} />
-        <ResidentReviews />
-        <PropertyPredictionSection/>
+        <FeaturedProjectsSection projects={projects} />
+        <SignatureDevelopments initialProjects={projects} />
+        <HomeTestimonials />
+        <HomeCta />
       </main>
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }

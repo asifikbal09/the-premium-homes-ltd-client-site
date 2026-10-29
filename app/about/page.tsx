@@ -5,13 +5,15 @@ import { AboutHero } from "@/components/section/about/about_hero";
 import { AboutProvenTrust } from "@/components/section/about/about_proven_trust";
 import { AboutFamilySlider } from "@/components/section/about/about_family_slider";
 import { AboutPrinciplesDna } from "@/components/section/about/about_principles_dna";
+import { AboutMissionVision } from "@/components/section/about/about_mission_vision";
+import { AboutPromiseCards } from "@/components/section/about/about_promise_cards";
 import { AboutBuildingJourney } from "@/components/section/about/about_building_journey";
-import { AboutFounderTrust } from "@/components/section/about/about_founder_trust";
 import { AboutMilestones } from "@/components/section/about/about_milestones";
+import { AboutFounderTrust } from "@/components/section/about/about_founder_trust";
 import { AboutPartners } from "@/components/section/about/about_partners";
-import { LifeAtTphlStories } from "@/components/section/life_at_tphl/life_at_tphl_stories";
-import { ResidentReviews } from "@/components/section/home/resident_reviews";
 import { AboutCareerCta } from "@/components/section/about/about_career_cta";
+import { LifeAtTphlStories } from "@/components/section/life_at_tphl/life_at_tphl_stories";
+import { HomeTestimonials } from "@/components/section/home/home_testimonials";
 
 export const metadata: Metadata = {
   title: "About Us | The Story Of A Dream | Premium Homes",
@@ -19,47 +21,31 @@ export const metadata: Metadata = {
     "TPHL is shaping accessible premium living in Bangladesh through honest communication, structured buying journeys, and homes designed around real families.",
 };
 
+/** Sections in Figma "About page" order. */
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
-      {/* Sticky Top Navbar on Scroll */}
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-
-      <main className="flex-1">
-        {/* Animated Visual Hero with 5-image showcase */}
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-white text-sage">
         <AboutHero />
-
-        {/* Built On Trust, Proven By Delivery (Second Section) */}
         <AboutProvenTrust />
-
-        {/* Designed for families. Scaled for tomorrow. (Third Section - Stacked Slider) */}
         <AboutFamilySlider />
-
-        {/* Milestones / Foundation Section */}
-        <AboutMilestones />
-
-        {/* Founder Trust Image Section */}
-        <AboutFounderTrust />
-
-        {/* Additional sections can be added here */}
         <AboutPrinciplesDna />
-
+        <AboutMissionVision />
+        <AboutPromiseCards />
         <AboutBuildingJourney />
-
-        <LifeAtTphlStories />
-
-        {/* Our Partners / Suppliers Section */}
+        <AboutMilestones />
+        <AboutFounderTrust />
+        <LifeAtTphlStories
+          title="Explore life at the premium home"
+          cta={{ label: "Visit life at TPH", href: "/life-at-premium-homes" }}
+        />
         <AboutPartners />
-
-        <ResidentReviews />
-
-        {/* Career Journey CTA (Last Section) */}
+        <HomeTestimonials />
         <AboutCareerCta />
       </main>
-
-      {/* Global Footer */}
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }
-

@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
+import { motion, useInView } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRef } from "react";
+import { Appear } from "@/components/ui/motion";
+import { GreenPill, Heading } from "@/components/ui/primitives";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { SETTLE, SPRING_SOFT } from "@/lib/utils";
 import team01 from "@/public/image/life-at-tphl/stories-team01.png";
 import team02 from "@/public/image/life-at-tphl/stories-team02.png";
 import team03 from "@/public/image/life-at-tphl/stories-team03.png";
@@ -38,33 +42,60 @@ const PINS = [
   [1484, 85.3],
 ];
 
-export function LifeAtTphlStories() {
+const COPY =
+  "TPHL gives me the space to grow and contribute to real impact. Hear from the people shaping TPHL’s growth, culture, and customer experience.";
+
+/**
+ * Photos pinned along a dashed line. Once the stage is in view the line draws across, the photos
+ * pop onto it one after another and the pins drop in last. The About page reuses it with its own
+ * title and button.
+ */
+export function LifeAtTphlStories({
+  title = "Stories from the team.",
+  cta = { label: "Join our team", href: "/career" },
+}: {
+  title?: string;
+  cta?: { label: string; href: string };
+}) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const play = useInView(stageRef, { once: true, amount: 0.3 });
+  const reduce = useReducedMotion();
+
   return (
     <section
-      aria-label="Stories From The Team"
-      className="relative w-full bg-white text-[#1f2723] pt-14 sm:pt-20 md:pt-24 lg:pt-28 pb-16 sm:pb-24 md:pb-28 overflow-hidden select-none"
+      aria-label={title}
+      className="relative w-full overflow-hidden bg-white pb-16 pt-14 select-none sm:pb-24 sm:pt-20 md:pb-28 md:pt-[120px]"
     >
-      {/* Section Heading */}
-      <div className="w-full text-center max-w-3xl mx-auto px-4 mb-4 sm:mb-6">
-        <h2 className="font-heading font-normal text-4xl sm:text-5xl md:text-6xl lg:text-[68px] text-[#054b3c] leading-[1.08] tracking-tight">
-          Stories From
-          <br />
-          The Team.
-        </h2>
+      <div className="shell flex justify-center">
+        <Heading size={72} min={40} leading={1} mask className="max-w-[680px] text-center">
+          {title}
+        </Heading>
       </div>
 
       {/* Photo stage: fixed aspect ratio, everything positioned in stage % */}
-      <div
-        className="relative w-full max-w-[1600px] mx-auto"
-        style={{ aspectRatio: `${W} / ${H}` }}
-      >
+      <div ref={stageRef} className="relative mx-auto w-full max-w-[1600px]" style={{ aspectRatio: `${W} / ${H}` }}>
         <svg
           viewBox={`0 ${-WAVE_Y} ${W} ${H}`}
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
         >
+          {/* The dashed line is revealed through a solid twin used as a mask, so the dashes stay put while it draws. */}
+          <defs>
+            <mask id="stories-wave-reveal" maskUnits="userSpaceOnUse">
+              <motion.path
+                d={WAVE}
+                fill="none"
+                stroke="white"
+                strokeWidth="8"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: play ? 1 : 0 }}
+                transition={{ duration: reduce ? 0 : 1.6, ease: SETTLE }}
+              />
+            </mask>
+          </defs>
           <path
             d={WAVE}
+            mask="url(#stories-wave-reveal)"
             fill="none"
             stroke="#546360"
             strokeWidth="2"
@@ -73,50 +104,56 @@ export function LifeAtTphlStories() {
           />
         </svg>
 
-        {CARDS.map((c) => {
+        {CARDS.map((c, i) => {
           const w = c.img.width;
           return (
             <div
               key={c.img.src}
-              className="absolute -translate-x-1/2 -translate-y-1/2 transition-[scale] duration-300 hover:scale-105 hover:z-40"
+              className="absolute -translate-x-1/2 -translate-y-1/2 transition-[scale] duration-300 hover:z-40 hover:scale-105"
               style={{ left: pct(c.x, W), top: pct(c.y, H), width: pct(w, W) }}
             >
-              <Image
-                src={c.img}
-                alt={c.alt}
-                priority={c.img === team03}
-                sizes={`(max-width: ${W}px) ${Math.round((w / W) * 100)}vw, ${w}px`}
-                className="w-full h-auto"
-              />
+              <Appear preset="pop" play={play} delay={0.3 + i * 0.1}>
+                {/* Once pinned, each photo sways a little on the line, every one at its own pace. */}
+                <motion.div
+                  animate={play && !reduce ? { rotate: [0, 1.2, -0.8, 0] } : { rotate: 0 }}
+                  transition={{ duration: 6 + i * 0.7, delay: 1.2 + i * 0.1, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ transformOrigin: "50% 0%" }}
+                >
+                  <Image
+                    src={c.img}
+                    alt={c.alt}
+                    sizes={`(max-width: ${W}px) ${Math.round((w / W) * 100)}vw, ${w}px`}
+                    className="h-auto w-full"
+                  />
+                </motion.div>
+              </Appear>
             </div>
           );
         })}
 
-        {PINS.map(([x, y]) => (
-          <span
+        {PINS.map(([x, y], i) => (
+          <motion.span
             key={x}
             aria-hidden="true"
-            className="absolute z-50 aspect-square rounded-full bg-[#e5262b] shadow-[0_1px_2px_rgba(0,0,0,0.35)] -translate-x-1/2 -translate-y-1/2"
+            initial={{ opacity: 0, y: -24 }}
+            animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }}
+            transition={reduce ? { duration: 0 } : { ...SPRING_SOFT, delay: 0.9 + i * 0.08 }}
+            className="absolute z-50 aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e5262b] shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
             style={{ left: pct(x, W), top: pct(y + WAVE_Y, H), width: `max(8px, ${pct(22, W)})` }}
           />
         ))}
       </div>
 
-      {/* Bottom Description & CTA */}
-      <div className="text-center max-w-2xl mx-auto mt-6 sm:mt-8 md:mt-10 px-4">
-        <p className="font-sans text-xs sm:text-sm md:text-[14.5px] text-[#4a5550] font-normal leading-relaxed mb-6 sm:mb-8">
-          TPHL Gives Me The Space To Grow And Contribute To Real
-          <br className="hidden sm:inline" /> Impact. Hear From The People
-          Shaping TPHL’s Growth,
-          <br className="hidden sm:inline" /> Culture, And Customer Experience.
-        </p>
-
-        <Link
-          href="/career"
-          className="group inline-flex items-center justify-center px-7 sm:px-8 py-2.5 sm:py-3 rounded-full text-[11px] sm:text-xs font-semibold tracking-[0.14em] uppercase text-white bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95"
-        >
-          <span>JOIN OUR TEAM</span>
-        </Link>
+      {/* Bottom description & CTA */}
+      <div className="shell mt-6 flex flex-col items-center gap-6 text-center sm:mt-8 md:mt-[clamp(40px,3.9vw,62px)]">
+        <Appear as="p" preset="lift" className="max-w-[644px] text-[clamp(16px,1.5vw,24px)] capitalize leading-[1.4] text-sage">
+          {COPY}
+        </Appear>
+        <Appear preset="lift" delay={0.15}>
+          <GreenPill href={cta.href} arrow className="text-white">
+            {cta.label}
+          </GreenPill>
+        </Appear>
       </div>
     </section>
   );

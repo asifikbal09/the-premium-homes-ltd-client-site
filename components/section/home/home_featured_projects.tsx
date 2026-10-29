@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Appear } from "@/components/ui/motion";
+import { FilterChips } from "@/components/ui/filter_chips";
 import { HoverShutter } from "@/components/ui/hover_shutter";
 import { Eyebrow, GreenPill, Heading } from "@/components/ui/primitives";
 import type { ProjectData } from "@/lib/projects";
@@ -241,7 +242,6 @@ export function HomeFeaturedProjects({ initialProjects = [] }: { initialProjects
   const [filter, setFilter] = useState(ALL);
   // Hover photos mount the first time a pointer enters the section (never on touch screens).
   const [armed, setArmed] = useState(false);
-  const [hoveredChip, setHoveredChip] = useState<string | null>(null);
   const visible = cards
     .filter((p) => filter === ALL || p.community === filter)
     .slice(0, MAX_CARDS);
@@ -274,60 +274,12 @@ export function HomeFeaturedProjects({ initialProjects = [] }: { initialProjects
 
         {/* Filter chips: after the heading lines, each chip fades up a beat after the last. */}
         <div className="no-scrollbar -mx-[clamp(16px,5vw,80px)] mt-10 w-[calc(100%+2*clamp(16px,5vw,80px))] overflow-x-auto md:mt-12">
-          {/* One green pill glides between chips: it follows the hovered chip, and settles back on the
-              selected one when the pointer leaves the row. */}
-          <div
-            className="mx-auto flex w-max gap-3 px-[clamp(16px,5vw,80px)]"
-            onMouseLeave={() => setHoveredChip(null)}
-          >
-            {filters.map((f, i) => {
-              const active = f === filter;
-              const lit = f === (hoveredChip ?? filter);
-              return (
-                <Appear
-                  key={f}
-                  preset="lift"
-                  delay={0.35 + i * 0.08}
-                  className="relative shrink-0"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setFilter(f)}
-                    onMouseEnter={() => setHoveredChip(f)}
-                    onFocus={() => setHoveredChip(f)}
-                    onBlur={() => setHoveredChip(null)}
-                    aria-pressed={active}
-                    className={cn(
-                      "relative flex h-[42px] items-center justify-center whitespace-nowrap rounded-[40px] text-[14px] font-medium uppercase tracking-[2px] transition-colors duration-300",
-                      // Turn white as the gliding pill arrives under the label, not before it.
-                      lit && "delay-150",
-                      f === ALL ? "px-6" : "h-[45px] px-5",
-                      lit ? "text-white" : "text-sage",
-                    )}
-                  >
-                    {lit && (
-                      <motion.span
-                        layoutId="chip"
-                        transition={{
-                          type: "spring",
-                          bounce: 0,
-                          duration: 0.7,
-                        }}
-                        className="absolute inset-0 rounded-[40px] bg-green"
-                      />
-                    )}
-                    {!lit && (
-                      <span className="absolute inset-0 rounded-[40px] border border-chip" />
-                    )}
-                    {/* Labels sit above the pill, so it never covers a neighbour's label while it glides past. */}
-                    <span className="trim relative z-10 leading-[1.7]">
-                      {f}
-                    </span>
-                  </button>
-                </Appear>
-              );
-            })}
-          </div>
+          <FilterChips
+            options={filters}
+            value={filter}
+            onChange={setFilter}
+            className="mx-auto w-max px-[clamp(16px,5vw,80px)]"
+          />
         </div>
 
         <motion.div

@@ -1,331 +1,202 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { SETTLE, SPRING, SPRING_SLOW, cn, fluid } from "@/lib/utils";
 
-interface SlideItem {
-  id: string;
-  src: string;
-  alt: string;
-  imgClass: string;
-}
-
-const SLIDES: SlideItem[] = [
-  // 1. Handover ceremony with green folder and TPHL logo (Front card in design)
-  {
-    id: "slide-1",
-    src: "/image/about/about_slide01.png",
-    alt: "The Premium Homes Ltd leadership and client contract handover ceremony",
-    imgClass: "object-[center_32%]",
-  },
-  // 2. Illuminated golden "TPHL" logo wall (Tier 1 behind front card in design)
-  {
-    id: "slide-2",
-    src: "/image/about/about_hero03.png",
-    alt: "TPHL corporate headquarters milestone celebration with illuminated logo",
-    imgClass: "object-[center_16%]",
-  },
-  // 3. Modern tower and director smiling (Tier 2 behind Tier 1 in design)
-  {
-    id: "slide-3",
-    src: "/image/about/about_slide03.png",
-    alt: "Architectural residential tower and development director at The Premium Homes Ltd",
-    imgClass: "object-[center_18%]",
-  },
-  // 4. Collaborative team lunch gathering (Tier 3 top-most behind Tier 2 in design)
-  {
-    id: "slide-4",
-    src: "/image/about/about_hero05.png",
-    alt: "Collaborative executive team discussion and company culture",
-    imgClass: "object-[center_18%]",
-  },
+const SLIDES = [
+  { src: "/image/about/about_slide01.png", alt: "TPHL leadership handing over a client agreement", pos: "object-[center_32%]" },
+  { src: "/image/about/about_hero03.png", alt: "TPHL milestone celebration under the illuminated logo", pos: "object-[center_16%]" },
+  { src: "/image/about/about_slide03.png", alt: "Residential tower on screen with a TPHL director", pos: "object-[center_18%]" },
+  { src: "/image/about/about_hero05.png", alt: "TPHL team lunch in the office", pos: "object-[center_18%]" },
 ];
 
-interface TierConfig {
-  width: string;
-  y: number;
-  yMobile: number;
-  zIndex: number;
-  brightness: number;
-  overlayOpacity: number;
-  shadow: string;
-}
-
-// Exact proportional measurements extracted from reference design image:
-// Tier 0 (Front): 100% width, 0px Y
-// Tier 1: 70.2% width, -24px Y
-// Tier 2: 50.6% width, -50px Y
-// Tier 3: 36.0% width, -74px Y
-const TIERS: TierConfig[] = [
-  {
-    width: "100%",
-    y: 0,
-    yMobile: 0,
-    zIndex: 40,
-    brightness: 1,
-    overlayOpacity: 0,
-    shadow:
-      "0 24px 50px -10px rgba(0, 0, 0, 0.22), 0 10px 20px -8px rgba(0, 0, 0, 0.12)",
-  },
-  {
-    width: "70.2%",
-    y: -24,
-    yMobile: -18,
-    zIndex: 30,
-    brightness: 0.94,
-    overlayOpacity: 0.08,
-    shadow: "0 18px 40px -10px rgba(0, 0, 0, 0.18)",
-  },
-  {
-    width: "50.6%",
-    y: -50,
-    yMobile: -36,
-    zIndex: 20,
-    brightness: 0.88,
-    overlayOpacity: 0.16,
-    shadow: "0 14px 30px -8px rgba(0, 0, 0, 0.15)",
-  },
-  {
-    width: "36%",
-    y: -74,
-    yMobile: -54,
-    zIndex: 10,
-    brightness: 0.82,
-    overlayOpacity: 0.25,
-    shadow: "0 8px 20px -6px rgba(0, 0, 0, 0.12)",
-  },
+/*
+ * Figma stack, measured on the 1600 frame: the front card is 775 × 473 and each card behind it is
+ * smaller and sits higher, so its top edge peeks out. Widths are shares of the front card; tops are
+ * shares of the stack's box, 604 tall from the back card's top (y 259) to the front card's foot (y 863).
+ */
+const TIERS = [
+  { width: "100%", top: "21.69%", z: 40, shade: 0 },
+  { width: "70.06%", top: "15.73%", z: 30, shade: 0.08 },
+  { width: "50.45%", top: "7.12%", z: 20, shade: 0.16 },
+  { width: "35.74%", top: "0%", z: 10, shade: 0.24 },
 ];
 
+const AUTOPLAY_MS = 3200;
+const TITLE = "Designed for families. Scaled for tomorrow.";
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** A two-digit figure that rolls to its new value, up when moving forward and down when back. */
+function RollingIndex({ value, dir }: { value: number; dir: 1 | -1 }) {
+  return (
+    <span className="relative inline-flex overflow-hidden">
+      <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+        <motion.span
+          key={value}
+          custom={dir}
+          variants={{
+            enter: (d: number) => ({ y: `${d * 100}%` }),
+            center: { y: "0%" },
+            exit: (d: number) => ({ y: `${d * -100}%` }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.6, ease: SETTLE }}
+          className="inline-block"
+        >
+          {pad(value)}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+function TextButton({ onClick, children, label }: { onClick: () => void; children: string; label: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label} className="group relative capitalize transition-colors duration-300 hover:text-green">
+      {children}
+      <span className="absolute inset-x-0 -bottom-1 h-px origin-left scale-x-0 bg-green transition-transform duration-500 ease-out-expo group-hover:scale-x-100" />
+    </button>
+  );
+}
+
+/**
+ * The title drifts past as a slow marquee. The stack rises in card by card from the back once in
+ * view, then cycles on its own (paused while hovered): the front card steps back to the rear and
+ * every other card moves forward one place, growing into its new slot.
+ */
 export function AboutFamilySlider() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [active, setActive] = useState(0);
+  const [dir, setDir] = useState<1 | -1>(1);
+  const [paused, setPaused] = useState(false);
+  const stackRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(stackRef, { once: true, amount: 0.35 });
+  const reduce = useReducedMotion();
+
+  const go = useCallback((step: 1 | -1) => {
+    setDir(step);
+    setActive((i) => (i + step + SLIDES.length) % SLIDES.length);
+  }, []);
 
   useEffect(() => {
-    setMounted(true);
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+    if (paused || !inView || reduce) return;
+    const t = setInterval(() => go(1), AUTOPLAY_MS);
+    return () => clearInterval(t);
+  }, [paused, inView, reduce, go]);
 
-  const handleNext = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % SLIDES.length);
-  }, []);
-
-  const handlePrev = useCallback(() => {
-    setActiveIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-  }, []);
-
-  const goToSlide = useCallback((index: number) => {
-    setActiveIndex(index);
-  }, []);
-
-  // Autoplay: changes slide every 2 seconds in a continuous loop
-  useEffect(() => {
-    if (isPaused) return;
-
-    const timer = setInterval(() => {
-      handleNext();
-    }, 2000);
-
-    return () => clearInterval(timer);
-  }, [isPaused, handleNext]);
+  const controls = "font-display font-medium leading-none text-ink";
 
   return (
-    <section
-      aria-label="Designed for families. Scaled for tomorrow."
-      className="relative w-full bg-[#f9f5ef] text-[#1f2723] overflow-hidden py-16 sm:py-20 md:py-24 lg:py-28 selection:bg-[#d0a65b]/25 selection:text-[#044133]"
-    >
-      {/* ========================================================= */}
-      {/* 1. INFINITE MARQUEE TITLE (Slow continuous right-to-left) */}
-      {/* ========================================================= */}
-      <div className="relative w-full overflow-hidden select-none pointer-events-none mb-6 sm:mb-10 md:mb-14">
-        <div
-          className="animate-marquee-rtl flex items-center shrink-0 will-change-transform"
-          style={{ animationDuration: "45s" }}
-        >
-          {/* First Track (50% width) */}
-          <div className="flex shrink-0 items-center">
-            {[...Array(2)].map((_, idx) => (
-              <span
-                key={`track1-${idx}`}
-                className="font-heading text-6xl sm:text-7xl md:text-8xl lg:text-[112px] xl:text-[136px] font-normal text-[#054b3c] tracking-tight leading-none px-6 sm:px-10 whitespace-nowrap"
-              >
-                Designed For Families. Scaled for tomorrow.
-              </span>
-            ))}
-          </div>
-
-          {/* Second Track (Identical duplicate for seamless continuous loop) */}
-          <div className="flex shrink-0 items-center" aria-hidden="true">
-            {[...Array(2)].map((_, idx) => (
-              <span
-                key={`track2-${idx}`}
-                className="font-heading text-6xl sm:text-7xl md:text-8xl lg:text-[112px] xl:text-[136px] font-normal text-[#054b3c] tracking-tight leading-none px-6 sm:px-10 whitespace-nowrap"
-              >
-                Designed For Families. Scaled for tomorrow.
-              </span>
-            ))}
-          </div>
+    <section aria-label={TITLE} className="relative overflow-hidden bg-warm pb-[clamp(48px,4.8vw,77px)] pt-[clamp(40px,4.4vw,70px)]">
+      {/* Title — Figma: K Victor 40 Regular, 144px, running off both edges. */}
+      <div aria-hidden className="w-full overflow-hidden">
+        <div className="flex w-max will-change-transform" style={{ animation: reduce ? undefined : "marquee 60s linear infinite" }}>
+          {[0, 1].map((k) => (
+            <span
+              key={k}
+              className="whitespace-nowrap pr-[0.4em] font-display font-normal capitalize leading-none text-green"
+              style={{ fontSize: fluid(144, 56) }}
+            >
+              {TITLE} {TITLE}
+            </span>
+          ))}
         </div>
       </div>
+      <h2 className="sr-only">{TITLE}</h2>
 
-      {/* ========================================================= */}
-      {/* 2. 3D CASCADING CARD SLIDER / STACKED CAROUSEL SHOWCASE   */}
-      {/* ========================================================= */}
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16 w-full">
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 pt-20 sm:pt-24 md:pt-28 pb-4">
-          {/* Left: Dynamic Slide Number Display (e.g. 01/04) */}
-          <div className="hidden md:flex flex-1 justify-start">
-            <span className="font-heading text-2xl sm:text-3xl text-[#3b3e40] tracking-wider select-none font-normal">
-              {String(activeIndex + 1).padStart(2, "0")}/
-              {String(SLIDES.length).padStart(2, "0")}
-            </span>
-          </div>
-
-          {/* Center: 3D Cascading Stacked Cards Container */}
-          <div
-            className="w-full max-w-[440px] sm:max-w-[540px] md:max-w-[580px] lg:max-w-[620px] aspect-[16/11] relative mx-auto"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
-            {mounted ? (
-              SLIDES.map((slide, index) => {
-                // Calculate position in the 4-tier cascade:
-                // 0 = Front active card
-                // 1 = Tier 1 behind front
-                // 2 = Tier 2 behind Tier 1
-                // 3 = Tier 3 top-most behind Tier 2
-                const slot = (index - activeIndex + SLIDES.length) % SLIDES.length;
-                const tier = TIERS[slot];
-                const isFront = slot === 0;
-
-                return (
-                  <motion.div
-                    key={slide.id}
-                    onClick={() => {
-                      if (!isFront) goToSlide(index);
-                    }}
-                    initial={false}
-                    animate={{
-                      width: tier.width,
-                      y: isMobile ? tier.yMobile : tier.y,
-                      zIndex: tier.zIndex,
-                      boxShadow: tier.shadow,
-                    }}
-                    transition={{
-                      duration: 0.65,
-                      ease: [0.16, 1, 0.3, 1], // Smooth luxury ease-out
-                    }}
-                    drag={isFront ? "x" : false}
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.25}
-                    onDragEnd={(_, info) => {
-                      if (info.offset.x < -45) handleNext();
-                      else if (info.offset.x > 45) handlePrev();
-                    }}
-                    className={cn(
-                      "absolute bottom-0 left-1/2 -translate-x-1/2 h-full rounded-md overflow-hidden select-none border border-black/[0.06] bg-[#eae5dc] will-change-transform",
-                      isFront
-                        ? "cursor-grab active:cursor-grabbing"
-                        : "cursor-pointer hover:border-black/20 transition-colors"
-                    )}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={slide.src}
-                        alt={slide.alt}
-                        fill
-                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 580px, 620px"
-                        priority={index === 0}
-                        className={cn("object-cover select-none", slide.imgClass)}
-                        draggable={false}
-                      />
-
-                      {/* Subtle Darkening Overlay for Depth on Stacked Tiers */}
-                      <motion.div
-                        animate={{ opacity: tier.overlayOpacity }}
-                        transition={{ duration: 0.55 }}
-                        className="absolute inset-0 bg-[#000000] pointer-events-none"
-                      />
-
-                      {/* Top Edge Highlight for Photorealistic Card Depth */}
-                      <div className="absolute top-0 inset-x-0 h-[1.5px] bg-white/20 pointer-events-none" />
-                    </div>
-                  </motion.div>
-                );
-              })
-            ) : (
-              /* Fallback static layout while mounting on client */
-              <div className="relative w-full h-full rounded-md overflow-hidden shadow-2xl border border-black/[0.06] bg-[#eae5dc]">
+      <div className="shell relative mt-[clamp(24px,2.8vw,45px)]">
+        {/* Stack — the box spans from the back card's top to the front card's foot. */}
+        <div
+          ref={stackRef}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          className="relative mx-auto aspect-[775/604] w-full max-w-[775px] lg:w-[48.44%]"
+        >
+          {SLIDES.map((s, i) => {
+            const slot = (i - active + SLIDES.length) % SLIDES.length;
+            const tier = TIERS[slot];
+            const front = slot === 0;
+            return (
+              <motion.div
+                key={s.src}
+                onClick={() => !front && (setDir(1), setActive(i))}
+                initial={{ opacity: 0.001, y: 80 }}
+                animate={{
+                  width: tier.width,
+                  top: tier.top,
+                  zIndex: tier.z,
+                  opacity: inView ? 1 : 0.001,
+                  y: inView ? 0 : 80,
+                }}
+                transition={
+                  reduce
+                    ? { duration: 0 }
+                    : {
+                        width: SPRING,
+                        top: SPRING,
+                        zIndex: { duration: 0 },
+                        // The first entrance runs back to front.
+                        opacity: { duration: 0.6, delay: (3 - slot) * 0.12 },
+                        y: { ...SPRING_SLOW, delay: (3 - slot) * 0.12 },
+                      }
+                }
+                drag={front ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.25}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -45) go(1);
+                  else if (info.offset.x > 45) go(-1);
+                }}
+                className={cn(
+                  "absolute left-1/2 aspect-[775/473] -translate-x-1/2 select-none overflow-hidden rounded-[2.84px] bg-stone-2",
+                  front ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
+                )}
+              >
                 <Image
-                  src={SLIDES[0].src}
-                  alt={SLIDES[0].alt}
+                  src={s.src}
+                  alt={s.alt}
                   fill
-                  sizes="620px"
-                  priority
-                  className="object-cover object-[center_32%]"
+                  draggable={false}
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className={cn("pointer-events-none object-cover", s.pos)}
                 />
-              </div>
-            )}
-          </div>
+                <motion.span
+                  aria-hidden
+                  animate={{ opacity: tier.shade }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 bg-black"
+                />
+              </motion.div>
+            );
+          })}
+        </div>
 
-          {/* Right: Borderless Text Controls (Prev / Next) */}
-          <div className="hidden md:flex flex-1 justify-end">
-            <div className="flex items-center gap-2.5 font-heading text-2xl sm:text-3xl text-[#3b3e40] font-normal select-none">
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="cursor-pointer transition-colors duration-200 hover:text-[#044133] focus:outline-none bg-transparent border-0 p-0"
-                aria-label="Previous slide"
-              >
-                Prev
-              </button>
-              <span className="text-[#3b3e40]/40 font-serif text-xl sm:text-2xl font-light">
-                /
-              </span>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="cursor-pointer transition-colors duration-200 hover:text-[#044133] focus:outline-none bg-transparent border-0 p-0"
-                aria-label="Next slide"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Slide Counter & Controls Row (below the cards) */}
-          <div className="flex md:hidden items-center justify-between w-full max-w-[440px] px-2 pt-2">
-            <span className="font-heading text-xl text-[#3b3e40] tracking-wider select-none font-normal">
-              {String(activeIndex + 1).padStart(2, "0")}/
-              {String(SLIDES.length).padStart(2, "0")}
-            </span>
-            <div className="flex items-center gap-2 font-heading text-xl text-[#3b3e40] font-normal select-none">
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="cursor-pointer transition-colors duration-200 hover:text-[#044133] focus:outline-none bg-transparent border-0 p-0"
-                aria-label="Previous slide"
-              >
-                Prev
-              </button>
-              <span className="text-[#3b3e40]/40 font-serif text-lg font-light">
-                /
-              </span>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="cursor-pointer transition-colors duration-200 hover:text-[#044133] focus:outline-none bg-transparent border-0 p-0"
-                aria-label="Next slide"
-              >
-                Next
-              </button>
-            </div>
+        {/* Counter and controls — Figma: 32px, level with the middle of the front card. */}
+        <div
+          className={cn(
+            controls,
+            "mt-6 flex items-center justify-between lg:absolute lg:inset-x-[57px] lg:top-[60.85%] lg:mt-0 lg:-translate-y-1/2",
+          )}
+          style={{ fontSize: fluid(32, 22) }}
+        >
+          <p aria-live="polite" className="flex items-center gap-[2.8px]">
+            <RollingIndex value={active + 1} dir={dir} />
+            <span>/</span>
+            <span>{pad(SLIDES.length)}</span>
+          </p>
+          <div className="flex items-center gap-[11.4px]">
+            <TextButton onClick={() => go(-1)} label="Previous slide">
+              Prev
+            </TextButton>
+            <span aria-hidden>/</span>
+            <TextButton onClick={() => go(1)} label="Next slide">
+              next
+            </TextButton>
           </div>
         </div>
       </div>

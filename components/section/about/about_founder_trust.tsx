@@ -1,84 +1,74 @@
-import React from "react";
+"use client";
+
+import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
+import { useRef } from "react";
+import { Appear, InkScrub, Words } from "@/components/ui/motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { SETTLE } from "@/lib/utils";
 
+// Figma breaks the close into short lines so the quote steps clear of the portrait.
+const QUOTE =
+  "At the heart of TPHL is a simple commitment: build trust first, then build everything else around\nit. When people\nbelieve in the\nprocess, they\nbelieve in\nthe home.”";
+
+/**
+ * Figma "Founder-Led Trust" (1600 × 1189): the portrait fills the frame, cropped from a larger
+ * 2156 × 1463 image, with a black fade on the left under the copy. The portrait drifts as the
+ * section scrolls, the title masks up and the quote inks in word by word.
+ */
 export function AboutFounderTrust() {
-  return (
-    <section
-      aria-label="Founder-Led Trust"
-      className="relative w-full overflow-hidden bg-[#0d0d0d] text-white"
-    >
-      {/* 1. Only the outer side edges get the ambient blur backdrop (NO blur on face) */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <Image
-          src="/image/about/DolonSir.png"
-          alt=""
-          fill
-          priority
-          className="object-cover blur-3xl scale-125 opacity-75"
-        />
-        <div className="absolute inset-0 bg-black/40" />
-      </div>
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
 
-      {/* 2. Main 1600 x 1189 Frame Container adhering strictly to Figma box model */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto aspect-[1600/1189] overflow-hidden flex items-center">
-        {/* Exact Crisp Unblurred Image Box */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div
-            className="absolute"
-            style={{
-              top: "-19%",
-              left: "-8.375%",
-              width: "134.75%",
-              height: "123.05%",
-            }}
-          >
+  return (
+    <section ref={ref} aria-label="Founder-led trust" className="relative overflow-hidden bg-[#0d0d0d] text-white">
+      <div className="relative mx-auto min-h-[720px] w-full max-w-[1600px] lg:aspect-[1600/1189] lg:min-h-0">
+        <motion.div style={{ y }} className="absolute inset-[-6%_0]">
+          <div className="absolute" style={{ left: "-8.375%", top: "-19%", width: "134.75%", height: "123.05%" }}>
             <Image
               src="/image/about/DolonSir.png"
-              alt="Mainul Hasan Dulon - Managing Director & CEO"
+              alt="Mainul Hasan Dulon, Managing Director and CEO"
               fill
-              priority
-              sizes="(max-width: 1600px) 135vw, 2156px"
-              className="object-cover"
+              sizes="135vw"
+              className="object-cover object-[60%_center]"
             />
           </div>
-        </div>
+        </motion.div>
+        {/* Figma: 791 wide, black at the left edge fading out by about three quarters across. */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-full lg:w-[49.4%]"
+          style={{ backgroundImage: "linear-gradient(to left, rgba(0,0,0,0) 24.08%, #000 105.69%)" }}
+        />
 
-        {/* Subtle dark gradient strictly on text area (NO blur on image/face) */}
-        <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/60 via-black/20 to-transparent w-full max-w-[500px] pointer-events-none" />
-
-        {/* Text Content Overlay adhering strictly to Figma Typography */}
-        <div className="relative z-10 w-full px-6 sm:px-10 md:px-14 lg:px-20 py-8 sm:py-12">
-          <div className="flex flex-col items-start text-left max-w-[660px]">
-            {/* 1. Title: K Victor Trial, 120px, 500, 100% Line Height */}
-            <h2
-              className="font-heading text-white font-medium capitalize text-3xl sm:text-5xl md:text-7xl lg:text-[90px] xl:text-[110px] 2xl:text-[120px] leading-[1.0] tracking-normal mb-5 sm:mb-7 md:mb-9 lg:mb-11"
-              style={{ fontWeight: 500 }}
-            >
-              Founder-Led
-              <br />
-              Trust
-            </h2>
-
-            {/* 2. Quote: K Victor Trial, 48px, 500, 120% Line Height */}
-            <p
-              className="font-heading text-white font-medium capitalize text-base sm:text-xl md:text-2xl lg:text-[36px] xl:text-[44px] 2xl:text-[48px] leading-[1.2] tracking-normal mb-6 sm:mb-8 md:mb-10 lg:mb-12"
-              style={{ fontWeight: 500 }}
-            >
-              At the heart of TPHL is a simple commitment: build trust first, then build everything else around <br /> it. When people <br /> believe in the <br /> process, they <br /> believe in <br /> the home.”
-            </p>
-
-            {/* 3. Divider Line */}
-            <div className="w-full max-w-[280px] sm:max-w-[320px] h-[1px] bg-white/40 mb-3 sm:mb-4 md:mb-5" />
-
-            {/* 4. Signature: Seaweed Script, 40px, 400, 120% Line Height */}
-            <span className="font-signature font-[family-name:var(--font-seaweed-script)] text-white text-2xl sm:text-3xl md:text-[36px] lg:text-[40px] leading-[1.2] select-none mb-1">
-              Mainul Hasan Dulon
-            </span>
-
-            {/* 5. Designation: Vazirmatn, 20px, 400, 160% Line Height */}
-            <span className="font-sans font-normal text-white text-xs sm:text-sm md:text-base lg:text-[20px] leading-[1.6]">
-              Managing Director &amp; CEO
-            </span>
+        <div className="shell relative flex flex-col gap-[clamp(40px,4.5vw,72px)] py-16 lg:absolute lg:inset-x-0 lg:top-[9.25%] lg:py-0">
+          <h2 aria-label="Founder-Led Trust" className="font-display font-medium capitalize leading-none text-[clamp(56px,7.5vw,120px)]">
+            <Words as="span" text="Founder-Led" mask className="block" />
+            <Words as="span" text="Trust" mask delay={0.12} className="block" />
+          </h2>
+          <div className="flex flex-col gap-[clamp(40px,4.75vw,76px)]">
+            <InkScrub
+              text={QUOTE}
+              className="max-w-[13.67em] font-display font-medium capitalize leading-[1.2] text-[clamp(28px,3vw,48px)]"
+            />
+            <div className="flex w-full max-w-[502px] flex-col gap-[29px]">
+              <motion.span
+                aria-hidden
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true, amount: 1 }}
+                transition={{ duration: reduce ? 0 : 1.2, ease: SETTLE }}
+                className="block h-px w-full origin-left bg-white/60"
+              />
+              <Appear preset="lift" delay={0.3} className="flex flex-col">
+                <p className="font-[family-name:var(--font-seaweed-script)] capitalize leading-[1.2] text-[clamp(30px,2.5vw,40px)]">
+                  Mainul Hasan Dulon
+                </p>
+                <p className="text-[clamp(16px,1.25vw,20px)] leading-[1.6]">Managing Director &amp; CEO</p>
+              </Appear>
+            </div>
           </div>
         </div>
       </div>
