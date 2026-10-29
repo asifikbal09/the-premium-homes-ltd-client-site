@@ -1,220 +1,167 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Plus, Minus } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
+import { useState } from "react";
+import { EmptyState } from "@/components/ui/empty_state";
+import { FilterChips } from "@/components/ui/filter_chips";
+import { Appear } from "@/components/ui/motion";
+import { GreenPill, Heading } from "@/components/ui/primitives";
+import type { FaqCategory, FaqItem } from "@/lib/faqs";
+import { CONTACT } from "@/lib/site";
+import { cn, SETTLE, SPRING } from "@/lib/utils";
 
-type FAQItem = {
-  question: string;
-  answer: string;
-};
+const ROW_PAD = "px-[clamp(20px,2vw,32px)]";
 
-type FAQCategory = {
-  id: string;
-  label: string;
-  items: FAQItem[];
-};
+/**
+ * One question: a white bar whose ⊕ spins a quarter turn on hover and settles into × as the answer
+ * slides open beneath it. Rows rise in one after another when they mount or a tab brings them in.
+ */
+function FaqRow({
+  item,
+  index,
+  open,
+  onToggle,
+}: {
+  item: FaqItem;
+  index: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const panelId = `faq-answer-${item.id}`;
+  return (
+    <motion.div
+      initial={{ opacity: 0.001, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ ...SPRING, delay: index * 0.06 }}
+      className="bg-white"
+    >
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggle}
+        className={cn("group flex w-full items-center justify-between gap-6 py-6 text-left", ROW_PAD)}
+      >
+        <span
+          className={cn(
+            "text-[clamp(16px,1.25vw,20px)] leading-[1.6] transition-colors duration-300",
+            open ? "text-green" : "text-sage group-hover:text-green",
+          )}
+        >
+          {item.question}
+        </span>
+        <Image
+          src="/faq/icons/add-circle.svg"
+          alt=""
+          width={40}
+          height={40}
+          className={cn(
+            "size-10 shrink-0 transition-transform duration-500 ease-out-expo",
+            open ? "rotate-45" : "group-hover:rotate-90",
+          )}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id={panelId}
+            role="region"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.5, ease: SETTLE }}
+            className="overflow-hidden"
+          >
+            {/* Clear of the icon column, so the answer reads under the question. */}
+            <p className={cn("whitespace-pre-line pb-6 pr-[72px] text-[16px] leading-[1.6] text-sage", ROW_PAD)}>
+              {item.answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
-const faqData: FAQCategory[] = [
-  {
-    id: "general",
-    label: "GENERAL",
-    items: [
-      {
-        question: "What kind of properties does Premium Homes Ltd. develop?",
-        answer: "We develop residential apartments and land-based projects.",
-      },
-      {
-        question: "Where are your current projects located?",
-        answer:
-          "Our current projects are located in prime locations across Dhaka, including Ashulia, Bashundhara, Gulshan, and Uttara areas.",
-      },
-      {
-        question: "How long has Premium Homes been in business?",
-        answer:
-          "Premium Homes Ltd. has been serving clients for over 15 years, delivering quality real estate solutions.",
-      },
-    ],
-  },
-  {
-    id: "booking",
-    label: "BOOKING & PAYMENT",
-    items: [
-      {
-        question: "What is the booking process?",
-        answer:
-          "The booking process involves selecting your preferred property, submitting required documents, and making an initial payment.",
-      },
-      {
-        question: "What payment methods do you accept?",
-        answer:
-          "We accept bank transfers, cheques, and flexible installment plans tailored to your needs.",
-      },
-      {
-        question: "Can I get a payment plan customized to my budget?",
-        answer:
-          "Absolutely! We offer flexible payment plans that can be tailored to match your financial requirements and timeline",
-      },
-    ],
-  },
-  {
-    id: "legal",
-    label: "LEGAL & DOCUMENTATION",
-    items: [
-      {
-        question: "What documents are required for booking?",
-        answer:
-          "You will need a valid national ID, passport-sized photographs, and proof of address.",
-      },
-      {
-        question: "Is the land legally registered?",
-        answer:
-          "Yes, all our properties are legally registered with proper documentation and clear titles.",
-      },
-      {
-        question: "How long does the documentation process take?",
-        answer:
-          "The documentation process typically takes 7-10 business days, depending on the verification requirements.",
-      },
-    ],
-  },
-];
-
-export function FAQContent() {
-  const [activeTab, setActiveTab] = useState<string>(faqData[0].id);
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-
-  const toggleItem = (categoryIndex: number, itemIndex: number) => {
-    const key = `${categoryIndex}-${itemIndex}`;
-    setOpenItems((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const activeCategoryIndex = faqData.findIndex((c) => c.id === activeTab);
-  const activeCategory = faqData[activeCategoryIndex];
+/**
+ * Figma FAQ body: the heading, a line of copy and two contact actions on the left; category tabs
+ * over an accordion on the right. Tabs and questions are whatever GET /faqs returns. Switching tab
+ * fades the old list out before the new questions rise in.
+ */
+export function FAQContent({ categories }: { categories: FaqCategory[] }) {
+  const [active, setActive] = useState(categories[0]?.label ?? "");
+  const [openId, setOpenId] = useState<FaqItem["id"] | null>(null);
+  const items = categories.find((c) => c.label === active)?.items ?? [];
 
   return (
-    <section className="py-20 md:py-32 bg-[#f4f4f4]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-          {/* Left Column: Heading and Contact info */}
-          <div className="w-full lg:w-[45%] flex flex-col items-start">
-            <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-[#061d16] font-normal leading-[1.1] mb-6">
-              Answers To Your
-              <br />
-              Questions About
-              <br />
-              Premium Homes
-            </h2>
-            <p className="text-[#5a6a62] font-sans text-sm md:text-base leading-relaxed mb-10 max-w-sm">
-              Don&apos;t see your question answered? Our team can provide
-              personalized answers and guidance
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/contact"
-                className="group inline-flex items-center justify-center px-8 py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase text-white bg-[#044133] hover:bg-[#033125] transition-colors shadow-sm"
-              >
-                CONTACT US
-              </Link>
-              <Link
-                href="tel:+8801958253300"
-                className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase text-[#044133] bg-transparent border border-[#044133] hover:bg-[#044133]/5 transition-colors shadow-sm"
-              >
-                <Phone className="w-4 h-4" />
-                +8801958253300
-              </Link>
-            </div>
+    <section aria-label="Frequently asked questions" className="bg-[#f5f6f7] py-[clamp(48px,5vw,80px)]">
+      <div className="shell grid items-start gap-12 lg:grid-cols-[465fr_800fr] lg:gap-[clamp(40px,10.94vw,175px)]">
+        <div className="flex flex-col items-start gap-12">
+          <div className="flex flex-col gap-6">
+            <Heading size={64} min={36} leading={1.1} mask>
+              Answers to your questions about premium homes
+            </Heading>
+            <Appear
+              as="p"
+              preset="lift"
+              delay={0.3}
+              className="max-w-[442px] text-[clamp(16px,1.125vw,18px)] leading-[1.5] text-sage"
+            >
+              Don’t see your question answered? Our team can provide personalized answers and guidance
+            </Appear>
           </div>
-
-          {/* Right Column: Tabs and Accordion */}
-          <div className="w-full lg:w-[55%] flex flex-col">
-            {/* Tabs */}
-            <div className="flex flex-wrap items-center gap-3 mb-8">
-              {faqData.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setActiveTab(category.id)}
-                  className={cn(
-                    "px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-widest uppercase transition-all duration-300 border",
-                    activeTab === category.id
-                      ? "bg-[#044133] text-white border-[#044133]"
-                      : "bg-transparent text-[#7a8a81] border-[#d4d4d4] hover:border-[#044133] hover:text-[#044133]",
-                  )}
-                >
-                  {category.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Accordion List */}
-            <div className="flex flex-col gap-4">
-              <AnimatePresence mode="popLayout">
-                {activeCategory?.items.map((item, idx) => {
-                  const key = `${activeCategoryIndex}-${idx}`;
-                  const isOpen = !!openItems[key];
-
-                  return (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className="bg-white rounded-lg px-6 py-5 shadow-sm border border-black/5"
-                    >
-                      <button
-                        onClick={() => toggleItem(activeCategoryIndex, idx)}
-                        className="w-full flex items-center justify-between text-left gap-6 group"
-                      >
-                        <span className="font-sans text-[15px] text-[#2b3a32] font-medium leading-tight">
-                          {item.question}
-                        </span>
-                        <span
-                          className={cn(
-                            "flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border transition-colors",
-                            isOpen
-                              ? "border-[#044133] text-[#044133] bg-[#044133]/5"
-                              : "border-[#d4d4d4] text-[#7a8a81] group-hover:border-[#044133] group-hover:text-[#044133]",
-                          )}
-                        >
-                          {isOpen ? (
-                            <Minus className="w-4 h-4" />
-                          ) : (
-                            <Plus className="w-4 h-4" />
-                          )}
-                        </span>
-                      </button>
-
-                      <AnimatePresence>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pt-4 pb-2">
-                              <p className="text-[14px] text-[#5a6a62] leading-relaxed">
-                                {item.answer}
-                              </p>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-          </div>
+          <Appear preset="lift" delay={0.45} className="flex flex-wrap items-center gap-4">
+            <GreenPill href="/contact" arrow>
+              contact us
+            </GreenPill>
+            <a
+              href={CONTACT.support.href}
+              className="press inline-flex h-[42px] shrink-0 items-center gap-1 rounded-full border border-sage bg-white pl-4 pr-5 text-[14px] font-medium uppercase tracking-[2px] text-green hover:border-green"
+            >
+              <Image src="/faq/icons/call.svg" alt="" width={24} height={24} className="size-6 shrink-0" />
+              <span className="trim leading-[1.7]">{CONTACT.support.label}</span>
+            </a>
+          </Appear>
         </div>
+
+        {categories.length > 0 ? (
+          <div className="flex min-w-0 flex-col gap-8">
+            {/* Scrolls sideways on phones, where the three labels cannot share one row. */}
+            <div className="no-scrollbar overflow-x-auto rounded-full bg-white px-4 py-3">
+              <FilterChips
+                options={categories.map((c) => c.label)}
+                value={active}
+                onChange={setActive}
+                tall
+                fill
+              />
+            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={active}
+                exit={{ opacity: 0, y: -12, transition: { duration: 0.25, ease: SETTLE } }}
+                className="flex flex-col gap-4"
+              >
+                {items.map((item, i) => (
+                  <FaqRow
+                    key={item.id}
+                    item={item}
+                    index={i}
+                    open={openId === item.id}
+                    onToggle={() => setOpenId((id) => (id === item.id ? null : item.id))}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        ) : (
+          <EmptyState
+            title="No questions yet"
+            copy="Our FAQs are being updated. Contact us and our team will answer you directly."
+          />
+        )}
       </div>
     </section>
   );

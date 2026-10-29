@@ -3,13 +3,16 @@
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { EmptyState } from "@/components/ui/empty_state";
 import { FilterChips } from "@/components/ui/filter_chips";
 import { Appear } from "@/components/ui/motion";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { GreenPill } from "@/components/ui/primitives";
+import { SearchField } from "@/components/ui/search_field";
 import type { ProjectData } from "@/lib/projects";
+import { useDebounced } from "@/lib/use-debounced";
 import { cn } from "@/lib/utils";
 import { ProjectCard } from "./project_card";
 
@@ -117,7 +120,7 @@ export function ProjectsFilterGrid({ initialProjects }: { initialProjects: Proje
   const [status, setStatus] = useState(statusFromUrl);
   const [location, setLocation] = useState(locationFromUrl);
   const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const debouncedQuery = useDebounced(query.trim().toLowerCase());
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   // Hover photos mount the first time a mouse enters the grid (never on touch screens).
   const [armed, setArmed] = useState(false);
@@ -130,11 +133,6 @@ export function ProjectsFilterGrid({ initialProjects }: { initialProjects: Proje
     setStatus(statusFromUrl());
     setLocation(locationFromUrl());
   }
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 280);
-    return () => clearTimeout(t);
-  }, [query]);
 
   // A new filter starts again from the first page (adjusted during render, as React recommends).
   const filterKey = `${status}|${location}|${debouncedQuery}`;
@@ -177,17 +175,12 @@ export function ProjectsFilterGrid({ initialProjects }: { initialProjects: Proje
           />
         </div>
         <Appear preset="lift" delay={0.55} className="relative flex gap-3">
-          <label className="flex h-12 min-w-0 flex-1 items-center gap-1 rounded-full border border-chip px-6 transition-colors duration-300 focus-within:border-green lg:w-[240px] lg:flex-none">
-            <Image src="/projects/icons/search.svg" alt="" width={20} height={20} className="size-5 shrink-0" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search project"
-              aria-label="Search project"
-              className="min-w-0 flex-1 bg-transparent text-[14px] font-medium uppercase tracking-[2px] text-sage outline-none placeholder:text-sage/50"
-            />
-          </label>
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            placeholder="Search project"
+            className="flex-1 lg:w-[240px] lg:flex-none"
+          />
           <LocationSelect options={locations} value={location} onChange={setLocation} />
         </Appear>
       </div>
@@ -204,16 +197,12 @@ export function ProjectsFilterGrid({ initialProjects }: { initialProjects: Proje
           </AnimatePresence>
         </motion.div>
       ) : (
-        <Appear
-          preset="lift"
-          className="mt-12 flex flex-col items-center gap-5 rounded-[24px] border border-dashed border-chip bg-warm px-4 py-16 text-center md:mt-20"
-        >
-          <p className="font-display text-[28px] font-medium text-green">No projects found</p>
-          <p className="max-w-md text-[14px] leading-[1.5] text-sage">
-            No projects match these filters. Try another status, location or search.
-          </p>
-          <GreenPill onClick={clearFilters}>Clear filters</GreenPill>
-        </Appear>
+        <EmptyState
+          title="No projects found"
+          copy="No projects match these filters. Try another status, location or search."
+          onClear={clearFilters}
+          className="mt-12 md:mt-20"
+        />
       )}
 
       {visibleCount < filtered.length && (

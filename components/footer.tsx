@@ -252,7 +252,7 @@ export function Footer({ reveal = false }: FooterProps = {}) {
             >
               <div className="flex flex-col gap-4">
                 <p className="font-display text-[28px] font-normal uppercase text-gold md:text-[32px]">
-                  TPH Properties
+                  TPHL Properties
                 </p>
                 <p className="max-w-[455px] text-[16px] capitalize tracking-[-0.18px] text-white md:text-[18px]">
                   A Regional Real Estate Developer Building Communities with

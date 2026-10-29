@@ -55,6 +55,7 @@ export const CONTACT = {
   inquiries: { label: "info@thepremiumhomes.com", href: "mailto:info@thepremiumhomes.com" },
   phone: { label: "+971 54 308 6000", href: "tel:+971543086000" },
   phoneLocal: { label: "+8801794 - 621 487", href: "tel:+8801794621487" },
+  support: { label: "+8801958253300", href: "tel:+8801958253300" },
   email: { label: "hello@premiumhomes.com.bd", href: "mailto:hello@premiumhomes.com.bd" },
   office: ["House 15, Road 7, Block B", "Bashundhara R/A, Dhaka 1229"],
 } as const;

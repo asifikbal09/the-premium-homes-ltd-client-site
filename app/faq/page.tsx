@@ -3,6 +3,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FAQHero } from "@/components/section/faq/faq_hero";
 import { FAQContent } from "@/components/section/faq/faq_content";
+import { getFaqs } from "@/lib/faqs";
 
 export const metadata: Metadata = {
   title: "FAQ | Premium Homes Ltd.",
@@ -10,15 +11,19 @@ export const metadata: Metadata = {
     "Find answers to common questions about Premium Homes Ltd., including property development, booking, payment, and legal documentation.",
 };
 
-export default function FAQPage() {
+/** Sections in Figma "FAQ" order. */
+export default async function FAQPage() {
+  const categories = await getFaqs();
+
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-      <main className="flex-1">
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-white text-sage">
         <FAQHero />
-        <FAQContent />
+        <FAQContent categories={categories} />
       </main>
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }

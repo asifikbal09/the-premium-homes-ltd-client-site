@@ -98,7 +98,7 @@ function QuoteCard({ q, play, delay }: { q: TeamQuote; play: boolean; delay: num
         <span aria-hidden className="h-px w-full bg-[#e0d1b6]" />
         <div className="flex items-center justify-between">
           <p className="whitespace-nowrap font-display text-[clamp(16px,1.25vw,20px)] font-medium leading-[1.5] tracking-[-0.2px] text-green">Team Member</p>
-          <Image src="/image/life-at-tphl/premium-homes-logo.svg" alt="Premium Homes" width={142} height={32} className="h-8 w-[142px]" />
+          <Image src="/image/logo/LOGO-GREEN.png" alt="Premium Homes" width={142} height={32} className="h-8 w-[142px]" />
         </div>
       </div>
     </div>

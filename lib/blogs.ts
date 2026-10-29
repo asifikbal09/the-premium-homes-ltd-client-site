@@ -1,3 +1,5 @@
+import { API_BASE } from "./api";
+
 export interface BlogDetail {
   id: number | string;
   title: string;
@@ -72,20 +74,63 @@ export function sanitizeImageUrl(url?: string | null): string {
   return url;
 }
 
+/** What a blog card needs, trimmed from the full post so the listing page ships little data. */
+export interface BlogSummary {
+  id: number | string;
+  slug: string | null;
+  title: string;
+  /** "News" when the post has none. */
+  category: string;
+  /** Like "Mar 12, 2026"; empty when the post has no valid date. */
+  date: string;
+  image: string;
+  excerpt: string;
+}
+
+/** "Mar 12, 2026", formatted on the server so the client renders the same text. */
+function formatBlogDate(raw?: string | null): string {
+  const d = raw ? new Date(raw) : null;
+  if (!d || Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+/** Every post from GET /blogs as card data, in the API's order. */
+export async function getBlogs(): Promise<BlogSummary[]> {
+  try {
+    const res = await fetch(`${API_BASE}/blogs`, { next: { revalidate: 3600 } });
+    if (!res.ok) {
+      console.warn(`[getBlogs] API responded with ${res.status}.`);
+      return [];
+    }
+
+    const data = await res.json();
+    const list: BlogDetail[] = Array.isArray(data) ? data : data?.blogs || data?.data || [];
+
+    return list
+      .filter((b) => b?.title)
+      .map((b) => ({
+        id: b.id,
+        slug: b.slug || null,
+        title: cleanBlogTitle(b.title),
+        category: b.category?.trim() || "News",
+        date: formatBlogDate(b.date || b.created_at),
+        image: sanitizeImageUrl(b.image),
+        excerpt: b.excerpt ?? "",
+      }));
+  } catch (error) {
+    console.error("[getBlogs] Fetch error from API:", error);
+    return [];
+  }
+}
+
 export async function getBlogBySlug(slug: string): Promise<BlogDetail | null> {
   if (!slug) return null;
 
   const rawSlug = slug.trim();
   const encodedSlug = encodeURIComponent(rawSlug);
 
-  const baseUrl =
-    process.env.API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://api.dpremiumhomes.com/api";
-  const cleanBase = baseUrl.replace(/\/+$/, "");
-
   try {
-    const res = await fetch(`${cleanBase}/blogs/${encodedSlug}`, {
+    const res = await fetch(`${API_BASE}/blogs/${encodedSlug}`, {
       next: { revalidate: 3600 },
     });
 

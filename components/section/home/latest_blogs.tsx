@@ -216,9 +216,7 @@ export function LatestBlogs() {
                   {p.category}
                 </p>
                 <h3 className="font-display text-[26px] font-normal capitalize leading-[1.35] text-green md:text-[32px] md:leading-[44px]">
-                  <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-[400ms] ease-out-expo group-hover:bg-[length:100%_1px]">
-                    {p.title}
-                  </span>
+                  <span className="link-draw">{p.title}</span>
                 </h3>
               </div>
             </MotionLink>

@@ -420,6 +420,15 @@ html.lenis body {
   }
 }
 
+/* Hairline that draws under a title from the left while its `.group` card is hovered. */
+@utility link-draw {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0% 1px no-repeat;
+  transition: background-size 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  .group:hover & {
+    background-size: 100% 1px;
+  }
+}
+
 @utility nudge {
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   .group:hover & {

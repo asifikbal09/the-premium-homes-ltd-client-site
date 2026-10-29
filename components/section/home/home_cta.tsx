@@ -32,7 +32,7 @@ const HOME_CARD: CtaImage = { src: "/home/img/cta-base.jpg", alt: "Premium Homes
 export function HomeCta({
   id = "contact",
   eyebrow = "Start Your Journey",
-  title = "Find Your Next Address with TPH",
+  title = "Find Your Next Address with TPHL",
   cta = { label: "try property price predictor", href: PRICE_PREDICTOR_URL },
   background = HOME_BACKGROUND,
   card = HOME_CARD,

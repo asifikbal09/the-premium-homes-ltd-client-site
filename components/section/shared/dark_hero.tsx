@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { Appear, Words } from "@/components/ui/motion";
 import { Eyebrow } from "@/components/ui/primitives";
 import { useIntro } from "@/components/providers/intro";
-import { fluid } from "@/lib/utils";
+import { cn, fluid } from "@/lib/utils";
 
 /**
  * Figma "Hero" of the Team and Career pages: a 700 tall deep-green band with a centred eyebrow, a
@@ -17,8 +17,11 @@ export function DarkHero({
   title,
   copy,
   copyWidth,
+  compact = false,
   children,
 }: {
+  /** The 493 tall band of the FAQ and Blog pages, centred under the nav. */
+  compact?: boolean;
   eyebrow: string;
   /** One entry per line, as Figma breaks the title. */
   title: string[];
@@ -38,7 +41,12 @@ export function DarkHero({
     <section
       ref={ref}
       aria-label={title.join(" ")}
-      className="relative flex min-h-[clamp(560px,43.75vw,700px)] items-center justify-center overflow-hidden bg-green-deep py-[120px] text-white"
+      className={cn(
+        "relative flex items-center justify-center overflow-hidden bg-green-deep text-white",
+        compact
+          ? "min-h-[clamp(400px,30.8vw,493px)] pb-[30px] pt-[110px]"
+          : "min-h-[clamp(560px,43.75vw,700px)] py-[120px]",
+      )}
     >
       <motion.div style={{ y, opacity }} className="shell flex flex-col items-center text-center">
         <Eyebrow play={done}>{eyebrow}</Eyebrow>

@@ -3,6 +3,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { BlogsHero } from "@/components/section/blogs/blogs_hero";
 import { BlogsGrid } from "@/components/section/blogs/blogs_grid";
+import { getBlogs } from "@/lib/blogs";
 
 export const metadata: Metadata = {
   title: "Blogs, Insights | Premium Homes Ltd.",
@@ -10,15 +11,19 @@ export const metadata: Metadata = {
     "Explore the latest insights, news, architectural stories, and community updates from Premium Homes Ltd.",
 };
 
-export default function BlogsPage() {
+/** Sections in Figma "Blog" order. */
+export default async function BlogsPage() {
+  const posts = await getBlogs();
+
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#ffffff] text-[#1f2723]">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-      <main className="flex-1">
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-white text-sage">
         <BlogsHero />
-        <BlogsGrid />
+        <BlogsGrid posts={posts} />
       </main>
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }

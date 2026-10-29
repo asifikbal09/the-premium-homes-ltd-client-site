@@ -15,6 +15,7 @@ export function FilterChips({
   onChange,
   delay = 0.35,
   tall = false,
+  fill = false,
   className,
 }: {
   options: string[];
@@ -24,6 +25,8 @@ export function FilterChips({
   delay?: number;
   /** Every chip 48px high, as on the projects page; otherwise the home sizes (42 first, 45 rest). */
   tall?: boolean;
+  /** Chips share the row's width equally, as the FAQ tabs do; they never shrink below their label. */
+  fill?: boolean;
   className?: string;
 }) {
   // Two rows on one page must not share a pill.
@@ -43,7 +46,7 @@ export function FilterChips({
             key={option}
             preset="lift"
             delay={delay + i * 0.08}
-            className="relative shrink-0"
+            className={cn("relative", fill ? "flex-[1_0_0]" : "shrink-0")}
           >
             <button
               type="button"
@@ -58,6 +61,7 @@ export function FilterChips({
                 lit && "delay-150",
                 i === 0 ? "px-6" : "px-5",
                 tall ? "h-12" : i === 0 ? "h-[42px]" : "h-[45px]",
+                fill && "w-full",
                 lit ? "text-white" : "text-sage",
               )}
             >
