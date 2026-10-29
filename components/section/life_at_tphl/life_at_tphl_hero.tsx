@@ -1,173 +1,120 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { useRef } from "react";
+import { Words } from "@/components/ui/motion";
+import { useIntro } from "@/components/providers/intro";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { SPRING_SLOW, fluid } from "@/lib/utils";
 
-export function LifeAtTphlHero() {
+/** Figma "523" frame: the photo pile sits on a 1600 × 466 strip, cut off by the title band below. */
+const STAGE = { w: 1600, h: 466 };
+const pct = (v: number, of: number) => `${(v / of) * 100}%`;
+
+type Card = {
+  /** Figma box of the rotated card, relative to the strip (frame y − 100 for the nav). */
+  x: number;
+  y: number;
+  /** Unrotated photo size inside the 12px white mat. */
+  w: number;
+  h: number;
+  rotate: number;
+  /** Scroll parallax in px; nearer cards travel further. */
+  drift: number;
+  photo?: { src: string; alt: string };
+};
+
+// DOM order = Figma stacking order.
+const CARDS: Card[] = [
+  { x: 644, y: 169, w: 231.18, h: 301.94, rotate: -11.57, drift: -60, photo: { src: "/image/life-at-tphl/tplt-team04.png", alt: "Executive team presentation with a tower render on screen" } },
+  { x: 1057, y: 104, w: 188, h: 258, rotate: 7, drift: -90, photo: { src: "/image/life-at-tphl/tplt-team02.png", alt: "Project team reviewing a scale model" } },
+  { x: 145, y: 61, w: 231.18, h: 301.94, rotate: -7.23, drift: -110, photo: { src: "/image/life-at-tphl/tplt-team05.png", alt: "TPHL architect reviewing the master plan board" } },
+  { x: 79, y: 205, w: 233.44, h: 130.62, rotate: -8.22, drift: -40, photo: { src: "/image/life-at-tphl/tplt-team06.png", alt: "Team festive celebration in traditional attire" } },
+  { x: 884, y: 209, w: 233.44, h: 130.62, rotate: 11.57, drift: -50, photo: { src: "/image/life-at-tphl/tplt-team03.png", alt: "TPHL team collaborating at the conference table" } },
+  { x: 398, y: 124, w: 218.98, h: 303, rotate: 10.78, drift: -80 },
+  { x: 1244, y: 169, w: 172.02, h: 255.54, rotate: -12, drift: -120, photo: { src: "/image/life-at-tphl/tplt-team1.png", alt: "Team members in conversation in the lounge" } },
+];
+
+const QUOTE = "A culture built around people, stories, ambition, and the human side of building homes.";
+
+/** One card of the pile. It falls in from above the strip, spinning onto its resting angle. */
+function PileCard({ c, i, play, progress }: { c: Card; i: number; play: boolean; progress: MotionValue<number> }) {
+  const reduce = useReducedMotion();
+  const y = useTransform(progress, [0, 1], [0, c.drift]);
+  // Card + 12px mat (quote card: 12px border + 12px padding) as a share of the strip.
+  const pad = c.photo ? 24 : 48;
+  const hidden = { y: "-140%", rotate: c.rotate + (i % 2 ? 24 : -24), opacity: 0.001 };
+  const shown = { y: "0%", rotate: c.rotate, opacity: 1 };
   return (
-    <section
-      aria-label="Life At TPHL Hero"
-      className="relative w-full bg-[#546360] text-white flex flex-col justify-between overflow-hidden pt-20 sm:pt-24 lg:pt-28"
+    <motion.div
+      style={{ left: pct(c.x, STAGE.w), top: pct(c.y, STAGE.h), width: pct(c.w + pad, STAGE.w), y }}
+      className="absolute"
     >
-
-      {/* Hero Center & Lower Content */}
-      <div className="relative z-10 w-full flex flex-col justify-between pt-8 sm:pt-12 md:pt-14">
-        {/* 
-          Polaroid Photo Strip (clipped cleanly along the bottom baseline):
-          Preserves the exact overlapping order, rotations, and positions from design
-        */}
-        <div className="w-full overflow-hidden h-[180px] sm:h-[220px] md:h-[260px] lg:h-[290px] xl:h-[310px]">
-          <div className="w-full max-w-[1440px] mx-auto h-full px-2 sm:px-4">
-            <div className="relative w-full h-full min-w-[760px] sm:min-w-0 origin-bottom sm:scale-100 scale-[0.82] -translate-x-[9%] sm:translate-x-0">
-              {/* Card 1 (Festive - Front Left): overlaps bottom of Card 2 */}
-              <div
-                style={{ transform: "rotate(-4deg)" }}
-                className="absolute left-[3.5%] md:left-[4.5%] bottom-[-15px] sm:bottom-[-20px] w-[17.5%] sm:w-[17%] max-w-[240px] aspect-[4/3] z-20 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/25">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team06.png"
-                      alt="Team festive celebration in traditional attire"
-                      fill
-                      sizes="(max-width: 768px) 160px, 240px"
-                      className="object-cover object-center"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2 (Architecture board - Back Left): tall portrait, sits behind Card 1 & Card 3 */}
-              <div
-                style={{ transform: "rotate(4deg)" }}
-                className="absolute left-[8%] md:left-[9%] bottom-0 w-[17.5%] sm:w-[17%] max-w-[240px] aspect-[3/4] z-10 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/20">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team05.png"
-                      alt="Architectural development and planning board review"
-                      fill
-                      sizes="(max-width: 768px) 160px, 240px"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3 (Quote Card): White card with solid gold border and deep forest green text */}
-              <div
-                style={{ transform: "rotate(8deg)" }}
-                className="absolute left-[24%] md:left-[25%] bottom-[-10px] sm:bottom-[-16px] w-[20%] sm:w-[19%] max-w-[270px] aspect-[1/1] z-30 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white border-[2.5px] sm:border-[3px] md:border-[3.5px] border-[#b89461] p-2.5 sm:p-3.5 md:p-5 flex flex-col justify-center shadow-xl shadow-black/20">
-                  <p className="font-heading text-[#0c382c] text-[10px] sm:text-xs md:text-sm lg:text-[15px] xl:text-[17px] font-normal leading-[1.28] tracking-tight">
-                    A culture built
-                    <br />
-                    around people,
-                    <br />
-                    stories, ambition, and
-                    <br />
-                    the human side of
-                    <br />
-                    building homes.
-                  </p>
-                </div>
-              </div>
-
-              {/* Card 4 (TV Screen Presentation - Center Left): sits behind Card 3 and Card 5 */}
-              <div
-                style={{ transform: "rotate(-3deg)" }}
-                className="absolute left-[41.5%] md:left-[42.5%] bottom-[-5px] sm:bottom-[-8px] w-[18.5%] sm:w-[18%] max-w-[260px] aspect-[16/11] z-10 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/20">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team04.png"
-                      alt="Executive team presentation with skyscraper model render"
-                      fill
-                      sizes="(max-width: 768px) 170px, 260px"
-                      className="object-cover object-center"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 5 (TPHL Women Team - Center Right): sits in front of Card 4 and Card 6 */}
-              <div
-                style={{ transform: "rotate(-4deg)" }}
-                className="absolute left-[56.5%] md:left-[57.5%] bottom-[-10px] sm:bottom-[-14px] w-[18.5%] sm:w-[18%] max-w-[260px] aspect-[4/3] z-25 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/25">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team03.png"
-                      alt="TPHL team collaborating at conference table"
-                      fill
-                      sizes="(max-width: 768px) 170px, 260px"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 6 (Blueprints & Model - Back Right): tall portrait, sits behind Card 5 & Card 7 */}
-              <div
-                style={{ transform: "rotate(-4deg)" }}
-                className="absolute left-[68.5%] md:left-[69.5%] bottom-0 w-[17%] sm:w-[16.5%] max-w-[235px] aspect-[3/4] z-10 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/20">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team02.png"
-                      alt="Architecture and engineering team reviewing scale models"
-                      fill
-                      sizes="(max-width: 768px) 160px, 235px"
-                      className="object-cover object-center"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 7 (Lounge Discussion - Far Right): sits in front of Card 6 */}
-              <div
-                style={{ transform: "rotate(6deg)" }}
-                className="absolute left-[80%] md:left-[81%] bottom-[-5px] sm:bottom-[-10px] w-[17%] sm:w-[16%] max-w-[230px] aspect-[3/4] z-20 transition-transform duration-300 hover:scale-105 hover:z-40"
-              >
-                <div className="w-full h-full bg-white p-1 sm:p-1.5 md:p-2 pb-3 sm:pb-4 shadow-xl shadow-black/25">
-                  <div className="relative w-full h-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src="/image/life-at-tphl/tplt-team1.png"
-                      alt="Team members enjoying conversation in lounge"
-                      fill
-                      sizes="(max-width: 768px) 150px, 230px"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                </div>
-              </div>
+      <motion.div
+        initial={hidden}
+        animate={play ? shown : hidden}
+        transition={reduce ? { duration: 0 } : { ...SPRING_SLOW, delay: 0.15 + i * 0.09 }}
+        // Hover straightens the card and lifts it off the pile.
+        whileHover={reduce ? undefined : { rotate: 0, scale: 1.06, zIndex: 10, transition: { type: "spring", bounce: 0.25, duration: 0.6 } }}
+        className="relative shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]"
+      >
+        {c.photo ? (
+          <div className="bg-white p-[clamp(5px,0.75vw,12px)]">
+            <div className="relative w-full" style={{ aspectRatio: `${c.w} / ${c.h}` }}>
+              <Image src={c.photo.src} alt={c.photo.alt} fill preload={i < 3} sizes="(min-width: 1024px) 16vw, 28vw" className="object-cover" />
             </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="border-[clamp(5px,0.75vw,12px)] border-gold bg-white p-[clamp(5px,0.75vw,12px)]"
+            style={{ aspectRatio: `${c.w + pad} / ${c.h + pad}` }}
+          >
+            <p className="font-display font-medium leading-[1.4] text-green" style={{ fontSize: fluid(24, 11) }}>
+              {QUOTE}
+            </p>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
 
-        {/* 
-          Main Headline:
-          "Life At"
-          "TPHL"
-          Rendered in luxury serif (Cormorant Garamond) exactly matching the design
-        */}
-        <div className="w-full text-center px-4 pt-6 sm:pt-8 md:pt-10 lg:pt-12 pb-14 sm:pb-20 md:pb-28 lg:pb-32 select-none">
-          <h1 className="font-heading font-normal text-white text-center leading-[0.88] sm:leading-[0.86] tracking-tight">
-            <span className="block text-[64px] sm:text-[96px] md:text-[128px] lg:text-[154px] xl:text-[180px] font-normal">
-              Life At
-            </span>
-            <span className="block text-[64px] sm:text-[98px] md:text-[132px] lg:text-[160px] xl:text-[188px] font-normal tracking-[0.04em] uppercase mt-1 sm:mt-2 md:mt-3">
-              TPHL
-            </span>
-          </h1>
+/**
+ * Figma "523": a pile of polaroids tossed above a big "Life At TPHL" title. After the preloader
+ * the cards fall onto the pile one after another, then the title rises out of a clip letter by
+ * letter. On scroll the cards drift up at different speeds.
+ */
+export function LifeAtTphlHero() {
+  const ref = useRef<HTMLElement>(null);
+  const { done } = useIntro();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+
+  return (
+    <section ref={ref} aria-label="Life At TPHL" className="relative overflow-hidden bg-sage pt-[clamp(88px,6.25vw,100px)]">
+      {/* Phones get a wider-than-screen strip so the cards stay a readable size; the sides crop. */}
+      <div className="relative w-full overflow-hidden">
+        <div
+          className="relative left-1/2 w-[max(100%,820px)] max-w-[1600px] -translate-x-1/2"
+          style={{ aspectRatio: `${STAGE.w} / ${STAGE.h}` }}
+        >
+          {CARDS.map((c, i) => (
+            <PileCard key={i} c={c} i={i} play={done} progress={scrollYProgress} />
+          ))}
         </div>
+      </div>
+
+      {/* Title band: painted over the bottom of the pile, as in Figma. */}
+      <div className="relative z-10 -mt-px bg-sage pb-[clamp(40px,4.375vw,70px)] pt-[clamp(24px,3.125vw,50px)]">
+        <h1
+          aria-label="Life At TPHL"
+          className="mx-auto max-w-[962px] text-center font-display font-normal leading-none text-white"
+          style={{ fontSize: fluid(260, 84) }}
+        >
+          {["Life At", "TPHL"].map((line, i) => (
+            <Words key={line} as="span" play={done} delay={0.75 + i * 0.18} by="chars" mask text={line} className="block whitespace-nowrap" />
+          ))}
+        </h1>
       </div>
     </section>
   );

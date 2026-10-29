@@ -1,133 +1,80 @@
 "use client";
 
-import React from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { Shutter } from "@/components/ui/motion";
+import { SectionIntro } from "@/components/section/shared/section_intro";
+import { fluid } from "@/lib/utils";
 
-interface LifeImageItem {
-  id: string;
+type Photo = {
   src: string;
   alt: string;
-  type: "corner" | "side" | "center";
-}
+  /** Figma frame size on the 1600 canvas. */
+  w: number;
+  h: number;
+  /** Figma crop of the photo inside its frame. */
+  position?: string;
+};
 
-const LIFE_IMAGES: LifeImageItem[] = [
-  {
-    id: "life-1",
-    src: "/image/career/career01.png",
-    alt: "Outdoor company gathering",
-    type: "corner",
-  },
-  {
-    id: "life-2",
-    src: "/image/career/career03.png",
-    alt: "Executive discussions and signing",
-    type: "side",
-  },
-  {
-    id: "life-3",
-    src: "/image/career/career05.png",
-    alt: "Premium Homes leadership at BYD event",
-    type: "center",
-  },
-  {
-    id: "life-4",
-    src: "/image/career/career04.png",
-    alt: "Team members at development site",
-    type: "side",
-  },
-  {
-    id: "life-5",
-    src: "/image/career/career02.png",
-    alt: "Team celebration and gifting",
-    type: "corner",
-  },
+// Figma "About Taameer V.2": seven frames growing to the 400px centre one; the outer two overhang the canvas.
+const PHOTOS: Photo[] = [
+  { src: "/image/career/career06.png", alt: "Premium Homes community gathering", w: 200, h: 247 },
+  { src: "/image/career/career03.png", alt: "Premium Homes team gathering on the field", w: 260, h: 322, position: "right" },
+  { src: "/image/career/career04.png", alt: "Team celebration and gifting", w: 300, h: 371, position: "46% 50%" },
+  { src: "/image/career/career05.png", alt: "Premium Homes leadership at the BYD showroom", w: 400, h: 495, position: "bottom" },
+  { src: "/image/career/career02.png", alt: "Executive discussion and agreement signing", w: 300, h: 371, position: "78% 50%" },
+  { src: "/image/career/career01.png", alt: "Team members at a development site", w: 260, h: 322, position: "top" },
+  { src: "/image/career/career06.png", alt: "Premium Homes community gathering", w: 200, h: 247 },
 ];
+const CENTRE = (PHOTOS.length - 1) / 2;
 
+/**
+ * Photos open with the shutter from the centre outwards; while the section scrolls by, the strip
+ * slides sideways and each photo zooms a touch on hover.
+ */
 export function CareerLife() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const x = useTransform(scrollYProgress, [0, 1], [80, -80]);
+
   return (
-    <section
-      aria-label="Life At Premium Homes"
-      className="relative w-full bg-[#48564f] text-white py-16 sm:py-20 md:py-24 lg:py-28 overflow-hidden"
-    >
-      {/* Header Container */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-14 md:mb-16">
-        <motion.span
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="inline-block text-[#d0a65b] font-semibold text-xs sm:text-[13px] tracking-[0.24em] uppercase mb-3 sm:mb-4"
-        >
-          LIFE AT PREMIUM HOMES
-        </motion.span>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[56px] xl:text-[62px] font-normal text-white leading-[1.08] tracking-tight"
-        >
-          A Glimpse Into Life At
-          <br />
-          Premium Homes
-        </motion.h2>
+    <section ref={ref} aria-label="Life at Premium Homes" className="overflow-hidden bg-sage py-[clamp(64px,7.5vw,120px)]">
+      <div className="shell">
+        <SectionIntro
+          eyebrow="Life at Premium Homes"
+          title="A Glimpse Into Life at Premium Homes"
+          light
+          className="mx-auto max-w-[714px]"
+        />
       </div>
-
-      {/* Full-width Image Showcase Row */}
-      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-14">
-        <div className="w-full overflow-x-auto pb-6 pt-2 scrollbar-none">
-          <div className="flex items-center justify-start lg:justify-center gap-3 sm:gap-4 md:gap-5 lg:gap-5 xl:gap-6 min-w-max lg:min-w-0 w-full mx-auto">
-            {LIFE_IMAGES.map((img, index) => {
-              const isCenter = img.type === "center";
-              const isSide = img.type === "side";
-
-              const cardClasses = isCenter
-                ? "lg:flex-[1.6] w-[270px] sm:w-[320px] md:w-[360px] lg:w-auto h-[380px] sm:h-[480px] md:h-[540px] lg:h-[620px] xl:h-[670px] 2xl:h-[700px] z-20 shadow-2xl ring-1 ring-white/20"
-                : isSide
-                ? "lg:flex-[1.25] w-[220px] sm:w-[270px] md:w-[300px] lg:w-auto h-[320px] sm:h-[400px] md:h-[460px] lg:h-[530px] xl:h-[570px] 2xl:h-[600px] z-10 shadow-xl opacity-95 hover:opacity-100 ring-1 ring-white/10"
-                : "lg:flex-[1] w-[190px] sm:w-[230px] md:w-[250px] lg:w-auto h-[260px] sm:h-[330px] md:h-[390px] lg:h-[450px] xl:h-[480px] 2xl:h-[510px] z-0 shadow-lg opacity-90 hover:opacity-100 ring-1 ring-white/10";
-
-              return (
-                <motion.div
-                  key={img.id}
-                  initial={{ opacity: 0, scale: 0.94, y: 24 }}
-                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-30px" }}
-                  transition={{
-                    duration: 0.6,
-                    delay: Math.abs(index - 2) * 0.08,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                  whileHover={{
-                    scale: 1.025,
-                    y: -4,
-                    transition: { duration: 0.3, ease: "easeOut" },
-                  }}
-                  className={`group relative shrink-0 overflow-hidden rounded-none bg-neutral-900/60 transition-all duration-300 hover:ring-2 hover:ring-[#d0a65b] ${cardClasses}`}
-                >
+      <motion.div
+        style={{ x, gap: fluid(32, 12) }}
+        className="relative left-1/2 mt-[clamp(48px,5vw,80px)] flex w-max -translate-x-1/2 items-center"
+      >
+        {PHOTOS.map((p, i) => (
+          <div key={i} className="shrink-0" style={{ width: fluid(p.w, p.w * 0.6) }}>
+            <Shutter
+              tone="bg-sage"
+              delay={Math.abs(i - CENTRE) * 0.12}
+              className="relative w-full"
+            >
+              <div className="zoom-frame relative size-full" style={{ aspectRatio: `${p.w} / ${p.h}` }}>
+                <div className="absolute inset-0">
                   <Image
-                    src={img.src}
-                    alt={img.alt}
+                    src={p.src}
+                    alt={p.alt}
                     fill
-                    priority={isCenter}
-                    sizes={
-                      isCenter
-                        ? "(max-width: 640px) 270px, (max-width: 1024px) 360px, (max-width: 1536px) 28vw, 480px"
-                        : isSide
-                        ? "(max-width: 640px) 220px, (max-width: 1024px) 300px, (max-width: 1536px) 22vw, 380px"
-                        : "(max-width: 640px) 190px, (max-width: 1024px) 250px, (max-width: 1536px) 18vw, 320px"
-                    }
-                    className="object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-108"
+                    sizes={`${Math.round((p.w / 1600) * 100)}vw`}
+                    className="object-cover"
+                    style={{ objectPosition: p.position }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none" />
-                </motion.div>
-              );
-            })}
+                </div>
+              </div>
+            </Shutter>
           </div>
-        </div>
-      </div>
+        ))}
+      </motion.div>
     </section>
   );
 }

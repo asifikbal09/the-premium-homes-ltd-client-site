@@ -1,10 +1,41 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import { CheckCircle, FileUp, X } from "lucide-react";
 import Image from "next/image";
-import { FileUp, CheckCircle, X, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { Appear, Shutter } from "@/components/ui/motion";
+import { GreenPill, Heading } from "@/components/ui/primitives";
+import { cn, fluid } from "@/lib/utils";
 
+// Figma fields: 24px Vazirmatn labels and values, 24px padding, #E6E6E6 hairline.
+const TEXT = { fontSize: fluid(24, 16) };
+const LABEL = "block leading-[1.2] text-green";
+const BOX = "w-full border border-[#e6e6e6] bg-white p-[clamp(14px,1.5vw,24px)] leading-[1.2] text-green transition-colors duration-300";
+
+function Field({
+  id,
+  label,
+  delay,
+  ...input
+}: React.InputHTMLAttributes<HTMLInputElement> & { id: string; label: string; delay: number }) {
+  return (
+    <Appear preset="lift" delay={delay} className="flex flex-1 flex-col gap-[clamp(10px,1.25vw,20px)]">
+      <label htmlFor={id} className={LABEL} style={TEXT}>
+        {label}
+      </label>
+      <input
+        id={id}
+        required
+        {...input}
+        className={cn(BOX, "placeholder:text-sage hover:border-sage/60 focus:border-green focus:outline-none")}
+        style={TEXT}
+      />
+    </Appear>
+  );
+}
+
+/** Figma "Join the team": portrait on the left, application form on the right. */
 export function LifeAtTphlJoinTeam() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -12,225 +43,108 @@ export function LifeAtTphlJoinTeam() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
+  const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResumeFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setResumeFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files?.[0]) setResumeFile(e.dataTransfer.files[0]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!resumeFile) {
       toast.error("Please attach your resume (PDF/DOC) before submitting.");
       return;
     }
-
     setIsSubmitting(true);
-
     setTimeout(() => {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-      toast.success(
-        "Application submitted successfully! Our HR team will review your resume and contact you soon."
-      );
+      toast.success("Application submitted successfully! Our HR team will review your resume and contact you soon.");
       setFullName("");
       setPhone("");
       setEmail("");
       setResumeFile(null);
-      setTimeout(() => setIsSubmitted(false), 4000);
     }, 1000);
   };
 
   return (
-    <section
-      aria-label="Join The Team Application"
-      className="relative w-full bg-white text-[#1f2723] py-14 sm:py-20 md:py-24 lg:py-28 overflow-hidden select-none"
-    >
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-14 items-center">
-          {/* Left Column: Photo of Two Executives Discussing Plans */}
-          <div className="lg:col-span-5 w-full">
-            <div className="relative w-full aspect-[4/5] overflow-hidden bg-neutral-100 shadow-sm">
-              <Image
-                src="/image/life-at-tphl/tphl-team07.png"
-                alt="Two senior TPHL executives collaborating in office"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 480px"
-                className="object-cover object-center"
-              />
-            </div>
+    <section id="join-team" aria-label="Join the team" className="bg-white py-[clamp(56px,6.25vw,100px)]">
+      <div className="shell flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
+        <Shutter className="relative aspect-[537/719] w-full max-w-[537px] max-lg:aspect-[4/3] max-lg:max-w-none lg:w-[37.3%] lg:shrink-0">
+          <div className="absolute inset-0">
+            <Image src="/image/life-at-tphl/tphl-team07.png" alt="Two TPHL colleagues reviewing notes together" fill sizes="(min-width: 1024px) 537px, 92vw" className="object-cover" />
+          </div>
+        </Shutter>
+
+        <form ref={formRef} onSubmit={handleSubmit} className="flex min-w-0 flex-1 flex-col items-start gap-[clamp(28px,3vw,48px)]">
+          <Heading size={64} min={40} leading={1.1} mask>
+            Join the team
+          </Heading>
+
+          <div className="flex w-full">
+            <Field id="full-name" label="Full Name*" placeholder="Enter full name*" type="text" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} delay={0.1} />
+          </div>
+          <div className="flex w-full flex-col gap-[clamp(28px,3vw,48px)] sm:flex-row sm:gap-3">
+            <Field id="phone-number" label="Phone Number*" placeholder="+880 435 615 6873" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} delay={0.18} />
+            <Field id="email-address" label="E-mail Address*" placeholder="Enter your e-mail address" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} delay={0.26} />
           </div>
 
-          {/* Right Column: Application Form */}
-          <div className="lg:col-span-7 w-full flex flex-col justify-center">
-            {/* Title */}
-            <h2 className="font-heading font-normal text-3xl sm:text-4xl md:text-5xl lg:text-[52px] text-[#054b3c] leading-[1.08] tracking-tight mb-6 sm:mb-8">
-              Join The Team
-            </h2>
-
-            {/* Application Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="w-full space-y-4 sm:space-y-5"
+          <Appear preset="lift" delay={0.34} className="flex w-full flex-col gap-[clamp(10px,1.25vw,20px)]">
+            <span className={LABEL} style={TEXT}>
+              Upload Resume*
+            </span>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={cn(
+                BOX,
+                "group flex h-[clamp(96px,7.5vw,120px)] cursor-pointer items-center justify-center gap-2.5 hover:border-green",
+                isDragging && "border-green bg-green/5",
+              )}
+              style={TEXT}
             >
-              {/* Full Name Field */}
-              <div className="w-full">
-                <label
-                  htmlFor="full-name"
-                  className="block text-xs sm:text-[13px] font-medium text-[#054b3c] mb-1.5"
-                >
-                  Full Name*
-                </label>
-                <input
-                  id="full-name"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter full name*"
-                  className="w-full px-4 py-2.5 sm:py-3 bg-white border border-neutral-200 text-neutral-800 placeholder:text-neutral-400 text-xs sm:text-sm focus:outline-none focus:border-[#054b3c] transition-colors rounded-none"
-                />
-              </div>
-
-              {/* Phone Number & E-mail Address (Two Columns on sm+) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                {/* Phone Number */}
-                <div className="w-full">
-                  <label
-                    htmlFor="phone-number"
-                    className="block text-xs sm:text-[13px] font-medium text-[#054b3c] mb-1.5"
+              <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" onChange={(e) => e.target.files?.[0] && setResumeFile(e.target.files[0])} className="hidden" />
+              {resumeFile ? (
+                <>
+                  <CheckCircle className="size-6 shrink-0 md:size-8" />
+                  <span className="truncate">{resumeFile.name}</span>
+                  <button
+                    type="button"
+                    aria-label="Remove file"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setResumeFile(null);
+                    }}
+                    className="p-1 transition-colors hover:text-[#e5262b]"
                   >
-                    Phone Number*
-                  </label>
-                  <input
-                    id="phone-number"
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+880 435 615 6873"
-                    className="w-full px-4 py-2.5 sm:py-3 bg-white border border-neutral-200 text-neutral-800 placeholder:text-neutral-400 text-xs sm:text-sm focus:outline-none focus:border-[#054b3c] transition-colors rounded-none"
-                  />
-                </div>
+                    <X className="size-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <FileUp className="size-6 shrink-0 transition-transform duration-500 ease-out-expo group-hover:-translate-y-1 md:size-8" strokeWidth={1.5} />
+                  <span>Drop your resume here</span>
+                </>
+              )}
+            </div>
+          </Appear>
 
-                {/* E-mail Address */}
-                <div className="w-full">
-                  <label
-                    htmlFor="email-address"
-                    className="block text-xs sm:text-[13px] font-medium text-[#054b3c] mb-1.5"
-                  >
-                    E-mail Address*
-                  </label>
-                  <input
-                    id="email-address"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your e-mail address"
-                    className="w-full px-4 py-2.5 sm:py-3 bg-white border border-neutral-200 text-neutral-800 placeholder:text-neutral-400 text-xs sm:text-sm focus:outline-none focus:border-[#054b3c] transition-colors rounded-none"
-                  />
-                </div>
-              </div>
-
-              {/* Upload Resume Dropzone Field */}
-              <div className="w-full">
-                <label className="block text-xs sm:text-[13px] font-medium text-[#054b3c] mb-1.5">
-                  Upload Resume*
-                </label>
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`relative w-full h-20 sm:h-24 border ${
-                    isDragging
-                      ? "border-[#054b3c] bg-[#054b3c]/5"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
-                  } flex items-center justify-center cursor-pointer transition-colors duration-200 px-4`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-
-                  {resumeFile ? (
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-[#054b3c]">
-                      <CheckCircle className="w-4 h-4 text-[#054b3c]" />
-                      <span className="truncate max-w-[240px] sm:max-w-xs font-medium">
-                        {resumeFile.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setResumeFile(null);
-                        }}
-                        className="p-1 hover:text-red-500 transition-colors ml-1"
-                        aria-label="Remove file"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2.5 text-[#054b3c]">
-                      <FileUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#054b3c]" />
-                      <span className="text-xs sm:text-sm font-normal">
-                        Drop your resume here
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-2 sm:pt-3">
-                <button
-                  type="submit"
-                  disabled={isSubmitting || isSubmitted}
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.16em] uppercase text-[#d0a65b] bg-[#054b3c] hover:bg-[#075947] transition-all duration-300 shadow-sm active:scale-95 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#d0a65b]" />
-                      <span>SUBMITTING...</span>
-                    </>
-                  ) : isSubmitted ? (
-                    <span>APPLICATION SUBMITTED</span>
-                  ) : (
-                    <span>SUBMIT APPLICATION</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          <Appear preset="lift" delay={0.42}>
+            <GreenPill onClick={() => !isSubmitting && formRef.current?.requestSubmit()} arrow className="h-12">
+              {isSubmitting ? "submitting…" : "submit application"}
+            </GreenPill>
+          </Appear>
+        </form>
       </div>
     </section>
   );

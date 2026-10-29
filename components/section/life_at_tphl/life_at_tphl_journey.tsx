@@ -1,126 +1,91 @@
 "use client";
 
-import React from "react";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
+import { useRef, type CSSProperties } from "react";
+import { Shutter, Words } from "@/components/ui/motion";
+import { Heading } from "@/components/ui/primitives";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { fluid } from "@/lib/utils";
 
-interface JourneyItem {
-  id: string;
+type JourneyItem = {
   title: string;
   watermark: string;
   image: string;
   alt: string;
-  bgColor: string;
-  imagePosition?: string;
-}
+  color: string;
+  /** Figma sets "Festive" at 200px, the rest at 172px. */
+  markSize: number;
+};
 
-const JOURNEY_ITEMS: JourneyItem[] = [
-  {
-    id: "festival-celebrations",
-    title: "Festival Celebrations",
-    watermark: "Festive",
-    image: "/image/life-at-tphl/journey/tphl-journey02.png",
-    alt: "TPHL team celebrating traditional festive occasions together in festive attire",
-    bgColor: "#973225",
-    imagePosition: "object-[center_24%]",
-  },
-  {
-    id: "team-outings",
-    title: "Team Outings",
-    watermark: "Outdoor",
-    image: "/image/life-at-tphl/journey/tphl-journey03.png",
-    alt: "TPHL team participating in greener community tree planting outing",
-    bgColor: "#546360",
-    imagePosition: "object-[center_35%]",
-  },
-  {
-    id: "special-days",
-    title: "Special Days",
-    watermark: "Special",
-    image: "/image/life-at-tphl/journey/tphl-journey04.png",
-    alt: "TPHL team celebrating birthdays and special milestones with cake cutting ceremony",
-    bgColor: "#89553f",
-    imagePosition: "object-center",
-  },
-  {
-    id: "team-lunches",
-    title: "Team Lunches",
-    watermark: "Lunches",
-    image: "/image/life-at-tphl/journey/tphl-journey05.png",
-    alt: "TPHL team sharing lunch and conversation in company dining space",
-    bgColor: "#635454",
-    imagePosition: "object-center",
-  },
-  {
-    id: "project-milestones",
-    title: "Project Milestones",
-    watermark: "Project",
-    image: "/image/life-at-tphl/journey/tphl-journey01.png",
-    alt: "TPHL architecture and project team collaborating around building scale models and blueprints",
-    bgColor: "#4c4d27",
-    imagePosition: "object-center",
-  },
+const JOURNEY: JourneyItem[] = [
+  { title: "Festival Celebrations", watermark: "Festive", image: "/image/life-at-tphl/journey/tphl-journey02.png", alt: "TPHL team celebrating a festival in traditional attire", color: "#973225", markSize: 200 },
+  { title: "Team Outings", watermark: "Outdoor", image: "/image/life-at-tphl/journey/tphl-journey03.png", alt: "TPHL team planting trees on a community outing", color: "#546360", markSize: 172 },
+  { title: "Special Days", watermark: "Special", image: "/image/life-at-tphl/journey/tphl-journey04.png", alt: "TPHL team cutting a cake together on a special day", color: "#89553f", markSize: 172 },
+  { title: "Team Lunches", watermark: "Lunches", image: "/image/life-at-tphl/journey/tphl-journey05.png", alt: "TPHL team sharing lunch in the office", color: "#635454", markSize: 172 },
+  { title: "Project Milestones", watermark: "Project", image: "/image/life-at-tphl/journey/tphl-journey01.png", alt: "TPHL project team around a building scale model", color: "#4c4d27", markSize: 172 },
 ];
 
-export function LifeAtTphlJourney() {
+/**
+ * One coloured row. From tablet up the rows are sticky, so each one slides over the last and the
+ * covered row sinks back a little. The watermark word slides in from the right as the row arrives.
+ */
+function JourneyRow({ item, i, progress }: { item: JourneyItem; i: number; progress: MotionValue<number> }) {
+  const reduce = useReducedMotion();
+  const n = JOURNEY.length;
+  // Shrink once the next row starts to cover this one; the last row never shrinks.
+  const start = i / n;
+  const scale = useTransform(progress, [start, 1], reduce || i === n - 1 ? [1, 1] : [1, 1 - (n - i) * 0.03]);
+
   return (
-    <section
-      aria-label="More Than Work, A Shared Journey"
-      className="relative w-full bg-white text-[#1f2723] py-14 sm:py-20 md:py-24 lg:py-28 overflow-hidden select-none"
+    <div
+      className="md:sticky"
+      style={{ top: `calc(clamp(88px,6.25vw,100px) + ${i * 16}px)`, "--row": item.color } as CSSProperties}
     >
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6">
-        {/* Section Heading */}
-        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 md:mb-14 lg:mb-16">
-          <h2 className="font-heading font-normal text-3xl sm:text-4xl md:text-5xl lg:text-[56px] xl:text-[62px] text-[#054b3c] leading-[1.12] sm:leading-[1.1] tracking-tight">
-            More Than Work,
-            <br />
-            A Shared Journey.
-          </h2>
+      <motion.article
+        style={{ scale, backgroundColor: item.color }}
+        className="flex origin-top flex-col gap-5 p-3 max-md:![transform:none] sm:p-5 md:flex-row md:gap-10"
+      >
+        <Shutter tone="bg-[var(--row)]" className="relative aspect-[732/600] w-full md:w-[51.4%] md:shrink-0">
+          <div className="absolute inset-0">
+            <Image src={item.image} alt={item.alt} fill sizes="(min-width: 768px) 46vw, 92vw" className="object-cover" />
+          </div>
+        </Shutter>
+
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-8 overflow-hidden font-display font-normal leading-none text-white">
+          <Words as="h3" text={item.title} by="words" className="pt-1" style={{ fontSize: fluid(48, 28) }} />
+          <Words
+            as="p"
+            text={item.watermark}
+            by="chars"
+            mask
+            className="whitespace-nowrap opacity-20"
+            style={{ fontSize: fluid(item.markSize, 64) }}
+          />
         </div>
+      </motion.article>
+    </div>
+  );
+}
 
-        {/* Stack of 5 Journey Cards */}
-        <div className="flex flex-col gap-3.5 sm:gap-4 md:gap-5">
-          {JOURNEY_ITEMS.map((item) => (
-            <article
-              key={item.id}
-              className="group relative w-full grid grid-cols-2 aspect-[2.26/1] overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md"
-            >
-              {/* Left Side: Photo */}
-              <div className="relative w-full h-full overflow-hidden bg-neutral-900">
-                <Image
-                  src={item.image}
-                  alt={item.alt}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 420px, 460px"
-                  className={`object-cover ${item.imagePosition || "object-center"} transition-transform duration-700 ease-out group-hover:scale-105`}
-                />
-              </div>
+/** Figma "More than work, a shared journey": five full-width coloured rows, one per occasion. */
+export function LifeAtTphlJourney() {
+  const stackRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: stackRef, offset: ["start start", "end end"] });
 
-              {/* Right Side: Colored Panel with Title and Subtle Watermark */}
-              <div
-                className="relative w-full h-full p-3.5 sm:p-5 md:p-7 lg:p-8 flex flex-col justify-between overflow-hidden"
-                style={{ backgroundColor: item.bgColor }}
-              >
-                {/* Top Label */}
-                <h3 className="font-heading font-normal text-xs sm:text-base md:text-lg lg:text-xl text-[#FAF7F2] leading-tight tracking-normal">
-                  {item.title}
-                </h3>
+  return (
+    // overflow-x-clip (not hidden) so the sticky rows still stick to the page.
+    <section aria-label="More than work, a shared journey" className="overflow-x-clip bg-white py-[clamp(56px,6.25vw,100px)]">
+      <div className="shell flex justify-center">
+        <Heading size={72} min={36} leading={1} mask className="max-w-[600px] text-center">
+          More Than Work, A Shared Journey.
+        </Heading>
+      </div>
 
-                {/* Bottom Watermark matching Figma specs */}
-                <span
-                  style={{
-                    fontFamily: "var(--font-victor), 'K Victor Trial', serif",
-                    fontWeight: 400,
-                    lineHeight: "100%",
-                    letterSpacing: "0%",
-                  }}
-                  className="text-3xl sm:text-5xl md:text-6xl lg:text-[78px] xl:text-[105px] 2xl:text-[130px] text-white/20 select-none whitespace-nowrap transition-colors duration-300 group-hover:text-white/25 pointer-events-none -mb-1 sm:-mb-2"
-                >
-                  {item.watermark}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div ref={stackRef} className="mx-auto mt-[clamp(40px,4.5vw,72px)] flex w-full max-w-[1600px] flex-col gap-6 px-[clamp(16px,4.25vw,68px)] md:gap-14">
+        {JOURNEY.map((item, i) => (
+          <JourneyRow key={item.title} item={item} i={i} progress={scrollYProgress} />
+        ))}
       </div>
     </section>
   );

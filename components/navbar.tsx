@@ -129,7 +129,7 @@ function MenuMeta({
 }
 
 /** Glass pill shared by the "All Project" link and the menu toggle. */
-function navPillClass(tone: "neutral" | "warm", light: boolean) {
+export function navPillClass(tone: "neutral" | "warm", light: boolean) {
   return cn(
     "glass press group relative flex h-[42px] items-center overflow-hidden rounded-full text-[14px] font-medium uppercase tracking-[2px] backdrop-blur-[6px] hover:tracking-[2.6px]",
     // Figma: rgba(24,24,24,.15) or gold 12%, each under a plus-lighter #171717 (≈ +9% white).

@@ -95,6 +95,50 @@ function Odometer({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
+const SCREEN = "fixed inset-0 z-[100] flex flex-col justify-end bg-green-deep px-6 py-6 text-warm md:px-12 md:py-10";
+
+/** Wordmark and tagline in the middle, counter in the corner. Shared by the intro and the route loading screen. */
+function ScreenContent({ progress }: { progress: MotionValue<number> }) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0.001, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -24 }}
+        transition={{ duration: 1, ease: SETTLE, delay: 0.1 }}
+        className="absolute inset-0 flex flex-col items-center justify-center gap-5"
+      >
+        <LogoReveal className="relative aspect-[231/52] w-[clamp(160px,18vw,231px)]" />
+        <span className="text-center text-[11px] uppercase tracking-[3px] text-warm/50 md:text-[12px]">Shaping tomorrow’s lifestyle</span>
+      </motion.div>
+
+      <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="relative flex items-end justify-end">
+        <span className="font-display text-[clamp(40px,5vw,80px)] font-normal leading-none text-warm" role="status" aria-label="Loading">
+          <Odometer progress={progress} />
+        </span>
+      </motion.div>
+    </>
+  );
+}
+
+/**
+ * The preloader screen for route loading (app/loading.tsx). How long the route takes is unknown,
+ * so the counter eases toward 99 and never claims to finish; the screen goes when the page arrives.
+ */
+export function LoadingScreen() {
+  const reduce = useReducedMotion();
+  const progress = useMotionValue(0);
+  useEffect(() => {
+    const run = animate(progress, 0.99, { duration: reduce ? 0.2 : 8, ease: [0.1, 0.7, 0.2, 1] });
+    return () => run.stop();
+  }, [progress, reduce]);
+  return (
+    <div aria-live="polite" aria-label="Loading page" className={SCREEN}>
+      <ScreenContent progress={progress} />
+    </div>
+  );
+}
+
 /**
  * A quiet first screen: the wordmark drawing itself on deep green and an
  * odometer counter. When everything is ready the whole screen slides up and away
@@ -154,24 +198,9 @@ export function Preloader() {
           initial={{ y: 0 }}
           exit={{ y: "-100%" }}
           transition={reduce ? { duration: 0.2 } : { type: "spring", bounce: 0, duration: 1.4 }}
-          className="fixed inset-0 z-[100] flex flex-col justify-end bg-green-deep px-6 py-6 text-warm md:px-12 md:py-10"
+          className={SCREEN}
         >
-          <motion.div
-            initial={{ opacity: 0.001, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -24 }}
-            transition={{ duration: 1, ease: SETTLE, delay: 0.1 }}
-            className="absolute inset-0 flex flex-col items-center justify-center gap-5"
-          >
-            <LogoReveal className="relative aspect-[231/52] w-[clamp(160px,18vw,231px)]" />
-            <span className="text-center text-[11px] uppercase tracking-[3px] text-warm/50 md:text-[12px]">Shaping tomorrow’s lifestyle</span>
-          </motion.div>
-
-          <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="relative flex items-end justify-end">
-            <span className="font-display text-[clamp(40px,5vw,80px)] font-normal leading-none text-warm" role="status" aria-label="Loading">
-              <Odometer progress={progress} />
-            </span>
-          </motion.div>
+          <ScreenContent progress={progress} />
         </motion.div>
       )}
     </AnimatePresence>

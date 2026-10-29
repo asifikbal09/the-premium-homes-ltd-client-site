@@ -1,93 +1,72 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import { motion, useInView } from "motion/react";
+import { useRef } from "react";
+import { Appear, Counter } from "@/components/ui/motion";
+import { Heading } from "@/components/ui/primitives";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { SETTLE, fluid } from "@/lib/utils";
 
-interface CulturePillar {
-  number: string;
-  title: string;
-  description: string;
-}
-
-const PILLARS: CulturePillar[] = [
-  {
-    number: "01",
-    title: "Trust In Every\nDecision",
-    description: "We Work With Clarity, Honesty,\nAnd Shared Responsibility.",
-  },
-  {
-    number: "02",
-    title: "Ownership In\nEvery Role",
-    description:
-      "Everyone Has Space To Take\nResponsibility And Make An Impact.",
-  },
-  {
-    number: "03",
-    title: "Growth Through\nLearning",
-    description: "We Support People Who Want To\nImprove, Lead, And Grow.",
-  },
-  {
-    number: "04",
-    title: "Collaboration\nAcross Teams",
-    description:
-      "Sales, Engineering, Operations,\nSupport Work Together On One Goal.",
-  },
+const PILLARS = [
+  { number: "01", title: "Trust in every decision", copy: "We work with clarity, honesty, and shared responsibility." },
+  { number: "02", title: "Ownership in every role", copy: "Everyone has space to take responsibility and make an impact." },
+  { number: "03", title: "Growth through learning", copy: "We support people who want to improve, lead, and grow." },
+  { number: "04", title: "Collaboration across teams", copy: "Sales, engineering, operations, support work together on one goal." },
 ];
 
+/**
+ * Figma "A culture of trust": centred heading over four 420px-tall columns split by hairlines.
+ * On entry each hairline draws downward, the numbers roll up like an odometer and the copy rises.
+ */
 export function LifeAtTphlCulture() {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const play = useInView(gridRef, { once: true, amount: 0.3 });
+  const reduce = useReducedMotion();
+
   return (
-    <section
-      aria-label="A Culture Of Trust, Growth, And Ownership"
-      className="relative w-full bg-[#546360] text-white overflow-hidden"
-    >
-      {/* Top Banner Image: Team Collaboration with Building Scale Model */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] lg:aspect-[2.4/1] max-h-[980px] overflow-hidden bg-neutral-900">
-        <Image
-          src="/image/life-at-tphl/tplt-team02.png"
-          alt="TPHL architecture and project team collaborating around blueprints and building scale models"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-      </div>
+    <section aria-label="A culture of trust, growth, and ownership" className="bg-sage py-[clamp(64px,7.5vw,120px)] text-white">
+      <div className="shell flex flex-col items-center gap-[clamp(48px,6.25vw,100px)]">
+        <Heading size={72} min={36} leading={1} mask className="max-w-[770px] text-center text-white">
+          A Culture of Trust, Growth, and Ownership.
+        </Heading>
 
-      {/* Bottom Content Area */}
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 pt-14 sm:pt-20 md:pt-24 lg:pt-28 pb-16 sm:pb-24 md:pb-28 lg:pb-32">
-        <div className="max-w-[1440px] mx-auto">
-          {/* Section Heading */}
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 md:mb-20">
-            <h2 className="font-heading font-normal text-3xl sm:text-4xl md:text-5xl lg:text-[56px] xl:text-[62px] text-white leading-[1.12] sm:leading-[1.1] tracking-tight">
-              A Culture Of Trust,
-              <br />
-              Growth, And Ownership.
-            </h2>
-          </div>
+        <div ref={gridRef} className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {PILLARS.map((p, i) => (
+            <div
+              key={p.number}
+              className="group relative flex min-h-[260px] flex-col justify-between gap-12 px-[clamp(20px,2.25vw,36px)] py-6 transition-colors duration-500 hover:bg-white/[0.05] lg:h-[420px]"
+            >
+              {/* Hairline on the right (desktop/tablet) or bottom (phone), drawn on entry. */}
+              <motion.span
+                aria-hidden
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: play ? 1 : 0 }}
+                transition={reduce ? { duration: 0 } : { duration: 1.2, ease: SETTLE, delay: 0.2 + i * 0.12 }}
+                className="absolute right-0 top-0 hidden h-full w-px origin-top bg-white/50 sm:block"
+              />
+              <motion.span
+                aria-hidden
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: play ? 1 : 0 }}
+                transition={reduce ? { duration: 0 } : { duration: 1.2, ease: SETTLE, delay: 0.2 + i * 0.12 }}
+                className="absolute bottom-0 left-0 h-px w-full origin-left bg-white/50 sm:hidden"
+              />
 
-          {/* 4 Pillars Grid with Thin Vertical Dividers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-white/20">
-            {PILLARS.map((pillar) => (
-              <div
-                key={pillar.number}
-                className="border-r border-b lg:border-b-0 border-white/20 p-6 sm:p-7 md:p-8 lg:p-9 xl:p-10 flex flex-col justify-between min-h-[250px] sm:min-h-[280px] md:min-h-[310px] transition-colors duration-300 hover:bg-white/[0.04]"
-              >
-                {/* Large Display Number */}
-                <span className="font-heading text-4xl sm:text-5xl md:text-[54px] font-light text-white select-none leading-none">
-                  {pillar.number}
-                </span>
-
-                {/* Title & Description */}
-                <div className="mt-8 sm:mt-12 md:mt-16">
-                  <h3 className="font-heading text-lg sm:text-xl md:text-[22px] text-white font-normal leading-snug mb-2.5 sm:mb-3 whitespace-pre-line">
-                    {pillar.title}
-                  </h3>
-                  <p className="font-sans text-xs sm:text-[13px] text-white/75 font-light leading-relaxed whitespace-pre-line">
-                    {pillar.description}
-                  </p>
-                </div>
+              <span className="font-display font-medium leading-none" style={{ fontSize: fluid(72, 48) }}>
+                <Counter value={p.number} />
+              </span>
+              <div className="flex flex-col gap-6 capitalize">
+                <Appear as="p" preset="lift" play={play} delay={0.45 + i * 0.12} className="max-w-[240px] font-display font-medium leading-[1.2]" style={{ fontSize: fluid(32, 24) }}>
+                  {p.title}
+                </Appear>
+                <Appear as="p" preset="lift" play={play} delay={0.55 + i * 0.12} className="text-[16px] leading-[1.4] text-white/85">
+                  {p.copy}
+                </Appear>
               </div>
-            ))}
-          </div>
+              {/* Gold underline grows on hover. */}
+              <span aria-hidden className="absolute bottom-0 left-[clamp(20px,2.25vw,36px)] h-[2px] w-0 bg-gold transition-[width] duration-700 ease-out-expo group-hover:w-16" />
+            </div>
+          ))}
         </div>
       </div>
     </section>

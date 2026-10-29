@@ -280,20 +280,6 @@ textarea {
   animation-play-state: paused;
 }
 
-/* Luxury Shimmer Loading Animation */
-@keyframes luxury-shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(250%);
-  }
-}
-
-.animate-luxury-shimmer {
-  animation: luxury-shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
 /* Custom Luxury Glass Pill Button for Navbar
    Figma's "Plus lighter" #171717 fill adds ~9% light onto the backdrop;
    CSS background-blend-mode can't blend with the backdrop, so a translucent
