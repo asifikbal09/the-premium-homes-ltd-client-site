@@ -1,306 +1,229 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { motion, useInView, type PanInfo } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { useLoopCarousel } from "@/components/ui/carousel";
+import { HoverShutter } from "@/components/ui/hover_shutter";
+import { Appear } from "@/components/ui/motion";
+import {
+  ArrowPair,
+  Eyebrow,
+  GreenPill,
+  Heading,
+  PatternStrip,
+} from "@/components/ui/primitives";
+import { cleanBlogTitle, sanitizeImageUrl } from "@/lib/blogs";
+import { SPRING_SLOW } from "@/lib/utils";
 
-export interface BlogItem {
-  id: number | string;
+const MotionLink = motion.create(Link);
+
+type Post = {
   title: string;
-  slug?: string;
-  category?: string | null;
-  author?: string;
-  date?: string;
-  image?: string;
-  readTime?: string;
-  excerpt?: string;
-}
+  category: string;
+  src: string;
+  /** Second photo, opened over the first with a shutter on hover. */
+  hover: string;
+  href: string;
+  crop?: React.CSSProperties;
+};
 
-// Fallback matching the design reference and backend data
-const FALLBACK_BLOGS: BlogItem[] = [
+const MAX_POSTS = 10;
+
+// Shown until the blogs API answers, and if it returns nothing.
+const FALLBACK_POSTS: Post[] = [
   {
-    id: 1,
-    title: "The Art Of Designing Homes That Age Gracefully",
-    slug: "the-art-of-designing-homes-that-age-gracefully",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/blogs/blogs7.jpeg",
-    date: "2025-10-19",
+    title: "The Art of Designing Homes That Age Gracefully",
+    category: "Specials",
+    src: "/home/img/blog-1.png",
+    hover: "/home/img/project-ariston.jpg",
+    href: "/blogs",
+    crop: { left: 0, top: "-11.2%", width: "100%", height: "147.21%" },
   },
   {
-    id: 2,
     title: "Dhaka's Premium Zones Are Outperforming Market Expectations",
-    slug: "dhakas-premium-zones-are-outperforming-market-expectations",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/blogs/blog6.jpg",
-    date: "2025-10-19",
+    category: "Specials",
+    src: "/home/img/blog-2.png",
+    hover: "/home/img/project-prestige.jpg",
+    href: "/blogs",
   },
   {
-    id: 3,
-    title: "Building The Connected Home: TPHL's Integrated Tech",
-    slug: "building-the-connected-home-tphls-integrated-tech",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Banner-images/bannerOne.png",
-    date: "2025-10-19",
+    title: "Building the Connected Home: TPHL's Integrated Tech",
+    category: "Specials",
+    src: "/home/img/blog-3.png",
+    hover: "/home/img/project-studio.jpg",
+    href: "/blogs",
+    crop: { left: 0, top: "-53.4%", width: "100%", height: "276.86%" },
   },
   {
-    id: 4,
-    title: "Flat for Sale in Dhaka: Curated Luxury Condominiums",
-    slug: "flat-for-sale-in-dhaka",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/std203.png",
-    date: "2025-10-19",
-  },
-  {
-    id: 5,
-    title: "Trusted Real Estate Innovations Across Bangladesh",
-    slug: "trusted-real-estate-company-in-bangladesh",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/blogs/blog1.webp",
-    date: "2025-10-19",
-  },
-  {
-    id: 6,
-    title: "Luxury Living: Why Natural Light Defines Modern Architecture",
-    slug: "luxury-apartments-in-bangladesh",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/crpProp1.png",
-    date: "2025-10-19",
-  },
-  {
-    id: 7,
-    title: "Top 10 Architectural Milestones in Contemporary Development",
-    slug: "top-10-real-estate-companies-in-bangladesh",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/mrProp1.png",
-    date: "2025-10-19",
-  },
-  {
-    id: 8,
-    title: "Prime Gated Communities: Capital Growth & Enduring Value",
-    slug: "top-real-estate-companies-in-dhaka-2026",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/mrProp2.png",
-    date: "2025-10-19",
-  },
-  {
-    id: 9,
-    title: "Sustainable Residences: Where Elegance Meets Efficiency",
-    slug: "best-real-estate-companies-in-dhaka-2026",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/premiumLakeview1.png",
-    date: "2025-10-19",
-  },
-  {
-    id: 10,
-    title: "Luxury vs Affordable Apartments in Dhaka: An Expert Comparison",
-    slug: "luxury-vs-affordable-apartments-in-dhaka",
-    category: "SPECIALS",
-    image: "https://api.dpremiumhomes.com/assets/Property/crpProp3.png",
-    date: "2025-10-19",
+    title: "Dhaka's Premium Zones Are Outperforming Market Expectations",
+    category: "Specials",
+    src: "/home/img/blog-2.png",
+    hover: "/home/video/spotlight-towers.jpg",
+    href: "/blogs",
   },
 ];
 
-function sanitizeImageUrl(url?: string | null): string {
-  if (!url || typeof url !== "string") return "/image/studio6.png";
-  if (url.startsWith("http://api.dpremiumhomes.com")) {
-    return url.replace(
-      "http://api.dpremiumhomes.com",
-      "https://api.dpremiumhomes.com",
-    );
-  }
-  return url;
+type ApiBlog = { title?: string; slug?: string; category?: string | null; image?: string | null };
+
+function toPosts(blogs: ApiBlog[]): Post[] {
+  const valid = blogs.filter((b) => b.title).slice(0, MAX_POSTS);
+  return valid.map((b, i) => ({
+    title: cleanBlogTitle(b.title),
+    category: b.category?.trim() || "Specials",
+    src: sanitizeImageUrl(b.image),
+    // The next post's photo opens over this one on hover.
+    hover: sanitizeImageUrl(valid[(i + 1) % valid.length].image),
+    href: b.slug ? `/blogs/${encodeURIComponent(b.slug)}` : "/blogs",
+  }));
 }
 
-function cleanBlogTitle(title: string): string {
-  if (!title) return "";
-  return title
-    .replace(/\s*\?["']\s*/g, " — ")
-    .replace(/\s*\?"\s*/g, " — ")
-    .replace(/[\uFFFD]/g, "")
-    .trim();
-}
+const AUTOPLAY_MS = 4000;
 
 export function LatestBlogs() {
-  const [blogs, setBlogs] = useState<BlogItem[]>(FALLBACK_BLOGS);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [posts, setPosts] = useState<Post[]>(FALLBACK_POSTS);
 
   useEffect(() => {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      process.env.API_BASE_URL ||
-      "https://api.dpremiumhomes.com/api/";
-    const endpoint = `${baseUrl.replace(/\/+$/, "")}/blogs`;
-
-    fetch(endpoint)
+    const baseUrl = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.dpremiumhomes.com/api"
+    ).replace(/\/+$/, "");
+    fetch(`${baseUrl}/blogs`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        const rawList = Array.isArray(data)
-          ? data
-          : data?.blogs || data?.data || [];
-
-        if (Array.isArray(rawList) && rawList.length > 0) {
-          // Take 10 blogs as requested
-          const sliced = rawList.slice(0, 10).map((b, idx) => ({
-            ...b,
-            category:
-              b.category && b.category.trim() !== "" ? b.category : "SPECIALS",
-            image:
-              sanitizeImageUrl(b.image) ||
-              FALLBACK_BLOGS[idx % FALLBACK_BLOGS.length].image,
-          }));
-          setBlogs(sliced);
-        }
+        const rawList = Array.isArray(data) ? data : data?.blogs || data?.data || [];
+        if (Array.isArray(rawList) && rawList.length > 0) setPosts(toPosts(rawList));
       })
-      .catch((err) => {
-        console.warn(
-          "Failed to fetch blogs from API, using fallback data:",
-          err,
-        );
-      });
+      .catch((err) => console.warn("Failed to fetch blogs, using fallback posts:", err));
   }, []);
 
-  const updateScrollButtons = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const N = posts.length;
+  // Three copies in a row; the track always rests inside the middle copy, so it can run forever both ways.
+  const LOOP = [...posts, ...posts, ...posts];
+  const sectionRef = useRef<HTMLElement>(null);
+  const {
+    trackRef,
+    x,
+    next,
+    prev,
+    onDragEnd: snap,
+    isClone,
+  } = useLoopCarousel(N);
+  const [paused, setPaused] = useState(false);
+  // Hover photos mount the first time a pointer enters the section (never on touch screens).
+  const [armed, setArmed] = useState(false);
+  const inView = useInView(sectionRef, { amount: 0.3 });
+  const seen = useInView(sectionRef, { once: true, amount: 0.15 });
 
+  // Autoplay while on screen, paused while hovered or dragged.
   useEffect(() => {
-    updateScrollButtons();
-    window.addEventListener("resize", updateScrollButtons);
-    return () => window.removeEventListener("resize", updateScrollButtons);
-  }, [blogs]);
+    if (!inView || paused) return;
+    const t = setInterval(next, AUTOPLAY_MS);
+    return () => clearInterval(t);
+  }, [inView, paused, next]);
 
-  const scrollNext = () => {
-    if (scrollRef.current) {
-      const card = scrollRef.current.firstElementChild as HTMLElement;
-      const cardWidth = card ? card.offsetWidth + 28 : 400;
-      scrollRef.current.scrollBy({ left: cardWidth, behavior: "smooth" });
-    }
-  };
-
-  const scrollPrev = () => {
-    if (scrollRef.current) {
-      const card = scrollRef.current.firstElementChild as HTMLElement;
-      const cardWidth = card ? card.offsetWidth + 28 : 400;
-      scrollRef.current.scrollBy({ left: -cardWidth, behavior: "smooth" });
-    }
+  const onDragEnd = (e: unknown, info: PanInfo) => {
+    snap(e, info);
+    setPaused(false);
   };
 
   return (
     <section
+      ref={sectionRef}
+      onPointerEnter={(e) => e.pointerType === "mouse" && setArmed(true)}
       id="blogs"
-      aria-label="Latest From Premium Homes"
-      className="w-full bg-[#ffffff] py-14 sm:py-18 md:py-20 lg:py-24 selection:bg-[#d0a65b]/20 overflow-hidden"
+      className="flex flex-col gap-12 bg-white pb-20 md:gap-14 md:pb-[160px]"
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-        {/* Header: Title on Left, Controls on Right */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 sm:gap-6 mb-8 sm:mb-12 md:mb-14">
-          <div>
-            <span className="text-[#C49C57] font-semibold text-[11px] sm:text-xs md:text-sm tracking-[0.25em] uppercase block mb-2 sm:mb-2.5">
-              BLOGS
-            </span>
-            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-normal text-[#044133] leading-[1.08] tracking-tight">
-              Latest From
-              <br />
-              Premium Homes
-            </h2>
-          </div>
+      <PatternStrip tone="light" />
 
-          {/* Navigation Controls: Left Arrow, Right Arrow, Browse All */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-start sm:self-end">
-            <button
-              type="button"
-              onClick={scrollPrev}
-              disabled={!canScrollLeft}
-              aria-label="Previous blog articles"
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#044133]/40 flex items-center justify-center text-[#044133] hover:border-[#044133] hover:bg-[#044133]/5 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.5} />
-            </button>
-            <button
-              type="button"
-              onClick={scrollNext}
-              disabled={!canScrollRight}
-              aria-label="Next blog articles"
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#044133] flex items-center justify-center text-[#fdfdf8] hover:bg-[#055b4b] active:scale-95 transition-all shadow-xs disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.5} />
-            </button>
-            <Link
-              href="/blogs"
-              className="px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[#044133] hover:bg-[#055b4b] text-[#fdfdf8] text-[11px] sm:text-xs font-semibold tracking-[0.16em] uppercase transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap inline-flex items-center justify-center"
-            >
-              BROWSE ALL
-            </Link>
-          </div>
+      <div className="shell flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div className="flex max-w-[655px] flex-col gap-4">
+          <Eyebrow play={seen}>Blogs</Eyebrow>
+          <Heading size={80} min={40} mask play={seen} delay={0.15}>
+            Latest From Premium Homes
+          </Heading>
         </div>
-
-        {/* Blog Cards Carousel with Alternating Image Heights */}
-        <div
-          ref={scrollRef}
-          onScroll={updateScrollButtons}
-          className="flex items-start gap-5 sm:gap-6 md:gap-7 lg:gap-8 overflow-x-auto scroll-smooth pb-8 pt-1 -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 [&::-webkit-scrollbar]:hidden"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        <Appear
+          preset="lift"
+          play={seen}
+          delay={0.45}
+          className="flex flex-wrap items-center gap-4 sm:gap-6"
         >
-          {blogs.slice(0, 10).map((blog, index) => {
-            // Alternating heights: even index has less height, odd index has more height
-            const isTaller = index % 2 === 1;
-            const category =
-              blog.category && blog.category.trim() !== ""
-                ? blog.category
-                : "SPECIALS";
-            const imageUrl = sanitizeImageUrl(blog.image);
-            const blogLink = blog.slug ? `/blogs/${blog.slug}` : "/blogs";
+          <ArrowPair onPrev={prev} onNext={next} />
+          <GreenPill href="/blogs" arrow>
+            browse all
+          </GreenPill>
+        </Appear>
+      </div>
 
-            return (
-              <article
-                key={blog.id || index}
-                className="group w-[280px] sm:w-[330px] md:w-[370px] lg:w-[395px] shrink-0 flex flex-col select-none cursor-pointer"
+      <div
+        className="w-full overflow-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <motion.div
+          ref={trackRef}
+          style={{ x }}
+          drag="x"
+          dragElastic={0.08}
+          dragMomentum={false}
+          onDragStart={() => setPaused(true)}
+          onDragEnd={onDragEnd}
+          className="flex w-max cursor-grab touch-pan-y items-start gap-5 px-[clamp(16px,5vw,80px)] active:cursor-grabbing 3xl:pl-[calc((100vw-1600px)/2+80px)]"
+        >
+          {LOOP.map((p, i) => (
+            <MotionLink
+              key={i}
+              href={p.href}
+              draggable={false}
+              // Only the middle copy is real for screen readers and the keyboard; the others are visual.
+              aria-hidden={isClone(i) ? true : undefined}
+              tabIndex={isClone(i) ? -1 : undefined}
+              initial={{ opacity: 0.001, y: 160 }}
+              animate={seen ? { opacity: 1, y: 0 } : { opacity: 0.001, y: 160 }}
+              transition={{ ...SPRING_SLOW, delay: 0.55 + (i % N) * 0.14 }}
+              className="group flex w-[min(80vw,clamp(280px,29.19vw,467px))] shrink-0 select-none flex-col gap-6"
+            >
+              <div
+                className="zoom-frame relative w-full"
+                // Alternate short and tall frames, as in the design.
+                style={{ aspectRatio: (i % N) % 2 ? "467 / 500" : "467 / 340" }}
               >
-                <Link href={blogLink} className="flex flex-col">
-                  {/* Image Container with alternating heights */}
-                  <div
-                    className={cn(
-                      "relative w-full overflow-hidden bg-[#F4F1EB] transition-all duration-300",
-                      isTaller
-                        ? "h-[320px] sm:h-[380px] md:h-[410px] lg:h-[430px]"
-                        : "h-[200px] sm:h-[240px] md:h-[260px] lg:h-[275px]",
-                    )}
-                  >
+                <div className="absolute inset-0">
+                  <div className="absolute" style={p.crop ?? { inset: 0 }}>
                     <Image
-                      src={imageUrl}
-                      alt={blog.title || "Blog post image"}
+                      src={p.src}
+                      alt=""
                       fill
-                      unoptimized
-                      sizes="(max-width: 768px) 80vw, 400px"
-                      className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                      draggable={false}
+                      sizes="(min-width: 768px) 30vw, 80vw"
+                      className="pointer-events-none object-cover"
                     />
                   </div>
-
-                  {/* Text Content below Image */}
-                  <div className="mt-3.5 sm:mt-4 md:mt-5 flex flex-col">
-                    <span className="text-[#C49C57] font-semibold text-[10px] sm:text-[11px] tracking-[0.2em] uppercase mb-1 sm:mb-1.5 block">
-                      {category}
-                    </span>
-                    <h3 className="font-heading text-lg sm:text-xl md:text-[22px] lg:text-[24px] font-normal text-[#083A30] leading-[1.22] tracking-tight group-hover:text-[#044133] transition-colors line-clamp-2">
-                      {cleanBlogTitle(blog.title)}
-                    </h3>
-                  </div>
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+                </div>
+                {/* Second photo opens over the first on hover, same shutter as the project cards. */}
+                <HoverShutter
+                  src={p.hover}
+                  sizes="(min-width: 768px) 30vw, 80vw"
+                  armed={armed}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <p className="text-[14px] font-medium uppercase leading-[1.5] text-gold">
+                  {p.category}
+                </p>
+                <h3 className="font-display text-[26px] font-normal capitalize leading-[1.35] text-green md:text-[32px] md:leading-[44px]">
+                  <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-[400ms] ease-out-expo group-hover:bg-[length:100%_1px]">
+                    {p.title}
+                  </span>
+                </h3>
+              </div>
+            </MotionLink>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

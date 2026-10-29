@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Seaweed_Script } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
+import { SiteShell } from "@/components/providers/site_shell";
 import "./globals.css";
 
 const kVictor = localFont({
@@ -76,6 +77,10 @@ export const metadata: Metadata = {
     "Building Communities With Vision, Precision, And Purpose. Premium luxury residences and commercial masterworks.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#09221c",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -87,7 +92,13 @@ export default function RootLayout({
       className={`${vazirmatn.variable} ${seaweedScript.variable} ${kVictor.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-[#ffffff] text-[#1f2723]">
-        {children}
+        {/* Always open at the top on reload: the intro and hero start the page. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "history.scrollRestoration='manual'",
+          }}
+        />
+        <SiteShell>{children}</SiteShell>
         <Toaster richColors position="top-right" />
       </body>
     </html>

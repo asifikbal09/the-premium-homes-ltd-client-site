@@ -67,7 +67,7 @@ function extractLocationString(
 /**
  * Normalizes raw project API payload into a clean, safe ProjectData shape.
  */
-function normalizeProject(
+export function normalizeProject(
   raw: Partial<ProjectData> & Record<string, unknown>,
 ): ProjectData {
   let img = (typeof raw.image === "string" ? raw.image : "") || "";

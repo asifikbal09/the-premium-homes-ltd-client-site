@@ -1,140 +1,172 @@
-import React from "react";
-import Image from "next/image";
-import appImage from "@/public/image/apps/apps_showcase.png";
+"use client";
 
-function AppleIcon({ className = "w-5 h-5" }: { className?: string }) {
+import { motion, useInView, useScroll, useTransform } from "motion/react";
+import Image from "next/image";
+import { useRef } from "react";
+import { Appear, ShutterMask, Words } from "@/components/ui/motion";
+import { fluid } from "@/lib/utils";
+
+const APP_STORE_URL = "https://apps.apple.com/us/app/tphl-premium-homes-ltd/id6752620266";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.premium_homes.tech&pcampaignid=web_share";
+
+/* Hand + phone composite. Coordinates live in a 958 × 858 box (Figma x 560→1518, y 0→858). */
+function Device({ play }: { play: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["6%", "-6%"]);
+
   return (
-    <svg
-      viewBox="0 0 170 170"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.85-12-14.43-5.67-8.6-10.1-18.49-13.29-29.68-3.19-11.19-4.79-22.1-4.79-32.74 0-14.56 3.69-26.68 11.06-36.36 7.37-9.68 16.89-14.65 28.56-14.92 5.03 0 10.51 1.34 16.44 4.02 5.93 2.68 9.77 4.07 11.52 4.17 1.48 0 5.43-1.42 11.85-4.26 6.42-2.84 12.02-4.06 16.8-3.66 12.55.93 22.42 5.48 29.62 13.65-10.98 6.64-16.32 15.73-16.03 27.27.3 9.4 3.96 17.26 10.99 23.58 7.02 6.32 15.35 10.02 24.98 11.1-2.22 6.77-5.01 13.91-8.35 21.43zM119.22 33.64c0-7.3 2.66-14.07 7.98-20.31 5.32-6.24 11.83-10.23 19.53-11.97.98 7.33-1.29 14.28-6.8 20.85-5.51 6.57-12.41 10.51-20.71 11.43z" />
-    </svg>
+    <div ref={ref} className="relative aspect-[958/858] w-full">
+      {/* The whole hand rises into frame on one slow spring, then drifts with the scroll. */}
+      <motion.div style={{ y }} className="absolute inset-0">
+        {/* Hand and phone open with the shutter; masked rather than covered, as they spill over the gradient. */}
+        <ShutterMask play={play} delay={0.35} className="absolute inset-0">
+          <div
+            className="absolute overflow-hidden rounded-[clamp(24px,3vw,48px)]"
+            style={{ left: 0, top: "1.49%", width: "100%", height: "98.48%" }}
+          >
+            <div
+              className="absolute inset-x-0"
+              style={{ top: "8.59%", height: "118.7%" }}
+            >
+              <Image
+                src="/home/img/app-hand.png"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+          <div
+            className="absolute flex items-center justify-center"
+            style={{
+              left: "1.51%",
+              top: 0,
+              width: "71.03%",
+              height: "103.22%",
+            }}
+          >
+            <div
+              className="relative"
+              style={{ rotate: "-29.69deg", width: "43.99%", height: "95.84%" }}
+            >
+              {/* Shadow as a blurred shape, not a filter on the moving image */}
+              <div
+                aria-hidden
+                className="absolute inset-[6%_4%_-2%_4%] rounded-[18%]"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.42), rgba(0,0,0,0) 72%)",
+                  transform: "translateY(5%)",
+                }}
+              />
+              <div
+                className="absolute"
+                style={{ inset: "1.39% 0.4% 0.5% 0.13%" }}
+              >
+                <Image
+                  src="/home/img/app-phone.png"
+                  alt="Premium Homes mobile app home screen"
+                  fill
+                  sizes="(min-width: 1024px) 24vw, 60vw"
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </ShutterMask>
+      </motion.div>
+    </div>
   );
 }
 
-function GooglePlayIcon({ className = "w-5 h-5" }: { className?: string }) {
+function StoreButton({ store }: { store: "apple" | "google" }) {
+  const apple = store === "apple";
   return (
-    <svg viewBox="0 0 512 512" className={className} aria-hidden="true">
-      <path
-        fill="#00C3FF"
-        d="M38.6 13.6C34.7 17.8 32.5 24.2 32.5 32.6v446.8c0 8.4 2.2 14.8 6.1 19l243.3-242.7L38.6 13.6z"
+    <a
+      href={apple ? APP_STORE_URL : PLAY_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={apple ? "Download on the App Store" : "Get it on Google Play"}
+      className="glass press relative flex h-[56px] items-center overflow-hidden rounded-full bg-white/85 pl-6 pr-6 backdrop-blur-[6px] md:h-[66.07px] md:pl-8 md:pr-[34px]"
+    >
+      <Image
+        src={apple ? "/home/icons/appstore.svg" : "/home/icons/googleplay.svg"}
+        alt=""
+        width={apple ? 120 : 139}
+        height={apple ? 30 : 33}
+        className="relative w-auto"
+        style={{
+          height: apple
+            ? "clamp(24px, 1.88vw, 30.07px)"
+            : "clamp(26px, 2.07vw, 33.19px)",
+        }}
       />
-      <path
-        fill="#00E676"
-        d="M362.4 179.6l-80.4 76.1 80.4 76.1 107-61.9c16.3-9.4 16.3-24.8 0-34.2l-107-56.1z"
-      />
-      <path
-        fill="#FF3D00"
-        d="M282 255.7L38.6 498.4c5.9 6.2 15.4 7 26.6.6l297.2-167.2-80.4-76.1z"
-      />
-      <path
-        fill="#FFD600"
-        d="M282 255.7l80.4-76.1L65.2 12.4c-11.2-6.4-20.7-5.6-26.6.6L282 255.7z"
-      />
-    </svg>
+    </a>
   );
 }
 
 export function MobileAppSection() {
+  // One trigger for the whole block so it plays in order: card, device, title lines, store buttons.
+  const ref = useRef<HTMLDivElement>(null);
+  const play = useInView(ref, { once: true, amount: 0.3 });
   return (
-    <section
-      aria-labelledby="mobile-app-heading"
-      className="w-full relative overflow-hidden py-14 sm:py-20 md:py-24 lg:py-28 px-4 sm:px-6 md:px-10 lg:px-12 xl:px-16 selection:bg-[#d0a65b]/20"
-      style={{
-        background:
-          "linear-gradient(180deg, #FFFFFF 0%, #FAF1E2 20%, #EED5AA 55%, #CFA564 100%)",
-      }}
-    >
-      <div className="max-w-[1360px] mx-auto">
-        {/* Luxury Rounded Dark Emerald Card */}
-        <div className="relative rounded-[28px] sm:rounded-[36px] md:rounded-[44px] lg:rounded-[52px] bg-[#07241c] shadow-[0_25px_60px_rgba(0,0,0,0.22)] overflow-hidden lg:overflow-visible lg:min-h-[500px] xl:min-h-[540px] flex flex-col lg:flex-row lg:items-end">
-          {/* Subtle Ambient Background Highlight behind Phone */}
-          <div
-            className="absolute top-0 right-0 w-full lg:w-3/5 h-full pointer-events-none rounded-[28px] sm:rounded-[36px] md:rounded-[44px] lg:rounded-[52px] overflow-hidden"
-            aria-hidden="true"
-          >
-            <div
-              className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-20 blur-[100px]"
-              style={{
-                background:
-                  "radial-gradient(circle, #0e5a47 0%, transparent 70%)",
-              }}
+    <section className="relative overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(179.38deg, #fff 0.9%, #cfa564 95.8%)",
+        }}
+      />
+
+      <div
+        ref={ref}
+        className="relative mx-auto max-w-[1600px] px-4 pb-14 pt-10 lg:aspect-[1600/945] lg:p-0"
+      >
+        {/* Card */}
+        <Appear
+          preset="grow"
+          slow
+          play={play}
+          className="relative overflow-hidden rounded-[32px] bg-green-deep lg:absolute lg:left-[5.125%] lg:top-[23.1%] lg:h-[67.72%] lg:w-[89.75%] lg:rounded-[clamp(32px,3vw,48px)]"
+        >
+          <div className="relative z-10 flex flex-col gap-10 px-6 pb-4 pt-10 sm:px-10 lg:absolute lg:left-[3.62%] lg:top-[50.16%] lg:w-[583px] lg:max-w-[42%] lg:p-0 xl:gap-14">
+            <Words
+              as="h2"
+              play={play}
+              delay={0.9}
+              mask
+              text="Your Dream Home Is Just a Tap Away"
+              className="max-w-[8.85em] font-display font-normal! capitalize leading-[1.2] text-gold"
+              style={{ fontSize: fluid(60, 36) }}
             />
-          </div>
-
-          {/* Left Content: Editorial Heading & App Store Badges */}
-          <div className="w-full lg:w-[48%] xl:w-[45%] p-6 sm:p-10 md:p-12 lg:p-14 xl:p-16 lg:pb-14 xl:pb-16 z-10 flex flex-col justify-end">
-            <h2
-              id="mobile-app-heading"
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[52px] font-normal text-[#cfa564] leading-[1.12] tracking-tight font-serif"
-              style={{
-                fontFamily:
-                  "var(--font-cormorant), 'Cormorant Garamond', Georgia, serif",
-              }}
+            <Appear
+              preset="lift"
+              play={play}
+              delay={1.35}
+              className="flex flex-wrap gap-[11.2px]"
             >
-              Your Dream Home
-              <br />
-              Is Just A Tap Away
-            </h2>
-
-            {/* Store Download Badges */}
-            <div className="mt-6 sm:mt-8 md:mt-10 flex flex-wrap items-center gap-3 sm:gap-4">
-              {/* Apple App Store */}
-              <a
-                href="https://apps.apple.com/us/app/tphl-premium-homes-ltd/id6752620266"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#dadedd] hover:bg-white text-[#1f2723] transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-sm group select-none cursor-pointer"
-                aria-label="Download on the App Store"
-              >
-                <AppleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1f2723] shrink-0 transition-transform duration-300 group-hover:scale-105" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[8px] sm:text-[9px] font-medium leading-none text-[#1f2723]/80">
-                    Download on the
-                  </span>
-                  <span className="text-xs sm:text-sm font-bold leading-tight text-[#1f2723] font-sans -tracking-tight mt-0.5">
-                    App Store
-                  </span>
-                </div>
-              </a>
-
-              {/* Google Play */}
-              <a
-                href="https://play.google.com/store/apps/details?id=com.premium_homes.tech&pcampaignid=web_share"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#dadedd] hover:bg-white text-[#1f2723] transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-sm group select-none cursor-pointer"
-                aria-label="Get it on Google Play"
-              >
-                <GooglePlayIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-300 group-hover:scale-105" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[7px] sm:text-[8px] font-semibold leading-none text-[#1f2723]/80 uppercase tracking-wider">
-                    GET IT ON
-                  </span>
-                  <span className="text-xs sm:text-sm font-bold leading-tight text-[#1f2723] font-sans -tracking-tight mt-0.5">
-                    Google Play
-                  </span>
-                </div>
-              </a>
-            </div>
+              <StoreButton store="apple" />
+              <StoreButton store="google" />
+            </Appear>
           </div>
 
-          {/* Right Content: Hand holding phone mockup */}
-          <div className="w-full lg:w-[52%] xl:w-[55%] flex lg:justify-end items-end px-4 sm:px-8 lg:px-0 pt-4 lg:pt-0">
-            <div className="relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[560px] xl:max-w-[620px] lg:absolute lg:bottom-3 xl:bottom-0 pointer-events-none select-none">
-              <Image
-                src={appImage}
-                alt="Premium Homes Mobile Application Interface"
-                width={1200}
-                height={978}
-                priority
-                className="w-full h-auto object-contain lg:rounded-br-[54px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
-              />
-            </div>
+          {/* Device inside the card on small screens */}
+          <div className="relative -mb-6 ml-auto mt-4 w-[110%] max-w-[700px] translate-x-[6%] lg:hidden">
+            <Device play={play} />
           </div>
+        </Appear>
+
+        {/* Device breaking out of the card on desktop */}
+        {/* Clipped at the card's bottom edge (and its rounded corner), as the Figma frame clips the hand and phone shadow. */}
+        <div className="pointer-events-none absolute left-[35%] top-0 hidden w-[59.875%] [clip-path:inset(-50%_0_0_-20%_round_0_0_clamp(32px,3vw,48px)_0)] lg:block">
+          <Device play={play} />
         </div>
       </div>
     </section>

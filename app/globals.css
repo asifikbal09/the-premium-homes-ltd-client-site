@@ -90,11 +90,24 @@
 
   /* Direct shorthand color utilities */
   --color-forest: #044133;
-  --color-gold: #d0a65b;
   --color-emerald-deep: #055b4b;
   --color-ivory: #fdfdf8;
-  --color-cream: #f7e7cb;
   --color-charcoal: #1f2723;
+
+  /* Home page design tokens (Figma: Premium-Home-x-Jisan-Dev, 1600px canvas) */
+  --color-green: #054b3c;
+  --color-green-deep: #09221c;
+  --color-gold: #cfa564;
+  --color-gold-line: #c19a5b;
+  --color-sage: #546360;
+  --color-warm: #f9f5ef;
+  --color-cream: #fff8ed;
+  --color-stone: #978b81;
+  --color-stone-2: #c0bbaf;
+  --color-taupe: #9d8b7b;
+  --color-ink: #3b3e40;
+  --color-chip: #dcdcdc;
+  --color-mist: #f2f5f7;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -116,6 +129,44 @@
   --font-signature: var(--font-seaweed-script), "Seaweed Script", cursive;
   --font-script: var(--font-signature);
   --font-sign: var(--font-signature);
+
+  /* Display face used by the home page design (same K Victor files as headings) */
+  --font-display: var(--font-victor), Georgia, serif;
+}
+
+@theme {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --breakpoint-3xl: 100rem; /* 1600px – the Figma canvas */
+
+  /* Popover / combobox cards: rise and settle, expo-out. */
+  --animate-pop-in: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pop-out: pop-out 0.2s ease-out forwards;
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+      scale: 0.96;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+  @keyframes pop-out {
+    from {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      translate: 0 8px;
+      scale: 0.98;
+    }
+  }
 }
 
 /* Base element typography rules */
@@ -123,6 +174,35 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+@layer base {
+  /* Tailwind v4's preflight leaves buttons on the default arrow; every control gets a hand,
+     text fields keep the I-beam, and anything disabled says so. */
+  button,
+  [role="button"],
+  [role="option"],
+  [role="tab"],
+  [role="switch"],
+  [role="combobox"],
+  [cmdk-item],
+  summary,
+  select,
+  label[for],
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  input[type="file"] {
+    cursor: pointer;
+  }
+
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Titles: h1, h2 default to medium (500) */
@@ -240,4 +320,201 @@ textarea {
   background:
     linear-gradient(0deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)),
     rgba(24, 24, 24, 0.15);
+}
+
+/* ---- Home page design system (ported from the Figma build) ---- */
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* Page gutter: 16px on phones → 80px at the 1600 canvas. */
+@utility shell {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 80px);
+}
+
+/* Cap-height trimming used across Figma text layers. */
+@utility trim {
+  text-box: trim-both cap alphabetic;
+}
+
+/*
+ * Glass surfaces. 1px rim masked to a ring, using the DarkSpotlightButton
+ * border: white at the top-left, faint mid-tone, dark lower-right. On hover
+ * the light swings from 135deg to 45deg. Fills stay per element.
+ * The host must be positioned (relative/absolute).
+ */
+@property --dark-spotlight-angle {
+  syntax: "<angle>";
+  initial-value: 135deg;
+  inherits: false;
+}
+
+@utility glass {
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    --dark-spotlight-angle: 135deg;
+    background: linear-gradient(
+      var(--dark-spotlight-angle),
+      #ffffff 0%,
+      rgba(255, 255, 255, 0.15) 10%,
+      rgba(255, 255, 255, 0.15) 20%,
+      rgb(62, 62, 62) 80%,
+      rgb(62, 62, 62) 90%,
+      rgb(62, 62, 62) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    transition: --dark-spotlight-angle 0.5s ease;
+  }
+
+  &:hover::before {
+    --dark-spotlight-angle: 45deg;
+  }
+}
+
+/* Light glass on bright photos ("Luxury collection"): darkens, 1.5px white rim. */
+@utility glass-light {
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.8),
+    0 0 2px 0 rgba(0, 0, 0, 0.1),
+    0 1px 8px 0 rgba(0, 0, 0, 0.1);
+}
+
+/*
+ * Hover physics. One ease everywhere: expo-out, 350ms. Buttons swell a touch
+ * and settle back when pressed; photos breathe inside their frame.
+ */
+@utility press {
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    letter-spacing 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease;
+  &:hover {
+    transform: scale(1.05);
+  }
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+@utility zoom-frame {
+  overflow: hidden;
+  & > :first-child {
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &:hover > :first-child {
+    transform: scale(1.05);
+  }
+}
+
+@utility nudge {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  .group:hover & {
+    transform: translateX(5px);
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Band heights for <ShutterMask>: registered so each one can transition on its own delay. */
+@property --sb0 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb1 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb2 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb3 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb4 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb5 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb6 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sb7 {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
 }

@@ -1,153 +1,176 @@
-import React from "react";
+"use client";
 
-interface PillarItem {
-  id: string;
-  title: string | React.ReactNode;
-  icon: React.ReactNode;
-}
+import { motion, useInView } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { useRef } from "react";
+import { Appear } from "@/components/ui/motion";
+import { Heading } from "@/components/ui/primitives";
+import { PILLAR_PATHS } from "./pillar_paths";
+import { fluid } from "@/lib/utils";
 
-const PILLARS: PillarItem[] = [
+/* Figma composes each pillar icon from several vector layers; positions are kept 1:1 inside a 100×100 box. */
+type Layer = { src: string; x: number; y: number; w: number; h: number };
+
+const PILLARS: { title: string; icon: Layer[] }[] = [
   {
-    id: "transparency",
     title: "Transparency",
-    icon: (
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-6 h-6 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 text-[#d0a65b]"
-        aria-hidden="true"
-      >
-        {/* Left bracket framing */}
-        <path d="M22 10 H10 V54 H22" />
-        {/* Right bracket framing */}
-        <path d="M42 10 H54 V54 H42" />
-        {/* Central angled diamond */}
-        <polygon points="32,20 44,32 32,44 20,32" />
-      </svg>
-    ),
+    icon: [
+      { src: "p1-a", x: 0, y: 0, w: 33.809, h: 100.001 },
+      { src: "p1-b", x: 66.19, y: 0, w: 33.809, h: 100.001 },
+      { src: "p1-c", x: 23.67, y: 23.68, w: 52.651, h: 52.651 },
+    ],
   },
   {
-    id: "growth",
     title: "Growth",
-    icon: (
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        className="w-6 h-6 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 text-[#d0a65b]"
-        aria-hidden="true"
-      >
-        {/* Outer chamfered polygon */}
-        <polygon points="24,8 56,8 56,56 8,56 8,24" />
-        {/* Middle nested chamfered polygon */}
-        <polygon points="24,16 48,16 48,48 16,48 16,24" />
-        {/* Inner concentric square */}
-        <rect x="24" y="24" width="16" height="16" />
-      </svg>
-    ),
+    icon: [
+      { src: "p2-a", x: 0, y: 0, w: 100, h: 100 },
+      { src: "p2-b", x: 16.17, y: 16.17, w: 67.638, h: 67.638 },
+      { src: "p2-c", x: 32.36, y: 32.36, w: 35.275, h: 35.275 },
+    ],
   },
   {
-    id: "client-experience",
-    title: (
-      <>
-        Client
-        <br />
-        Experience
-      </>
-    ),
-    icon: (
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        className="w-6 h-6 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 text-[#d0a65b]"
-        aria-hidden="true"
-      >
-        {/* Outer boundary circle */}
-        <circle cx="32" cy="32" r="24" />
-        {/* Bottom concentric resonance wave arcs */}
-        <path d="M 37.85 39.49 A 9.5 9.5 0 0 1 26.15 39.49" />
-        <path d="M 42.47 45.40 A 17 17 0 0 1 21.53 45.40" />
-        {/* Top-left concentric resonance wave arcs */}
-        <path d="M 22.59 33.32 A 9.5 9.5 0 0 1 28.44 23.19" />
-        <path d="M 15.17 34.37 A 17 17 0 0 1 25.63 16.24" />
-        {/* Top-right concentric resonance wave arcs */}
-        <path d="M 35.56 23.19 A 9.5 9.5 0 0 1 41.41 33.32" />
-        <path d="M 38.37 16.24 A 17 17 0 0 1 48.83 34.37" />
-      </svg>
-    ),
+    title: "Client Experience",
+    icon: [
+      { src: "p3-3095", x: 16.08, y: 31.83, w: 7.833, h: 19.627 },
+      { src: "p3-3094", x: 31.78, y: 76.07, w: 36.342, h: 7.746 },
+      { src: "p3-3087", x: 64.16, y: 19.95, w: 19.628, h: 31.508 },
+      { src: "p3-3086", x: 19.92, y: 19.98, w: 15.783, h: 15.842 },
+      { src: "p3-3054", x: 39.87, y: 62.06, w: 20.151, h: 5.591 },
+      { src: "p3-3047", x: 56.03, y: 33.96, w: 11.561, h: 17.501 },
+      { src: "p3-3046", x: 32.27, y: 33.99, w: 11.532, h: 17.501 },
+      { src: "p3-3099", x: 0, y: 0, w: 100, h: 100 },
+    ],
   },
   {
-    id: "trust",
     title: "Trust",
-    icon: (
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        className="w-6 h-6 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 text-[#d0a65b]"
-        aria-hidden="true"
-      >
-        {/* Outer circle */}
-        <circle cx="32" cy="32" r="24" />
-        {/* Central hexagon */}
-        <polygon points="32,20 42.4,26 42.4,38 32,44 21.6,38 21.6,26" />
-        {/* Top connecting vertical line */}
-        <line x1="32" y1="8" x2="32" y2="20" strokeLinecap="round" />
-        {/* Bottom connecting vertical line */}
-        <line x1="32" y1="44" x2="32" y2="56" strokeLinecap="round" />
-      </svg>
-    ),
+    icon: [
+      { src: "p4-2489", x: 27.52, y: 24.02, w: 44.962, h: 51.922 },
+      { src: "p4-2488", x: 0, y: 0, w: 100, h: 100 },
+      { src: "p4-2487", x: 48.54, y: 72.83, w: 2.912, h: 27.169 },
+      { src: "p4-2486", x: 48.54, y: 0.03, w: 2.912, h: 27.169 },
+    ],
   },
 ];
 
+function PillarCard({ p, i }: { p: (typeof PILLARS)[number]; i: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -8% 0px" });
+  return (
+    <Appear
+      as="article"
+      preset="rise"
+      delay={i * 0.14}
+      amount={0.3}
+      className="group relative flex h-[300px] flex-col justify-between overflow-hidden bg-gradient-to-b from-cream to-white p-8 md:h-[420px] md:p-10 xl:h-[493px]"
+    >
+      <span
+        ref={ref}
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-0"
+      />
+      {/* Hover wash rises from the floor of the card */}
+      <span className="absolute inset-0 origin-bottom scale-y-0 bg-gradient-to-t from-green to-green-deep transition-transform duration-[900ms] ease-out-expo group-hover:scale-y-100" />
+      <span className="relative transition-transform duration-700 ease-out-expo group-hover:-translate-y-2">
+        <PillarIcon layers={p.icon} draw={inView} delay={i * 0.14} />
+      </span>
+      <div className="relative">
+        <span className="mb-4 block font-sans text-[14px] font-medium tracking-[2px] text-gold opacity-0 transition-all duration-700 ease-out-expo group-hover:opacity-100">
+          0{i + 1}
+        </span>
+        <h3
+          className="max-w-[6.6em] font-display font-normal leading-none text-green transition-colors duration-700 group-hover:text-warm"
+          style={{ fontSize: fluid(48, 36) }}
+        >
+          {p.title}
+        </h3>
+      </div>
+    </Appear>
+  );
+}
+
+/**
+ * The icon draws itself on reveal: every Figma vector layer sits in its own
+ * nested viewBox at the design position, strokes in along its outline with a
+ * non-scaling hairline, then its fill settles. Layers follow one another.
+ */
+function PillarIcon({
+  layers,
+  draw,
+  delay = 0,
+}: {
+  layers: Layer[];
+  draw: boolean;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className="size-[72px] overflow-visible md:size-[100px]"
+      aria-hidden
+    >
+      {layers.map((l, i) => {
+        const path = PILLAR_PATHS[l.src];
+        const at = delay + 0.15 + i * 0.09;
+        return (
+          <svg
+            key={i}
+            x={l.x}
+            y={l.y}
+            width={l.w}
+            height={l.h}
+            viewBox={path.viewBox}
+            overflow="visible"
+          >
+            <motion.path
+              d={path.d}
+              fill="#CFA564"
+              stroke="#CFA564"
+              strokeWidth={1}
+              vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0, fillOpacity: 0 }}
+              animate={
+                draw
+                  ? { pathLength: 1, fillOpacity: 1 }
+                  : { pathLength: 0, fillOpacity: 0 }
+              }
+              transition={
+                reduce
+                  ? { duration: 0 }
+                  : {
+                      pathLength: {
+                        duration: 1.1,
+                        ease: [0.65, 0, 0.35, 1],
+                        delay: at,
+                      },
+                      fillOpacity: {
+                        duration: 0.5,
+                        ease: "easeOut",
+                        delay: at + 0.75,
+                      },
+                    }
+              }
+            />
+          </svg>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** The four pillars, as a section of their own (sits just before Testimonials). */
 export function PhilosophyPillars() {
   return (
-    <section
-      aria-labelledby="philosophy-heading"
-      className="w-full bg-white py-8 sm:py-16 lg:py-24 selection:bg-[#d0a65b]/20"
-    >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 md:px-10 lg:px-12">
-        {/* Section Heading matching Figma specs */}
-        <h2
-          id="philosophy-heading"
-          className="font-heading text-xl sm:text-3xl md:text-5xl lg:text-[54px] font-normal text-[#044133] leading-[115%] tracking-tight mb-4 sm:mb-8 lg:mb-14"
-        >
-          The Pillars Of Our Philosophy
-        </h2>
-
-        {/* 4 Pillars Responsive Grid: 4 columns across all screens */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-5 lg:gap-6">
-          {PILLARS.map((pillar) => (
-            <article
-              key={pillar.id}
-              className="group relative aspect-[3/4] p-2.5 sm:p-5 md:p-7 lg:p-9 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(4,65,51,0.06)] cursor-default"
-              style={{
-                background: "linear-gradient(180deg, #FEF8ED 0%, #FFFFFF 100%)",
-              }}
-            >
-              {/* Pillar Icon Header */}
-              <div className="flex items-start justify-start">
-                <div className="transition-transform duration-300 group-hover:scale-105">
-                  {pillar.icon}
-                </div>
-              </div>
-
-              {/* Pillar Title Footer */}
-              <h3 className="font-heading text-[10px] sm:text-base md:text-2xl lg:text-[32px] font-normal text-[#044133] leading-[112%] tracking-normal">
-                {pillar.title}
-              </h3>
-            </article>
+    <section className="relative bg-white pt-16 md:pt-[100px]">
+      {/* Pillars */}
+      <div className="shell lg:pl-[calc(clamp(16px,5vw,80px)+min(0.375vw,6px))]">
+        <Heading size={72} min={38} by="chars" mask>
+          The Pillars of Our Philosophy
+        </Heading>
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mt-12 xl:grid-cols-4">
+          {PILLARS.map((p, i) => (
+            <PillarCard key={p.title} p={p} i={i} />
           ))}
         </div>
       </div>

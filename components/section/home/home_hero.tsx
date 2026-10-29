@@ -1,552 +1,244 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import Image from "next/image";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  ChevronDown,
-  Send,
-  MoreVertical,
-  Check,
-  Building2,
-  MapPin,
-} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useRef, useState } from "react";
+import { Appear, Words } from "@/components/ui/motion";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn, SETTLE, fluid } from "@/lib/utils";
+import { useIntro } from "@/components/providers/intro";
 
-// --- Types & Constants ---
-interface ChatMessage {
-  id: string;
-  sender: "advisor" | "user";
-  text: string;
-  time: string;
+type FilterKey = "status" | "location";
+type Filters = Record<FilterKey, { label: string; options: string[] }>;
+
+/** shadcn Combobox: a Popover holding a searchable Command list, styled to the theme. */
+function Dropdown({
+  label,
+  options,
+  value,
+  open,
+  onOpenChange,
+  onSelect,
+}: {
+  label: string;
+  options: string[];
+  value: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (v: string | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-expanded={open}
+          className="flex w-full min-w-0 items-center justify-between gap-3 py-2 text-left text-[14px] uppercase text-white md:w-auto md:gap-12 md:text-[16px]"
+        >
+          <span className="trim truncate leading-[1.7]">{value ?? label}</span>
+          <Image
+            src="/home/icons/chevron-white.svg"
+            alt=""
+            width={24}
+            height={24}
+            className={cn("size-6 shrink-0 rotate-90 transition-transform duration-500 ease-out-expo", open && "-rotate-90")}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        sideOffset={22}
+        alignOffset={-16}
+        collisionPadding={16}
+        // Radix would focus the field before the popper is placed and scroll the page to it.
+        // Focus it ourselves without scrolling, and only where there is no on-screen keyboard.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          if (!window.matchMedia("(pointer: fine)").matches) return;
+          requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+        }}
+      >
+        <Command>
+          <CommandInput ref={inputRef} placeholder={`Search ${label.toLowerCase()}…`} />
+          <CommandList>
+            <CommandEmpty>No match</CommandEmpty>
+            <CommandGroup>
+              {options.map((opt) => (
+                <CommandItem
+                  key={opt}
+                  value={opt}
+                  onSelect={() => {
+                    onSelect(opt === value ? null : opt);
+                    onOpenChange(false);
+                  }}
+                >
+                  {opt}
+                  {value === opt && <span className="size-1.5 shrink-0 rounded-full bg-gold" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
-const DEFAULT_STATUS_FALLBACK = ["Ongoing", "Sold Out"];
-
-const DEFAULT_LOCATION_FALLBACK = [
-  "Bashundhara Residential Area",
-  "The Premium Smart City",
-  "Cox's Bazar",
-  "Jolshiri Abashon",
-  "ATI Model Society",
-  "Ashulia Model Town",
-];
-
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: "msg-1",
-    sender: "advisor",
-    text: "Hi there! I can help you find the perfect apartment or house. What kind of property are you looking for?",
-    time: "14:20 PM",
-  },
-  {
-    id: "msg-2",
-    sender: "user",
-    text: "I'm looking for a 3-bedroom apartment in Uttara, budget around 85 lakh.",
-    time: "14:21 PM",
-  },
-];
-
-// --- Search Filter Capsule Component ---
-interface HeroSearchFilterProps {
-  locations?: string[];
-  statuses?: string[];
-}
-
-function HeroSearchFilter({ locations = [], statuses = [] }: HeroSearchFilterProps) {
+/** Status + location filters; Search opens the projects page filtered by both. */
+function SearchBar({ filters }: { filters: Filters }) {
   const router = useRouter();
-  const [selectedStatus, setSelectedStatus] = useState("STATUS");
-  const [selectedLocation, setSelectedLocation] = useState("LOCATION");
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(false);
-
-  const statusRef = useRef<HTMLDivElement>(null);
-  const locationRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdowns on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        statusRef.current &&
-        !statusRef.current.contains(event.target as Node)
-      ) {
-        setStatusOpen(false);
-      }
-      if (
-        locationRef.current &&
-        !locationRef.current.contains(event.target as Node)
-      ) {
-        setLocationOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Compute status options
-  const statusOptions = React.useMemo(() => {
-    const list = [{ id: "all", label: "All Status" }];
-    const source = statuses.length > 0 ? statuses : DEFAULT_STATUS_FALLBACK;
-    source.forEach((s) => {
-      const trimmed = s.trim();
-      if (trimmed && !list.some((item) => item.label.toLowerCase() === trimmed.toLowerCase())) {
-        list.push({
-          id: trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-          label: trimmed,
-        });
-      }
-    });
-    return list;
-  }, [statuses]);
-
-  // Compute location options
-  const locationOptions = React.useMemo(() => {
-    const list = [{ id: "all", label: "All Locations" }];
-    const source = locations.length > 0 ? locations : DEFAULT_LOCATION_FALLBACK;
-    source.forEach((loc) => {
-      const trimmed = loc.trim();
-      if (trimmed && !list.some((item) => item.label.toLowerCase() === trimmed.toLowerCase())) {
-        list.push({
-          id: trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-          label: trimmed,
-        });
-      }
-    });
-    return list;
-  }, [locations]);
-
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (selectedStatus !== "STATUS" && selectedStatus !== "All Status") {
-      params.set("status", selectedStatus);
-    }
-    if (selectedLocation !== "LOCATION" && selectedLocation !== "All Locations") {
-      params.set("location", selectedLocation);
-    }
-    const queryString = params.toString();
-    router.push(`/projects${queryString ? `?${queryString}` : ""}`);
-  };
+  const [open, setOpen] = useState<FilterKey | null>(null);
+  const [values, setValues] = useState<Record<FilterKey, string | null>>({ status: null, location: null });
 
   return (
-    <div className="relative inline-flex items-center rounded-full bg-[#16221c]/90 hover:bg-[#16221c] backdrop-blur-md border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.55)] p-0.5 sm:p-1 md:p-1.5 transition-all select-none">
-      {/* STATUS Dropdown */}
-      <div className="relative" ref={statusRef}>
-        <button
-          type="button"
-          onClick={() => {
-            setStatusOpen((prev) => !prev);
-            setLocationOpen(false);
-          }}
-          className={cn(
-            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase transition-all cursor-pointer",
-            statusOpen || selectedStatus !== "STATUS"
-              ? "text-white bg-white/15"
-              : "text-white/90 hover:text-white hover:bg-white/10",
-          )}
-          aria-expanded={statusOpen}
-          aria-haspopup="listbox"
-        >
-          <span className="truncate max-w-[65px] sm:max-w-[100px] md:max-w-[120px]">
-            {selectedStatus}
-          </span>
-          <ChevronDown
-            className={cn(
-              "w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-white/80 transition-transform duration-200 shrink-0",
-              statusOpen && "rotate-180 text-white",
-            )}
-          />
-        </button>
-
-        {/* Dropdown Menu */}
-        <AnimatePresence>
-          {statusOpen && (
-            <motion.ul
-              initial={{ opacity: 0, y: 8, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.96 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              className="absolute bottom-full mb-3 left-0 min-w-[170px] sm:min-w-[200px] max-h-60 overflow-y-auto bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50"
-              role="listbox"
-            >
-              <div className="px-3 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#d0a65b] uppercase border-b border-white/10 mb-1 flex items-center gap-1.5">
-                <Building2 className="w-3 h-3" /> Property Status
-              </div>
-              {statusOptions.map((item) => {
-                const isSelected =
-                  selectedStatus === item.label ||
-                  (selectedStatus === "STATUS" && item.id === "all");
-                return (
-                  <li
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedStatus(
-                        item.id === "all" ? "STATUS" : item.label,
-                      );
-                      setStatusOpen(false);
-                    }}
-                    className={cn(
-                      "flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors cursor-pointer",
-                      isSelected
-                        ? "bg-[#044133] text-white"
-                        : "text-white/80 hover:bg-white/10 hover:text-white",
-                    )}
-                    role="option"
-                    aria-selected={isSelected}
-                  >
-                    <span>{item.label}</span>
-                    {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-[#d0a65b]" />
-                    )}
-                  </li>
-                );
-              })}
-            </motion.ul>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Subtle Divider */}
-      <div className="h-3 sm:h-4 w-[1px] bg-white/20 mx-0.5 sm:mx-1" />
-
-      {/* LOCATION Dropdown */}
-      <div className="relative" ref={locationRef}>
-        <button
-          type="button"
-          onClick={() => {
-            setLocationOpen((prev) => !prev);
-            setStatusOpen(false);
-          }}
-          className={cn(
-            "flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase transition-all cursor-pointer",
-            locationOpen || selectedLocation !== "LOCATION"
-              ? "text-white bg-white/15"
-              : "text-white/90 hover:text-white hover:bg-white/10",
-          )}
-          aria-expanded={locationOpen}
-          aria-haspopup="listbox"
-        >
-          <span className="truncate max-w-[65px] sm:max-w-[100px] md:max-w-[120px]">
-            {selectedLocation}
-          </span>
-          <ChevronDown
-            className={cn(
-              "w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-white/80 transition-transform duration-200 shrink-0",
-              locationOpen && "rotate-180 text-white",
-            )}
-          />
-        </button>
-
-        {/* Dropdown Menu */}
-        <AnimatePresence>
-          {locationOpen && (
-            <motion.ul
-              initial={{ opacity: 0, y: 8, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.96 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              className="absolute bottom-full mb-3 left-0 min-w-[200px] sm:min-w-[240px] max-h-60 overflow-y-auto bg-[#091d17]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-2 shadow-2xl z-50"
-              role="listbox"
-            >
-              <div className="px-3 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#d0a65b] uppercase border-b border-white/10 mb-1 flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" /> Select Location
-              </div>
-              {locationOptions.map((item) => {
-                const isSelected =
-                  selectedLocation === item.label ||
-                  (selectedLocation === "LOCATION" && item.id === "all");
-                return (
-                  <li
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedLocation(
-                        item.id === "all" ? "LOCATION" : item.label,
-                      );
-                      setLocationOpen(false);
-                    }}
-                    className={cn(
-                      "flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors cursor-pointer",
-                      isSelected
-                        ? "bg-[#044133] text-white"
-                        : "text-white/80 hover:bg-white/10 hover:text-white",
-                    )}
-                    role="option"
-                    aria-selected={isSelected}
-                  >
-                    <span>{item.label}</span>
-                    {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-[#d0a65b]" />
-                    )}
-                  </li>
-                );
-              })}
-            </motion.ul>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* SEARCH Button */}
-      <button
-        type="button"
-        onClick={handleSearch}
-        aria-label="Search Properties"
-        className="group relative inline-flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2.5 sm:px-4 md:px-6 py-1 sm:py-1.5 md:py-2 rounded-full text-[9px] sm:text-[11px] md:text-xs font-normal tracking-[0.14em] uppercase text-white bg-[#6b5e4f] hover:bg-[#7b6d5c] border border-white/25 shadow-md transition-all duration-200 cursor-pointer active:scale-95 ml-0.5 sm:ml-1"
-      >
-        <Search className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-white/95 group-hover:scale-110 transition-transform duration-200" />
-        <span className="relative z-10">SEARCH</span>
-      </button>
-    </div>
-  );
-}
-
-// --- Advisor Chat Component ---
-function HeroAdvisorChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
-  const [inputText, setInputText] = useState("");
-  const chatScrollRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll on new messages
-  useEffect(() => {
-    if (chatScrollRef.current) {
-      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
-
-    const newMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      text: inputText.trim(),
-      time: "Just now",
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
-    setInputText("");
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `advisor-${Date.now()}`,
-          sender: "advisor",
-          text: "Excellent choice! We have exclusive luxury 3-bedroom projects in Sector 3 and Sector 11 Uttara. Let me share the floor plans with you.",
-          time: "Just now",
-        },
-      ]);
-    }, 2000);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className="w-[270px] sm:w-[300px] md:w-[320px] bg-white rounded-lg sm:rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-black/10 overflow-hidden flex flex-col transition-all"
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setOpen(null);
+        const params = new URLSearchParams();
+        if (values.status) params.set("status", values.status);
+        if (values.location) params.set("location", values.location);
+        const query = params.toString();
+        router.push(`/projects${query ? `?${query}` : ""}`);
+      }}
+      className="glass relative grid w-full grid-cols-2 items-center gap-x-6 gap-y-3 rounded-[28px] bg-white/[0.115] px-6 py-4 backdrop-blur-[12px] md:flex md:w-auto md:gap-16 md:rounded-full md:py-3 md:pl-12 md:pr-4"
     >
-      {/* Header Bar */}
-      <div className="bg-[#ece6dc] border-b border-[#ded7cc] px-3.5 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 ring-1 ring-black/10 bg-[#e0d6c7]">
-            <Image
-              src="/image/advisor_bornali.png"
-              alt="Bornali Haque"
-              fill
-              sizes="32px"
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <h2 className="text-xs sm:text-[13px] font-bold text-[#1a231f] leading-tight">
-              Bornali Haque
-            </h2>
-            <div className="flex items-center gap-1 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-              <span className="text-[10px] font-medium text-[#047857]">
-                Online
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          aria-label="Chat options"
-          className="text-gray-500 hover:text-gray-800 p-1 transition-colors cursor-pointer"
-        >
-          <MoreVertical className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Messages Feed */}
-      <div
-        ref={chatScrollRef}
-        className="p-3 space-y-2.5 max-h-[160px] sm:max-h-[175px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 bg-white"
-      >
-        {/* Advisor Message 1 */}
-        <div className="flex items-start gap-2">
-          <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 mt-0.5 ring-1 ring-black/5 bg-[#e0d6c7]">
-            <Image
-              src="/image/advisor_bornali.png"
-              alt="Bornali Haque"
-              fill
-              sizes="20px"
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <div className="bg-[#f0ece5] text-[#1c2621] p-2.5 rounded-2xl rounded-tl-xs text-[11px] sm:text-xs leading-relaxed max-w-[210px] shadow-xs">
-              Hi there! I can help you find the perfect apartment or house. What
-              kind of property are you looking for?
-            </div>
-            <span className="text-[9px] text-gray-400 block mt-1">
-              14:20 PM
-            </span>
-          </div>
-        </div>
-
-        {/* User Message 2 */}
-        <div className="flex flex-col items-end">
-          <div className="bg-[#054b3c] text-white p-2.5 rounded-2xl rounded-tr-xs text-[11px] sm:text-xs leading-relaxed max-w-[210px] shadow-xs">
-            I&apos;m looking for a 3-bedroom apartment in Uttara, budget around
-            85 lakh.
-          </div>
-          <span className="text-[9px] text-gray-400 mt-1">14:21 PM</span>
-        </div>
-
-        {/* Typing Indicator Message 3 */}
-        <div className="flex items-start gap-2">
-          <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 mt-0.5 ring-1 ring-black/5 bg-[#e0d6c7]">
-            <Image
-              src="/image/advisor_bornali.png"
-              alt="Bornali Haque"
-              fill
-              sizes="20px"
-              className="object-cover"
-            />
-          </div>
-          <div className="bg-[#f0ece5] px-3 py-2 rounded-2xl rounded-tl-xs flex items-center gap-1.5 shadow-xs">
-            <span className="w-1.5 h-1.5 bg-[#055b4b] rounded-full animate-bounce [animation-delay:-0.3s]" />
-            <span className="w-1.5 h-1.5 bg-[#055b4b] rounded-full animate-bounce [animation-delay:-0.15s]" />
-            <span className="w-1.5 h-1.5 bg-[#055b4b] rounded-full animate-bounce" />
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Input Field */}
-      <form
-        onSubmit={handleSendMessage}
-        className="p-2 bg-white border-t border-gray-100 flex items-center gap-2"
-      >
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Ask Question..."
-          aria-label="Ask property question"
-          className="w-full bg-[#f2f4f5] text-xs px-3.5 py-1.5 rounded-full text-gray-800 placeholder:text-gray-400 focus:outline-none"
+      {(Object.keys(filters) as FilterKey[]).map((key) => (
+        <Dropdown
+          key={key}
+          label={filters[key].label}
+          options={filters[key].options}
+          value={values[key]}
+          open={open === key}
+          onOpenChange={(isOpen) => setOpen(isOpen ? key : null)}
+          onSelect={(v) => setValues((s) => ({ ...s, [key]: v }))}
         />
-        <button
-          type="submit"
-          aria-label="Send message"
-          disabled={!inputText.trim()}
-          className="w-7 h-7 rounded-full bg-[#11241d] hover:bg-[#1a382d] text-white flex items-center justify-center shrink-0 shadow-sm cursor-pointer transition-all active:scale-95 disabled:opacity-40"
-        >
-          <Send className="w-3.5 h-3.5" />
-        </button>
-      </form>
-    </motion.div>
+      ))}
+      <button
+        type="submit"
+        className="glass press col-span-2 flex items-center justify-center gap-3 overflow-hidden rounded-full bg-[rgba(157,139,123,0.72)] px-12 py-[15px] text-[14px] font-medium uppercase text-white backdrop-blur-[6px]"
+      >
+        <Image src="/home/icons/search.svg" alt="" width={24} height={24} className="size-6" />
+        <span className="trim leading-[1.7]">Search</span>
+      </button>
+    </form>
   );
 }
 
-// --- Main Hero Section Export ---
-interface HomeHeroProps {
+/**
+ * Intro choreography once the first screen slides away: the photo settles
+ * from a slow zoom while the label, title, search bar and widgets each arrive
+ * from well below on their own spring, a beat apart.
+ */
+// Used only when the projects API returns nothing to build the filters from.
+const FALLBACK_STATUSES = ["Ongoing", "Upcoming", "Ready to move", "Completed"];
+const FALLBACK_LOCATIONS = ["Bashundhara R/A", "Ashulia Model Town", "Uttara", "Gulshan", "Mirpur DOHS"];
+
+export interface HomeHeroProps {
   initialLocations?: string[];
   initialStatuses?: string[];
 }
 
-export function HomeHero({
-  initialLocations = [],
-  initialStatuses = [],
-}: HomeHeroProps) {
+export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHeroProps) {
+  const filters: Filters = {
+    status: { label: "Status", options: initialStatuses.length ? initialStatuses : FALLBACK_STATUSES },
+    location: { label: "Location", options: initialLocations.length ? initialLocations : FALLBACK_LOCATIONS },
+  };
+  const ref = useRef<HTMLElement>(null);
+  const { done } = useIntro();
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+
+ const contentY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
   return (
-    <>
-      <section
-        id="home"
-        aria-label="Hero Section"
-        className="w-full aspect-[16/9] md:aspect-auto md:h-screen md:max-h-[920px]"
+    <section
+      id="top"
+      ref={ref}
+      className="relative isolate h-[100svh] min-h-[640px] overflow-hidden bg-green-deep text-white lg:max-h-[1080px]"
+    >
+      {/* Background */}
+      <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10">
+        <motion.div
+          initial={{ scale: 1.14 }}
+          animate={done ? { scale: 1 } : undefined}
+          transition={reduce ? { duration: 0 } : { duration: 2.6, ease: SETTLE }}
+          className="absolute inset-[-31px_-9px_0]"
+        >
+          <Image
+            src="/home/img/hero-bg.jpg"
+            alt="Premium Homes residential towers lit at night"
+            fill
+            preload
+            sizes="100vw"
+            className="object-cover object-[62%_center]"
+          />
+        </motion.div>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(88.54deg, rgba(0,0,0,0.65) 22.651%, rgba(11,11,11,0) 71.69%)",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+      </motion.div>
+
+      {/* Headline — Figma: x 80, y 325 of a 900 tall frame */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="shell absolute inset-x-0 bottom-[220px] md:bottom-[235px] lg:bottom-auto lg:top-[36.1%]"
       >
-        {/* Contained Hero Card matching luxury aesthetic on Desktop & Mobile */}
-        <div className="relative w-full h-full aspect-[16/9] md:aspect-auto md:h-screen md:max-h-[920px] overflow-hidden border border-black/5 bg-[#031310] flex flex-col justify-between pt-8 sm:pt-16 md:pt-28 pb-2 sm:pb-4 md:pb-8 lg:pb-10 px-2.5 sm:px-6 md:px-8 lg:px-10 transition-all">
-          {/* Background Image Layer */}
-          <div className="absolute inset-0 z-0 pointer-events-none">
-            <Image
-              src="/image/home_hero_bg.png"
-              alt="Premium luxury modern architectural high-rise apartments at night"
-              fill
-              priority
-              sizes="100vw"
-              quality={90}
-              className="object-cover object-center transform scale-100 transition-transform duration-1000 ease-out"
-            />
-
-            {/* Soft Linear Gradient Overlay for text contrast */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 35%, rgba(0, 0, 0, 0.75) 100%)",
-              }}
-            />
-          </div>
-
-          {/* MIDDLE AREA: Left Headline & Right Floating Contact / Chat */}
-          <div className="relative z-10 w-full flex flex-col lg:flex-row justify-between my-auto gap-2 sm:gap-6">
-            {/* Left Column: Tagline & Display Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col justify-end max-w-2xl pb-0.5 sm:pb-2 lg:pb-6"
-            >
-              {/* Tagline */}
-              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-2 md:mb-3">
-                <span className="text-[6px] sm:text-[9px] md:text-xs font-semibold tracking-[0.16em] uppercase text-white/90 drop-shadow-sm">
-                  REAL ESTATE DEVELOPMENT AGENCY
-                </span>
-              </div>
-
-              {/* Headline */}
-              <h1 className="font-heading font-medium text-base sm:text-3xl md:text-6xl xl:text-[80px] 2xl:text-[90px] text-white leading-[100%] tracking-normal drop-shadow-lg select-none">
-                Shaping
-                <br />
-                Tomorrow&apos;s
-                <br />
-                Lifestyle.
-              </h1>
-            </motion.div>
-
-            {/* Right Column: WhatsApp Button + Bornali Haque Chat Card */}
-          </div>
-
-          {/* BOTTOM AREA: Centered Search Capsule Filter */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-30 w-full flex justify-center mt-0.5 sm:mt-2"
-          >
-            <HeroSearchFilter
-              locations={initialLocations}
-              statuses={initialStatuses}
-            />
-          </motion.div>
+        <div className="flex flex-col gap-4">
+          <Appear as="p" preset="rise" play={done} delay={0.1} className="text-[13px] font-medium uppercase leading-[1.5] tracking-[0.5px] sm:text-[16px] sm:tracking-normal">
+            Real Estate Development Agency
+          </Appear>
+          <Words
+            as="h1"
+            play={done}
+            delay={0.2}
+            by="chars"
+            mask
+            text="Shaping Tomorrow’s Lifestyle."
+            // No `capitalize` here: with one inline-block span per letter the browser would uppercase every letter.
+            className="max-w-[6.22em] font-display font-medium leading-none"
+            style={{ fontSize: fluid(100, 52) }}
+          />
         </div>
-      </section>
-    </>
+      </motion.div>
+
+      {/* Search */}
+      <Appear
+        preset="slide"
+        play={done}
+        delay={0.5}
+        slow
+        className="shell absolute inset-x-0 bottom-4 z-10 flex justify-center md:bottom-[18px]"
+      >
+        <SearchBar filters={filters} />
+      </Appear>
+
+      {/* Scroll cue */}
+      <Appear
+        preset="fade"
+        play={done}
+        delay={1.6}
+        className="pointer-events-none absolute bottom-10 left-[clamp(16px,5vw,80px)] hidden items-center gap-3 text-[12px] uppercase tracking-[2px] text-white/60 lg:flex"
+      >
+        <span className="relative h-10 w-px overflow-hidden bg-white/20">
+          <motion.span
+            className="absolute inset-x-0 top-0 h-1/2 bg-gold"
+            animate={{ y: ["-100%", "200%"] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </span>
+        Scroll
+      </Appear>
+    </section>
   );
 }
