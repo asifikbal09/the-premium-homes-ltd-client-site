@@ -48,13 +48,14 @@ export default async function BlogDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-white text-[#1f2723]">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-      <main className="flex-1 w-full">
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-white text-sage">
         <BlogDetailHero title={blog.title} category={blog.category} />
         <BlogDetailContent blog={blog} />
       </main>
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }

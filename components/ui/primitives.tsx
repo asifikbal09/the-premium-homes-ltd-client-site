@@ -104,23 +104,32 @@ type PillProps = {
   arrow?: boolean;
   /** Renders a button instead of a link, for in-page actions like "load more". */
   onClick?: () => void;
+  /** Renders a submit button, for the pill that sends a form. */
+  type?: "submit";
+  disabled?: boolean;
 };
 
-/** Link to `href`, or a plain button when the pill runs an action. */
+/** Link to `href`, or a plain button when the pill runs an action or submits a form. */
 function PillTarget({
   href,
   onClick,
+  type,
+  disabled,
   className,
   children,
-}: {
+}: Pick<PillProps, "onClick" | "type" | "disabled"> & {
   href: string;
-  onClick?: () => void;
   className: string;
   children: React.ReactNode;
 }) {
-  if (onClick)
+  if (onClick || type)
     return (
-      <button type="button" onClick={onClick} className={className}>
+      <button
+        type={type ?? "button"}
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(className, "disabled:opacity-70")}
+      >
         {children}
       </button>
     );
@@ -165,15 +174,17 @@ export function GreenPill({
   size = "md",
   arrow = false,
   onClick,
+  type,
+  disabled,
 }: PillProps) {
+  const target = { href, onClick, type, disabled };
   if (arrow) {
     // Figma pill. On hover a gold curtain with a curved top edge rises from the
     // bottom and fills the pill while the label rolls up into its green twin.
     const h = size === "md" ? "h-[42px]" : "h-[56px]";
     return (
       <PillTarget
-        href={href}
-        onClick={onClick}
+        {...target}
         className={cn(
           "group relative inline-flex shrink-0 items-center overflow-hidden rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold",
           size === "lg" &&
@@ -200,8 +211,7 @@ export function GreenPill({
   }
   return (
     <PillTarget
-      href={href}
-      onClick={onClick}
+      {...target}
       className={cn(
         "press inline-flex shrink-0 items-center rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold hover:tracking-[2.6px]",
         size === "md"

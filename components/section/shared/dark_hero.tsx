@@ -18,6 +18,8 @@ export function DarkHero({
   copy,
   copyWidth,
   compact = false,
+  titleSize = [100, 44],
+  titleWidth,
   children,
 }: {
   /** The 493 tall band of the FAQ and Blog pages, centred under the nav. */
@@ -25,12 +27,18 @@ export function DarkHero({
   eyebrow: string;
   /** One entry per line, as Figma breaks the title. */
   title: string[];
-  copy: string;
+  copy?: string;
   /** Figma width of the copy block in px. */
   copyWidth: number;
+  /** Figma title size and phone floor in px; a blog headline is set far smaller than a page title. */
+  titleSize?: [max: number, min: number];
+  /** Figma width of the title block in px, for a title that wraps on its own. */
+  titleWidth?: number;
   /** Action under the copy. */
   children?: React.ReactNode;
 }) {
+  // Display titles rise letter by letter; a long headline goes word by word so it lands in time.
+  const display = titleSize[0] >= 80;
   const ref = useRef<HTMLElement>(null);
   const { done } = useIntro();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -52,24 +60,35 @@ export function DarkHero({
         <Eyebrow play={done}>{eyebrow}</Eyebrow>
         <h1
           aria-label={title.join(" ")}
-          className="mt-4 font-display font-medium leading-none"
-          style={{ fontSize: fluid(100, 44) }}
+          className="mt-4 font-display font-medium"
+          style={{ fontSize: fluid(...titleSize), lineHeight: display ? 1 : 1.2, maxWidth: titleWidth }}
         >
           {/* No `capitalize`: with one span per letter the browser would uppercase every letter. */}
           {title.map((line, i) => (
-            <Words key={line} as="span" play={done} delay={0.2 + i * 0.25} by="chars" mask text={line} className="block" />
+            <Words
+              key={line}
+              as="span"
+              play={done}
+              delay={0.2 + i * 0.25}
+              by={display ? "chars" : "words"}
+              mask
+              text={line}
+              className="block"
+            />
           ))}
         </h1>
-        <Appear
-          as="p"
-          preset="lift"
-          play={done}
-          delay={0.9}
-          className="mt-6 text-[clamp(16px,1.25vw,20px)] leading-[1.6] text-white/80"
-          style={{ maxWidth: copyWidth }}
-        >
-          {copy}
-        </Appear>
+        {copy && (
+          <Appear
+            as="p"
+            preset="lift"
+            play={done}
+            delay={0.9}
+            className="mt-6 text-[clamp(16px,1.25vw,20px)] leading-[1.6] text-white/80"
+            style={{ maxWidth: copyWidth }}
+          >
+            {copy}
+          </Appear>
+        )}
         {children && (
           <Appear preset="lift" play={done} delay={1.05} className="mt-9">
             {children}

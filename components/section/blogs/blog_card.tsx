@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { BlogSummary } from "@/lib/blogs";
 import { SPRING } from "@/lib/utils";
+import { BlogMeta } from "./blog_meta";
 
 /**
  * Figma "Blog Card". Fades up as it scrolls in, a beat after the card to its left; cards a filter
@@ -48,15 +49,7 @@ export function BlogCard({
         </div>
 
         <div className="flex flex-col gap-4">
-          <p className="flex items-center gap-2 text-[14px] font-medium uppercase leading-none text-sage">
-            <span className="trim">{post.category}</span>
-            {post.date && (
-              <>
-                <Image src="/blogs/icons/dot.svg" alt="" width={8} height={8} className="size-2 shrink-0" />
-                <span className="trim">{post.date}</span>
-              </>
-            )}
-          </p>
+          <BlogMeta items={[post.category, post.date]} />
           <h2 className="font-display text-[clamp(20px,1.5vw,24px)] capitalize leading-[1.4] text-ink transition-colors duration-300 group-hover:text-green">
             <span className="link-draw">{post.title}</span>
           </h2>

@@ -23,8 +23,6 @@ type Post = {
   title: string;
   category: string;
   src: string;
-  /** Second photo, opened over the first with a shutter on hover. */
-  hover: string;
   href: string;
   crop?: React.CSSProperties;
 };
@@ -37,7 +35,6 @@ const FALLBACK_POSTS: Post[] = [
     title: "The Art of Designing Homes That Age Gracefully",
     category: "Specials",
     src: "/home/img/blog-1.png",
-    hover: "/home/img/project-ariston.jpg",
     href: "/blogs",
     crop: { left: 0, top: "-11.2%", width: "100%", height: "147.21%" },
   },
@@ -45,14 +42,12 @@ const FALLBACK_POSTS: Post[] = [
     title: "Dhaka's Premium Zones Are Outperforming Market Expectations",
     category: "Specials",
     src: "/home/img/blog-2.png",
-    hover: "/home/img/project-prestige.jpg",
     href: "/blogs",
   },
   {
     title: "Building the Connected Home: TPHL's Integrated Tech",
     category: "Specials",
     src: "/home/img/blog-3.png",
-    hover: "/home/img/project-studio.jpg",
     href: "/blogs",
     crop: { left: 0, top: "-53.4%", width: "100%", height: "276.86%" },
   },
@@ -60,7 +55,6 @@ const FALLBACK_POSTS: Post[] = [
     title: "Dhaka's Premium Zones Are Outperforming Market Expectations",
     category: "Specials",
     src: "/home/img/blog-2.png",
-    hover: "/home/video/spotlight-towers.jpg",
     href: "/blogs",
   },
 ];
@@ -69,12 +63,10 @@ type ApiBlog = { title?: string; slug?: string; category?: string | null; image?
 
 function toPosts(blogs: ApiBlog[]): Post[] {
   const valid = blogs.filter((b) => b.title).slice(0, MAX_POSTS);
-  return valid.map((b, i) => ({
+  return valid.map((b) => ({
     title: cleanBlogTitle(b.title),
     category: b.category?.trim() || "Specials",
     src: sanitizeImageUrl(b.image),
-    // The next post's photo opens over this one on hover.
-    hover: sanitizeImageUrl(valid[(i + 1) % valid.length].image),
     href: b.slug ? `/blogs/${encodeURIComponent(b.slug)}` : "/blogs",
   }));
 }
@@ -204,9 +196,9 @@ export function LatestBlogs() {
                     />
                   </div>
                 </div>
-                {/* Second photo opens over the first on hover, same shutter as the project cards. */}
+                {/* The same photo opens over itself on hover, same shutter as the project cards. */}
                 <HoverShutter
-                  src={p.hover}
+                  src={p.src}
                   sizes="(min-width: 768px) 30vw, 80vw"
                   armed={armed}
                 />

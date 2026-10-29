@@ -12,17 +12,19 @@ export const metadata: Metadata = {
     "We're here to help you find your dream home. Reach out to Premium Homes Ltd. anytime for sales inquiries, office visits, property consultations, and departmental support.",
 };
 
+/** Sections in Figma "Contact Us" order. */
 export default function ContactPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#f6f2ea] text-[#1f2723]">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
-      <main className="flex-1">
+      {/* The page rides above the footer and slides open to reveal it. */}
+      <main className="relative z-10 flex-1 bg-warm text-sage">
         <ContactHero />
         <ContactForm />
         <ContactOffices />
         <ContactDepartments />
       </main>
-      <Footer />
+      <Footer reveal />
     </div>
   );
 }

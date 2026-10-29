@@ -1,86 +1,57 @@
 "use server";
 
-export type ContactActionState = {
-  success: boolean;
+import { API_BASE } from "@/lib/api";
+
+/** Body of POST /contacts. The property fields are sent only when the enquiry is about a project. */
+export type ContactInput = {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
   message?: string;
-  error?: string;
-  timestamp?: number;
+  property_id?: string;
+  property_name?: string;
+  /** Where the enquiry was sent from, e.g. "contact_page". */
+  source: string;
 };
 
-export async function submitContactAction(
-  _prevState: ContactActionState,
-  formData: FormData
-): Promise<ContactActionState> {
-  const name = (formData.get("name") as string)?.trim();
-  const email = (formData.get("email") as string)?.trim();
-  const phone = (formData.get("phone") as string)?.trim();
-  const subject = (formData.get("subject") as string)?.trim() || "Sales Inquiry";
-  const message = (formData.get("message") as string)?.trim() || "";
-  const source = (formData.get("source") as string)?.trim() || "contact_page";
+export type ContactResult = { success: true; message: string } | { success: false; error: string };
 
-  if (!name || !email || !phone) {
-    return {
-      success: false,
-      error: "Please fill in all required fields (Name, Email, and Phone).",
-      timestamp: Date.now(),
-    };
+const FIELDS = ["name", "email", "phone", "subject", "message", "property_id", "property_name", "source"] as const;
+
+/** Sends an enquiry to POST /contacts. Only the known fields are forwarded, trimmed; empty ones are left out. */
+export async function submitContact(input: ContactInput): Promise<ContactResult> {
+  const body: Partial<Record<(typeof FIELDS)[number], string>> = {};
+  for (const field of FIELDS) {
+    const value = input?.[field];
+    if (typeof value === "string" && value.trim()) body[field] = value.trim();
   }
 
-  const rawBaseUrl =
-    process.env.API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://api.dpremiumhomes.com/api";
-
-  const baseUrl = rawBaseUrl.replace(/\/+$/, "");
+  if (!body.name || !body.email || !body.phone) {
+    return { success: false, error: "Please fill in your name, email address and phone number." };
+  }
 
   try {
-    const response = await fetch(`${baseUrl}/contacts`, {
+    const res = await fetch(`${API_BASE}/contacts`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        phone,
-        subject,
-        message,
-        source,
-      }),
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
     });
+    const data = await res.json().catch(() => null);
 
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok || (data && data.success === false)) {
-      const errorMessage =
-        data?.message ||
-        data?.error ||
-        `Submission failed with status: ${response.status}. Please try again later.`;
-
+    if (!res.ok || data?.success === false) {
       return {
         success: false,
-        error: errorMessage,
-        timestamp: Date.now(),
+        error: data?.message || data?.error || `We could not send your message (error ${res.status}). Please try again.`,
       };
     }
 
     return {
       success: true,
-      message:
-        data?.message ||
-        "Thank you! Your message has been sent successfully. We will get back to you shortly.",
-      timestamp: Date.now(),
+      message: data?.message || "Thank you! Your message has been sent. We will get back to you shortly.",
     };
-  } catch (err: unknown) {
-    console.error("[submitContactAction Error]:", err);
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "An unexpected network error occurred. Please check your connection and try again.",
-      timestamp: Date.now(),
-    };
+  } catch (error) {
+    console.error("[submitContact] Network error:", error);
+    return { success: false, error: "We could not reach the server. Please check your connection and try again." };
   }
 }

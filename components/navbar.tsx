@@ -541,7 +541,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
                       )}
                     </div>
                   ) : (
-                    /* Ten links: one column on phones, two columns of five from the large breakpoint */
+                    /* Nine links: one column on phones, two columns (five + four) from the large breakpoint */
                     <nav aria-label="Menu">
                       <ul className="grid gap-x-[clamp(32px,4vw,72px)] lg:grid-cols-2 lg:grid-rows-5 lg:grid-flow-col">
                         {MENU_ITEMS.map((item, i) => (

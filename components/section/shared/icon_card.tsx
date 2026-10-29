@@ -9,13 +9,25 @@ export type IconCardItem = {
 };
 
 /**
- * Bordered card with a 56px line icon over a display title, from the Career page. Without `body` it
- * is the compact "benefit" card (24px ink title); with one it is the taller "value" card (28px green
- * title and copy). Cards rise in one after another; on hover the border warms to gold and the icon
- * lifts.
+ * Bordered card with a 56px line icon over a display title, from the Career page. Without `body` or
+ * `children` it is the compact "benefit" card (24px ink title); with either it is the taller "value"
+ * card (28px green title, then the copy or the extra content, such as the Contact page's
+ * department lines). Cards rise in one after another; on hover the border warms to gold and the
+ * icon lifts.
  */
-export function IconCard({ item, index }: { item: IconCardItem; index: number }) {
-  const value = Boolean(item.body);
+export function IconCard({
+  item,
+  index,
+  className,
+  children,
+}: {
+  item: IconCardItem;
+  index: number;
+  className?: string;
+  /** Content under the title, in place of or after `body`. */
+  children?: React.ReactNode;
+}) {
+  const value = Boolean(item.body || children);
   return (
     <Appear
       preset="rise"
@@ -23,6 +35,7 @@ export function IconCard({ item, index }: { item: IconCardItem; index: number })
       className={cn(
         "group flex h-full flex-col items-start border border-[#e6e6e6] bg-white p-6 transition-colors duration-500 hover:border-gold/60 hover:bg-warm",
         value ? "gap-[clamp(40px,5vw,80px)]" : "gap-12 pb-7",
+        className,
       )}
     >
       <span className="grid size-14 place-items-center transition-transform duration-500 ease-out-expo group-hover:-translate-y-1.5">
@@ -39,6 +52,7 @@ export function IconCard({ item, index }: { item: IconCardItem; index: number })
           {item.title}
         </h3>
         {item.body && <p className="text-[16px] leading-[1.6] text-sage">{item.body}</p>}
+        {children}
       </div>
     </Appear>
   );

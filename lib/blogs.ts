@@ -54,7 +54,8 @@ export const FALLBACK_BLOG: BlogDetail = {
 export function cleanBlogTitle(title?: string | null): string {
   if (!title) return "";
   return title
-    .replace(/[\u2013\u2014]/g, " - ")
+    // Dashes, including the API's mis-encoded ones ("\u00e2\u20ac" plus one more character).
+    .replace(/\s*(?:\u00e2\u20ac.|[\u2013\u2014])\s*/g, " - ")
     .replace(/\s*\?["']\s*/g, " - ")
     .replace(/\s*\?"\s*/g, " - ")
     .replace(/[\uFFFD]/g, "")
@@ -88,10 +89,55 @@ export interface BlogSummary {
 }
 
 /** "Mar 12, 2026", formatted on the server so the client renders the same text. */
-function formatBlogDate(raw?: string | null): string {
+export function formatBlogDate(raw?: string | null): string {
   const d = raw ? new Date(raw) : null;
   if (!d || Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+/**
+ * Splits an SEO title like "Luxury Flats | The Premium Homes Ltd." at its first bar: the headline
+ * before it, the tagline (possibly empty) after it.
+ */
+export function splitBlogTitle(title: string) {
+  const [headline, ...rest] = title.split(/\s+\|\s+/);
+  return { headline: headline.trim(), tagline: rest.join(" | ").trim() };
+}
+
+/**
+ * Paragraphs of an API text field: split at its <br> tags, any other markup dropped, and a space
+ * restored where the CMS ran two sentences together ("living.When" → "living. When").
+ */
+function toParagraphs(text?: string | null): string[] {
+  return (text ?? "")
+    .split(/<br\s*\/?>/i)
+    .map((p) =>
+      p
+        .replace(/<[^>]*>/g, "")
+        .replace(/([a-z])\.([A-Z][a-z])/g, "$1. $2")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean);
+}
+
+export interface BlogSection {
+  heading: string | null;
+  paragraphs: string[];
+}
+
+/**
+ * The post body as the API stores it: `excerpt` (or `description`) is the intro, then up to nine
+ * `titleN` / `excerptN` pairs; a pair without text is skipped.
+ */
+export function blogSections(blog: BlogDetail): { intro: string[]; sections: BlogSection[] } {
+  const sections = ([2, 3, 4, 5, 6, 7, 8, 9, 10] as const)
+    .map((n) => ({
+      heading: cleanBlogTitle(blog[`title${n}`]) || null,
+      paragraphs: toParagraphs(blog[`excerpt${n}`]),
+    }))
+    .filter((s) => s.paragraphs.length > 0);
+  return { intro: toParagraphs(blog.excerpt || blog.description), sections };
 }
 
 /** Every post from GET /blogs as card data, in the API's order. */

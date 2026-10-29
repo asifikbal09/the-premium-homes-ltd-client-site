@@ -1,223 +1,135 @@
 "use client";
 
-import React, { useState, useEffect, useActionState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { submitContactAction, ContactActionState } from "@/app/actions/contact";
+import { submitContact, type ContactInput } from "@/app/actions/contact";
+import { Appear } from "@/components/ui/motion";
+import { GreenPill, Heading } from "@/components/ui/primitives";
+import { cn, SETTLE } from "@/lib/utils";
 
-const initialActionState: ContactActionState = {
-  success: false,
-};
+const SUBJECTS = ["Sales Inquiry", "Customer Support", "Project Consultation", "General Inquiry"];
 
-export function ContactForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "Sales Inquiry",
-    message: "",
-  });
+// Figma fields: 18px ink labels 20px above 64px boxes with a #E6E6E6 hairline and 16px text.
+const BOX =
+  "w-full border border-[#e6e6e6] bg-transparent px-5 text-[16px] leading-[1.5] text-ink transition-colors duration-300 placeholder:text-[#727679] hover:border-sage/50 focus:border-green focus:outline-none";
 
-  const [state, formAction, isPending] = useActionState(
-    submitContactAction,
-    initialActionState
+const fieldId = (name: keyof ContactInput) => `contact-${name}`;
+
+function Field({
+  name,
+  label,
+  delay,
+  className,
+  children,
+}: {
+  name: keyof ContactInput;
+  label: string;
+  delay: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Appear preset="lift" delay={delay} className={cn("flex flex-col gap-5", className)}>
+      <label htmlFor={fieldId(name)} className="trim text-[clamp(16px,1.125vw,18px)] leading-[1.5] text-ink">
+        {label}
+      </label>
+      {children}
+    </Appear>
   );
+}
 
-  useEffect(() => {
-    if (!state.timestamp) return;
+/**
+ * Figma "Send Us a Message": a warm card on a sand band. Fields fade up one after another; the
+ * message goes to POST /contacts and the form clears once it is accepted, with the answer shown
+ * under the button and in a toast.
+ */
+export function ContactForm() {
+  const [pending, startTransition] = useTransition();
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
 
-    if (state.success) {
-      toast.success(state.message || "Your message has been sent successfully!");
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "Sales Inquiry",
-        message: "",
-      });
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state]);
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const values = Object.fromEntries(new FormData(form)) as Omit<ContactInput, "source">;
+    setStatus(null);
+    startTransition(async () => {
+      const result = await submitContact({ ...values, source: "contact_page" });
+      if (result.success) {
+        form.reset();
+        toast.success(result.message);
+        setStatus({ ok: true, text: result.message });
+      } else {
+        toast.error(result.error);
+        setStatus({ ok: false, text: result.error });
+      }
+    });
+  };
 
   return (
-    <section
-      aria-label="Contact Form Section"
-      className="w-full bg-[#d8c7b5] py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-[#faf8f5] rounded-xl sm:rounded-2xl p-6 sm:p-10 md:p-14 lg:p-16 shadow-lg border border-[#ede7dc]"
+    <section aria-label="Send us a message" className="bg-[#e0d1b6] py-[clamp(48px,5vw,80px)]">
+      <div className="shell">
+        <Appear
+          preset="rise"
+          className="mx-auto flex max-w-[1195px] flex-col gap-[clamp(32px,3.5vw,56px)] bg-warm px-[clamp(20px,3vw,48px)] py-[clamp(28px,2.5vw,40px)]"
         >
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-[42px] font-normal text-[#083327] tracking-tight mb-8 sm:mb-10">
-            Send Us A Message
-          </h2>
+          <Heading size={48} min={32} leading={1.1} mask>
+            Send us a message
+          </Heading>
 
-          <AnimatePresence>
-            {state.success && state.message && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 p-4 rounded-lg bg-[#083c2f]/10 border border-[#083c2f]/20 text-[#083c2f] text-sm"
-              >
-                {state.message}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form
-            action={formAction}
-            className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 sm:gap-y-6"
-          >
-            <input type="hidden" name="source" value="contact_page" />
-
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-xs sm:text-[13px] font-medium text-[#1f2723] mb-2"
-              >
-                Name*
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Enter your Name"
-                className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs sm:text-[13px] font-medium text-[#1f2723] mb-2"
-              >
-                Email Address*
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="Enter your Email Address"
-                className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-xs sm:text-[13px] font-medium text-[#1f2723] mb-2"
-              >
-                Phone*
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="Enter your phone number"
-                className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="subject"
-                className="block text-xs sm:text-[13px] font-medium text-[#1f2723] mb-2"
-              >
-                Subject*
-              </label>
+          <form onSubmit={onSubmit} className="relative grid gap-6 md:grid-cols-2">
+            <Field name="name" label="Name*" delay={0.1}>
+              <input id={fieldId("name")} name="name" type="text" required autoComplete="name" placeholder="Enter your Name" className={cn(BOX, "h-16")} />
+            </Field>
+            <Field name="email" label="Email Address*" delay={0.16}>
+              <input id={fieldId("email")} name="email" type="email" required autoComplete="email" placeholder="Enter your Email Address" className={cn(BOX, "h-16")} />
+            </Field>
+            <Field name="phone" label="Phone*" delay={0.22}>
+              <input id={fieldId("phone")} name="phone" type="tel" required autoComplete="tel" placeholder="Enter your phone number" className={cn(BOX, "h-16")} />
+            </Field>
+            <Field name="subject" label="Subject*" delay={0.28}>
               <div className="relative">
-                <select
-                  id="subject"
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subject: e.target.value })
-                  }
-                  className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] focus:outline-none focus:border-[#083327] focus:bg-white transition-all appearance-none cursor-pointer pr-10"
-                >
-                  <option value="Sales Inquiry">Sales Inquiry</option>
-                  <option value="Customer Support">Customer Support</option>
-                  <option value="Project Consultation">Project Consultation</option>
-                  <option value="General Inquiry">General Inquiry</option>
+                <select id={fieldId("subject")} name="subject" required defaultValue={SUBJECTS[0]} className={cn(BOX, "peer h-16 cursor-pointer appearance-none pr-14")}>
+                  {SUBJECTS.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#4a5550]">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                <Image
+                  src="/contact/icons/chevron-down.svg"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="pointer-events-none absolute right-5 top-1/2 size-6 -translate-y-1/2 transition-transform duration-500 ease-out-expo peer-focus:rotate-180"
+                />
               </div>
-            </div>
+            </Field>
+            <Field name="message" label="Message" delay={0.34} className="md:col-span-2">
+              <textarea id={fieldId("message")} name="message" rows={5} placeholder="Write your message here" className={cn(BOX, "h-[172px] resize-y py-4")} />
+            </Field>
 
-            <div className="col-span-1 md:col-span-2">
-              <label
-                htmlFor="message"
-                className="block text-xs sm:text-[13px] font-medium text-[#1f2723] mb-2"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={5}
-                value={formData.message}
-                onChange={(e) =>
-                  setFormData({ ...formData, message: e.target.value })
-                }
-                placeholder="Write your message here"
-                className="w-full rounded-md bg-[#f4f1ea]/80 border border-[#e4ded2] px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-[#1f2723] placeholder:text-[#8a948e] focus:outline-none focus:border-[#083327] focus:bg-white transition-all resize-y"
-              />
-            </div>
-
-            <div className="col-span-1 md:col-span-2 mt-2 sm:mt-4">
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full rounded-full py-4 px-6 bg-[#083c2f] hover:bg-[#062c22] text-[#d0a65b] text-xs sm:text-[13px] font-semibold tracking-[0.18em] uppercase transition-all duration-300 shadow-md active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-[#d0a65b]" />
-                    <span>SENDING...</span>
-                  </>
-                ) : (
-                  <span>SEND YOUR MESSAGE</span>
-                )}
-              </button>
-            </div>
+            <Appear preset="lift" delay={0.4} className="flex flex-col gap-4 md:col-span-2">
+              <GreenPill type="submit" disabled={pending} size="lg" arrow className="w-full justify-center">
+                {pending ? "Sending…" : "Send your message"}
+              </GreenPill>
+              <div aria-live="polite">
+                <AnimatePresence>
+                  {status && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4, ease: SETTLE }}
+                      className={cn("text-center text-[14px] leading-[1.5]", status.ok ? "text-green" : "text-red-700")}
+                    >
+                      {status.text}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+            </Appear>
           </form>
-        </motion.div>
+        </Appear>
       </div>
     </section>
   );

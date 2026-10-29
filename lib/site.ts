@@ -13,7 +13,6 @@ export const MENU_ITEMS: SiteLink[] = [
   { name: "About TPHL", href: "/about" },
   { name: "Leadership Team", href: "/team" },
   { name: "Projects", href: "/projects" },
-  { name: "Projects Progress", href: "/project-progress" },
   { name: "Life At TPHL", href: "/life-at-premium-homes" },
   { name: "Careers", href: "/careers" },
   { name: "News & Events", href: "/blogs" },
