@@ -11,19 +11,50 @@ import {
   EyeOff,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Mail,
-  Lock,
-  User,
-  Phone,
-  Briefcase,
   KeyRound,
   RefreshCw,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LoadingScreen } from "@/components/preloader";
+
+const formContainerVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1] as const,
+      staggerChildren: 0.065,
+      delayChildren: 0.04,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -14,
+    transition: {
+      duration: 0.25,
+      ease: [0.32, 0.72, 0, 1] as const,
+    },
+  },
+};
+
+const formItemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  },
+};
 
 // ==========================================
 // INTERFACES & TYPES
@@ -111,7 +142,9 @@ export default function AuthPageContent({
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState<string | null>(null);
 
@@ -273,12 +306,14 @@ export default function AuthPageContent({
   });
 
   const handlePrevSlide = () => {
+    setSlideDirection(-1);
     setActiveSlide((prev) =>
       prev === 0 ? showcaseProjects.length - 1 : prev - 1
     );
   };
 
   const handleNextSlide = () => {
+    setSlideDirection(1);
     setActiveSlide((prev) =>
       prev === showcaseProjects.length - 1 ? 0 : prev + 1
     );
@@ -349,9 +384,8 @@ export default function AuthPageContent({
         console.error("Failed to save credentials in localStorage:", err);
       }
 
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
+      setIsRedirecting(true);
+      router.push("/dashboard");
     } catch (err: any) {
       setApiError(
         err?.message ||
@@ -539,10 +573,10 @@ export default function AuthPageContent({
         console.error("Failed to store credentials after OTP verification:", err);
       }
 
-      // Smooth redirect to dashboard
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1200);
+      // Smooth redirect to dashboard with preloader
+      setOtpModalOpen(false);
+      setIsRedirecting(true);
+      router.push("/dashboard");
     } catch (err: any) {
       setOtpError(
         err?.message ||
@@ -605,6 +639,7 @@ export default function AuthPageContent({
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-white text-[#1f2723]">
+      {isRedirecting && <LoadingScreen />}
       {/* Container holding the sliding 50/50 panels on desktop */}
       <div className="relative min-h-screen w-full flex flex-col lg:flex-row overflow-hidden">
         {/* ========================================================= */}
@@ -615,35 +650,39 @@ export default function AuthPageContent({
             x: isDesktop ? (isRegister ? "100%" : "0%") : "0%",
           }}
           transition={{
-            duration: 0.75,
-            ease: [0.32, 0.72, 0, 1],
+            duration: 0.8,
+            ease: [0.16, 1, 0.3, 1],
           }}
-          className={cn(
-            "w-full lg:w-1/2 min-h-screen flex flex-col justify-center items-center px-6 sm:px-12 md:px-16 lg:px-10 xl:px-16 py-10 bg-white z-10",
-            // When transformed to the right, keep borders clean
-            isRegister ? "lg:border-l lg:border-stone-100" : "lg:border-r lg:border-stone-100",
-          )}
+          className="w-full lg:w-1/2 min-h-screen flex flex-col justify-center items-center px-6 sm:px-12 md:px-16 lg:px-10 xl:px-16 py-10 bg-white z-10"
         >
-          <div className="w-full max-w-[440px] mx-auto flex flex-col">
+          <div className="w-full max-w-[403px] mx-auto flex flex-col">
             {/* Brand Logo */}
-            <div className="flex justify-center mb-5">
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className={cn(
+                "flex justify-center transition-all duration-500",
+                isRegister ? "mb-[28px]" : "mb-[43px]",
+              )}
+            >
               <Link
                 href="/"
-                className="inline-block transition-transform duration-200 hover:scale-[1.02]"
+                className="inline-block transition-transform duration-300 hover:scale-[1.03]"
                 aria-label="The Premium Homes Home"
               >
-                <div className="relative w-44 sm:w-48 h-12">
+                <div className="relative w-[200px] sm:w-[230.55px] h-[52px]">
                   <Image
                     src="/image/logo/LOGO-GREEN.png"
                     alt="The Premium Homes Ltd."
                     fill
                     priority
-                    sizes="200px"
+                    sizes="231px"
                     className="object-contain object-center"
                   />
                 </div>
               </Link>
-            </div>
+            </motion.div>
 
             {/* Global API Feedback Messages */}
             <AnimatePresence mode="wait">
@@ -653,7 +692,7 @@ export default function AuthPageContent({
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="mb-4 p-3.5 rounded-xl bg-red-50/90 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5 shadow-sm"
+                  className="mb-4 p-3.5 rounded-[8px] bg-red-50/90 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5 shadow-sm"
                   role="alert"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
@@ -667,10 +706,10 @@ export default function AuthPageContent({
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="mb-4 p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-200 text-[#044133] text-xs sm:text-sm flex items-start gap-2.5 shadow-sm"
+                  className="mb-4 p-3.5 rounded-[8px] bg-emerald-50/90 border border-emerald-200 text-[#054b3c] text-xs sm:text-sm flex items-start gap-2.5 shadow-sm"
                   role="status"
                 >
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#044133]" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#054b3c]" />
                   <div className="flex-1 font-normal">{apiSuccess}</div>
                 </motion.div>
               )}
@@ -680,452 +719,479 @@ export default function AuthPageContent({
             <AnimatePresence mode="wait" initial={false}>
               {!isRegister ? (
                 // ==========================================
-                // LOGIN FORM VIEW
+                // LOGIN FORM VIEW (Aligned with Figma 8232:20825)
                 // ==========================================
                 <motion.div
                   key="login-form-container"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.35 }}
-                  className="w-full flex flex-col"
+                  variants={formContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="w-full flex flex-col gap-[32px]"
                 >
-                  {/* Heading & Subtitle */}
-                  <div className="text-center mb-6">
-                    <h1 className="font-[family-name:var(--font-heading)] font-serif text-3xl sm:text-[34px] font-normal text-[#044133] tracking-tight leading-snug">
-                      Log In To Your Account
+                  {/* Heading & Supporting Text */}
+                  <motion.div
+                    variants={formItemVariants}
+                    className="flex flex-col items-center justify-center gap-[12px] text-center w-full"
+                  >
+                    <h1 className="font-[family-name:var(--font-heading)] text-[32px] sm:text-[40px] font-medium text-[#054b3c] leading-none capitalize">
+                      Log in to your account
                     </h1>
-                    <p className="text-xs sm:text-sm text-stone-500 mt-1.5 font-normal">
-                      Welcome Back! Please Enter Your Details.
+                    <p className="font-sans text-[16px] sm:text-[18px] font-normal text-[#546360] leading-[1.4] capitalize">
+                      Welcome back! Please enter your details.
                     </p>
-                  </div>
+                  </motion.div>
 
                   <form
                     onSubmit={handleLoginSubmit(onLogin)}
                     noValidate
-                    className="space-y-4"
+                    className="flex flex-col gap-[24px] w-full"
                   >
-                    {/* Email Field */}
-                    <div>
-                      <label
-                        htmlFor="login-email"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
+                    <div className="flex flex-col gap-[20px] w-full">
+                      {/* Email Field */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[20px] items-start w-full"
                       >
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="login-email"
-                          type="email"
-                          autoComplete="email"
-                          placeholder="Enter your email"
-                          disabled={isSubmitting}
-                          {...registerLogin("email", {
-                            required: "Email address is required",
-                            pattern: {
-                              value:
-                                /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: "Please enter a valid email address",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 sm:py-3 pl-10 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none",
-                            loginErrors.email
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {loginErrors.email && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {loginErrors.email.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password Field */}
-                    <div>
-                      <label
-                        htmlFor="login-password"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
-                      >
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="login-password"
-                          type={showPassword ? "text" : "password"}
-                          autoComplete="current-password"
-                          placeholder="••••••••"
-                          disabled={isSubmitting}
-                          {...registerLogin("password", {
-                            required: "Password is required",
-                            minLength: {
-                              value: 6,
-                              message: "Password must be at least 6 characters",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 sm:py-3 pl-10 pr-11 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none",
-                            loginErrors.password
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((prev) => !prev)}
-                          tabIndex={-1}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
+                        <label
+                          htmlFor="login-email"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
                         >
-                          {showPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
+                          Email Address
+                        </label>
+                        <div className="w-full">
+                          <input
+                            id="login-email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="Enter your email"
+                            disabled={isSubmitting}
+                            {...registerLogin("email", {
+                              required: "Email address is required",
+                              pattern: {
+                                value:
+                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: "Please enter a valid email address",
+                              },
+                            })}
+                            className={cn(
+                              "w-full h-[56px] px-[20px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] placeholder:text-[#727679] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                              loginErrors.email
+                                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                            )}
+                          />
+                          {loginErrors.email && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {loginErrors.email.message}
+                            </p>
                           )}
-                        </button>
-                      </div>
-                      {loginErrors.password && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {loginErrors.password.message}
-                        </p>
-                      )}
-                    </div>
+                        </div>
+                      </motion.div>
 
-                    {/* Remember Me & Forgot Password */}
-                    <div className="flex items-center justify-between pt-0.5">
-                      <label
-                        htmlFor="rememberMe"
-                        className="flex items-center gap-2 cursor-pointer select-none"
+                      {/* Password Field */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[20px] items-start w-full"
                       >
-                        <input
-                          id="rememberMe"
-                          type="checkbox"
-                          {...registerLogin("rememberMe")}
-                          className="w-4 h-4 rounded border-stone-300 text-[#044133] focus:ring-[#044133] accent-[#044133] cursor-pointer"
-                        />
-                        <span className="text-xs sm:text-sm text-stone-600 font-normal">
-                          Remember for 30 days
-                        </span>
-                      </label>
-
-                      <Link
-                        href="/contact"
-                        className="text-xs sm:text-sm font-normal text-[#044133] hover:underline transition-colors"
-                      >
-                        Forgot password?
-                      </Link>
+                        <label
+                          htmlFor="login-password"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
+                        >
+                          Password
+                        </label>
+                        <div className="w-full">
+                          <div className="relative w-full">
+                            <input
+                              id="login-password"
+                              type={showPassword ? "text" : "password"}
+                              autoComplete="current-password"
+                              placeholder="••••••••"
+                              disabled={isSubmitting}
+                              {...registerLogin("password", {
+                                required: "Password is required",
+                                minLength: {
+                                  value: 6,
+                                  message:
+                                    "Password must be at least 6 characters",
+                                },
+                              })}
+                              className={cn(
+                                "w-full h-[56px] pl-[20px] pr-[52px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[24px] text-[#3b3e40] placeholder:text-[#667085] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                                loginErrors.password
+                                  ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                  : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                              tabIndex={-1}
+                              className="absolute right-[20px] top-1/2 -translate-y-1/2 size-[24px] flex items-center justify-center text-[#546360] hover:text-[#054b3c] transition-colors cursor-pointer"
+                              aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                              }
+                            >
+                              {showPassword ? (
+                                <Eye className="size-[22px]" />
+                              ) : (
+                                <EyeOff className="size-[22px]" />
+                              )}
+                            </button>
+                          </div>
+                          {loginErrors.password && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {loginErrors.password.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-2">
-                      <button
+                    <motion.div variants={formItemVariants} className="w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.015 }}
+                        whileTap={{ scale: 0.985 }}
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-normal uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full h-[56px] px-[24px] py-[16px] rounded-[100px] bg-[#054b3c] hover:bg-[#043d30] text-[#cfa564] font-sans text-[14px] font-medium leading-[1.7] uppercase tracking-[2px] transition-colors duration-300 shadow-[0_10px_25px_-8px_rgba(5,75,60,0.45)] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
                       >
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin text-[#f7e7cb]" />
-                            <span>LOGGING IN...</span>
+                            <Loader2 className="w-4 h-4 animate-spin text-[#cfa564]" />
+                            <span className="trim">LOGGING IN...</span>
                           </>
                         ) : (
-                          <span>LOGIN</span>
+                          <span className="trim">login</span>
                         )}
-                      </button>
-                    </div>
+                      </motion.button>
+                    </motion.div>
 
-                    {/* Switch to Register link */}
-                    <div className="text-center pt-3">
-                      <p className="text-xs sm:text-sm text-stone-600 font-normal">
-                        Don&apos;t have an account?{" "}
-                        <button
-                          type="button"
-                          onClick={() => switchMode("register")}
-                          className="font-normal text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
-                        >
-                          Register now.
-                        </button>
-                      </p>
-                    </div>
+                    {/* Switch to Register Row (Styled with Remember/Forgot typography & layout) */}
+                    <motion.div
+                      variants={formItemVariants}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <span className="font-sans text-[14px] leading-[20px] text-[#344054] font-normal">
+                        Don&apos;t have an account?
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => switchMode("register")}
+                        className="font-sans text-[14px] leading-[20px] font-semibold text-[#054b3c] hover:underline transition-colors whitespace-nowrap cursor-pointer"
+                      >
+                        Register now
+                      </button>
+                    </motion.div>
                   </form>
                 </motion.div>
               ) : (
                 // ==========================================
-                // REGISTER FORM VIEW
+                // REGISTER FORM VIEW (Aligned with Figma Login Design)
                 // ==========================================
                 <motion.div
                   key="register-form-container"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.35 }}
-                  className="w-full flex flex-col"
+                  variants={formContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="w-full flex flex-col gap-[24px]"
                 >
-                  {/* Heading & Subtitle */}
-                  <div className="text-center mb-5">
-                    <h1 className="font-[family-name:var(--font-heading)] font-serif text-3xl sm:text-[34px] font-normal text-[#044133] tracking-tight leading-snug">
-                      Create Your Account
+                  {/* Heading & Supporting Text */}
+                  <motion.div
+                    variants={formItemVariants}
+                    className="flex flex-col items-center justify-center gap-[12px] text-center w-full"
+                  >
+                    <h1 className="font-[family-name:var(--font-heading)] text-[32px] sm:text-[40px] font-medium text-[#054b3c] leading-none capitalize">
+                      Create your account
                     </h1>
-                    <p className="text-xs sm:text-sm text-stone-500 mt-1.5 font-normal">
-                      Join The Premium Homes for exclusive luxury real estate access.
+                    <p className="font-sans text-[16px] sm:text-[18px] font-normal text-[#546360] leading-[1.4] capitalize">
+                      Join The Premium Homes for exclusive luxury access.
                     </p>
-                  </div>
+                  </motion.div>
 
                   <form
                     onSubmit={handleRegisterSubmit(onRegister)}
                     noValidate
-                    className="space-y-3.5"
+                    className="flex flex-col gap-[20px] w-full"
                   >
-                    {/* Full Name */}
-                    <div>
-                      <label
-                        htmlFor="register-name"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
+                    <div className="flex flex-col gap-[16px] w-full">
+                      {/* Full Name */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[16px] items-start w-full"
                       >
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="register-name"
-                          type="text"
-                          autoComplete="name"
-                          placeholder="e.g. John Doe"
-                          disabled={isSubmitting}
-                          {...registerRegister("name", {
-                            required: "Full name is required",
-                            minLength: {
-                              value: 2,
-                              message: "Name must be at least 2 characters",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none pl-10",
-                            registerErrors.name
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {registerErrors.name && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {registerErrors.name.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email Address */}
-                    <div>
-                      <label
-                        htmlFor="register-email"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
-                      >
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="register-email"
-                          type="email"
-                          autoComplete="email"
-                          placeholder="john@example.com"
-                          disabled={isSubmitting}
-                          {...registerRegister("email", {
-                            required: "Email address is required",
-                            pattern: {
-                              value:
-                                /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: "Please enter a valid email address",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none pl-10",
-                            registerErrors.email
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {registerErrors.email && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {registerErrors.email.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Phone Number */}
-                    <div>
-                      <label
-                        htmlFor="register-phone"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
-                      >
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="register-phone"
-                          type="tel"
-                          autoComplete="tel"
-                          placeholder="+8801XXXXXXXXX"
-                          disabled={isSubmitting}
-                          {...registerRegister("phone", {
-                            required: "Phone number is required",
-                            minLength: {
-                              value: 7,
-                              message: "Please enter a valid phone number",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none pl-10",
-                            registerErrors.phone
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {registerErrors.phone && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {registerErrors.phone.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password Field */}
-                    <div>
-                      <label
-                        htmlFor="register-password"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
-                      >
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="register-password"
-                          type={showRegPassword ? "text" : "password"}
-                          autoComplete="new-password"
-                          placeholder="••••••••"
-                          disabled={isSubmitting}
-                          {...registerRegister("password", {
-                            required: "Password is required",
-                            minLength: {
-                              value: 6,
-                              message: "Password must be at least 6 characters",
-                            },
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 pl-10 pr-11 rounded-lg border text-sm text-stone-900 placeholder:text-stone-400 bg-white transition-all outline-none",
-                            registerErrors.password
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        />
-                        <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <button
-                          type="button"
-                          onClick={() => setShowRegPassword((prev) => !prev)}
-                          tabIndex={-1}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
-                          aria-label={
-                            showRegPassword ? "Hide password" : "Show password"
-                          }
+                        <label
+                          htmlFor="register-name"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
                         >
-                          {showRegPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
+                          Full Name
+                        </label>
+                        <div className="w-full">
+                          <input
+                            id="register-name"
+                            type="text"
+                            autoComplete="name"
+                            placeholder="Enter your full name"
+                            disabled={isSubmitting}
+                            {...registerRegister("name", {
+                              required: "Full name is required",
+                              minLength: {
+                                value: 2,
+                                message: "Name must be at least 2 characters",
+                              },
+                            })}
+                            className={cn(
+                              "w-full h-[56px] px-[20px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] placeholder:text-[#727679] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                              registerErrors.name
+                                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                            )}
+                          />
+                          {registerErrors.name && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {registerErrors.name.message}
+                            </p>
                           )}
-                        </button>
-                      </div>
-                      {registerErrors.password && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {registerErrors.password.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Purposes Field */}
-                    <div>
-                      <label
-                        htmlFor="register-purposes"
-                        className="block text-xs sm:text-sm font-normal text-stone-700 mb-1"
-                      >
-                        Primary Purpose
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="register-purposes"
-                          disabled={isSubmitting}
-                          {...registerRegister("purposes", {
-                            required: "Please select your primary purpose",
-                          })}
-                          className={cn(
-                            "w-full px-4 py-2.5 pl-10 rounded-lg border text-sm text-stone-900 bg-white transition-all outline-none appearance-none cursor-pointer",
-                            registerErrors.purposes
-                              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                              : "border-stone-200 focus:border-[#044133] focus:ring-2 focus:ring-[#044133]/10",
-                          )}
-                        >
-                          <option value="Buying a property">Buying a property</option>
-                          <option value="Investment opportunities">
-                            Investment opportunities
-                          </option>
-                          <option value="Commercial space">Commercial space</option>
-                          <option value="Selling a property">Selling a property</option>
-                          <option value="Architectural consultation">
-                            Architectural consultation
-                          </option>
-                          <option value="General inquiry">General inquiry</option>
-                        </select>
-                        <Briefcase className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs">
-                          ▼
                         </div>
-                      </div>
-                      {registerErrors.purposes && (
-                        <p className="mt-1 text-xs text-red-600 font-normal">
-                          {registerErrors.purposes.message}
-                        </p>
-                      )}
+                      </motion.div>
+
+                      {/* Email Address */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[16px] items-start w-full"
+                      >
+                        <label
+                          htmlFor="register-email"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
+                        >
+                          Email Address
+                        </label>
+                        <div className="w-full">
+                          <input
+                            id="register-email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="Enter your email"
+                            disabled={isSubmitting}
+                            {...registerRegister("email", {
+                              required: "Email address is required",
+                              pattern: {
+                                value:
+                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: "Please enter a valid email address",
+                              },
+                            })}
+                            className={cn(
+                              "w-full h-[56px] px-[20px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] placeholder:text-[#727679] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                              registerErrors.email
+                                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                            )}
+                          />
+                          {registerErrors.email && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {registerErrors.email.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Phone Number */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[16px] items-start w-full"
+                      >
+                        <label
+                          htmlFor="register-phone"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
+                        >
+                          Phone Number
+                        </label>
+                        <div className="w-full">
+                          <input
+                            id="register-phone"
+                            type="tel"
+                            autoComplete="tel"
+                            placeholder="Enter your phone number"
+                            disabled={isSubmitting}
+                            {...registerRegister("phone", {
+                              required: "Phone number is required",
+                              minLength: {
+                                value: 7,
+                                message: "Please enter a valid phone number",
+                              },
+                            })}
+                            className={cn(
+                              "w-full h-[56px] px-[20px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] placeholder:text-[#727679] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                              registerErrors.phone
+                                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                            )}
+                          />
+                          {registerErrors.phone && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {registerErrors.phone.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Password Field */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[16px] items-start w-full"
+                      >
+                        <label
+                          htmlFor="register-password"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
+                        >
+                          Password
+                        </label>
+                        <div className="w-full">
+                          <div className="relative w-full">
+                            <input
+                              id="register-password"
+                              type={showRegPassword ? "text" : "password"}
+                              autoComplete="new-password"
+                              placeholder="••••••••"
+                              disabled={isSubmitting}
+                              {...registerRegister("password", {
+                                required: "Password is required",
+                                minLength: {
+                                  value: 6,
+                                  message:
+                                    "Password must be at least 6 characters",
+                                },
+                              })}
+                              className={cn(
+                                "w-full h-[56px] pl-[20px] pr-[52px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[24px] text-[#3b3e40] placeholder:text-[#667085] bg-white transition-all duration-300 outline-none focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                                registerErrors.password
+                                  ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                  : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowRegPassword((prev) => !prev)
+                              }
+                              tabIndex={-1}
+                              className="absolute right-[20px] top-1/2 -translate-y-1/2 size-[24px] flex items-center justify-center text-[#546360] hover:text-[#054b3c] transition-colors cursor-pointer"
+                              aria-label={
+                                showRegPassword
+                                  ? "Hide password"
+                                  : "Show password"
+                              }
+                            >
+                              {showRegPassword ? (
+                                <Eye className="size-[22px]" />
+                              ) : (
+                                <EyeOff className="size-[22px]" />
+                              )}
+                            </button>
+                          </div>
+                          {registerErrors.password && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {registerErrors.password.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Primary Purpose Field */}
+                      <motion.div
+                        variants={formItemVariants}
+                        className="flex flex-col gap-[16px] items-start w-full"
+                      >
+                        <label
+                          htmlFor="register-purposes"
+                          className="trim font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] whitespace-nowrap"
+                        >
+                          Primary Purpose
+                        </label>
+                        <div className="w-full">
+                          <div className="relative w-full">
+                            <select
+                              id="register-purposes"
+                              disabled={isSubmitting}
+                              {...registerRegister("purposes", {
+                                required: "Please select your primary purpose",
+                              })}
+                              className={cn(
+                                "w-full h-[56px] pl-[20px] pr-[48px] py-[16px] rounded-[8px] border font-sans text-[16px] font-normal leading-[1.5] text-[#3b3e40] bg-white transition-all duration-300 outline-none appearance-none cursor-pointer focus:shadow-[0_4px_20px_-4px_rgba(5,75,60,0.1)]",
+                                registerErrors.purposes
+                                  ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                  : "border-[#e6e6e6] hover:border-[#cfa564]/60 focus:border-[#054b3c] focus:ring-2 focus:ring-[#054b3c]/10",
+                              )}
+                            >
+                              <option value="Buying a property">
+                                Buying a property
+                              </option>
+                              <option value="Investment opportunities">
+                                Investment opportunities
+                              </option>
+                              <option value="Commercial space">
+                                Commercial space
+                              </option>
+                              <option value="Selling a property">
+                                Selling a property
+                              </option>
+                              <option value="Architectural consultation">
+                                Architectural consultation
+                              </option>
+                              <option value="General inquiry">
+                                General inquiry
+                              </option>
+                            </select>
+                            <ChevronDown className="pointer-events-none absolute right-[20px] top-1/2 -translate-y-1/2 size-[20px] text-[#546360]" />
+                          </div>
+                          {registerErrors.purposes && (
+                            <p className="mt-1.5 text-xs text-red-600 font-normal">
+                              {registerErrors.purposes.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-2">
-                      <button
+                    <motion.div variants={formItemVariants} className="w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.015 }}
+                        whileTap={{ scale: 0.985 }}
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-3.5 px-6 rounded-full bg-[#044133] hover:bg-[#065442] active:scale-[0.99] text-[#f7e7cb] text-xs sm:text-sm font-normal uppercase tracking-[0.16em] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full h-[56px] px-[24px] py-[16px] rounded-[100px] bg-[#054b3c] hover:bg-[#043d30] text-[#cfa564] font-sans text-[14px] font-medium leading-[1.7] uppercase tracking-[2px] transition-colors duration-300 shadow-[0_10px_25px_-8px_rgba(5,75,60,0.45)] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
                       >
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin text-[#f7e7cb]" />
-                            <span>CREATING ACCOUNT...</span>
+                            <Loader2 className="w-4 h-4 animate-spin text-[#cfa564]" />
+                            <span className="trim">CREATING ACCOUNT...</span>
                           </>
                         ) : (
-                          <span>REGISTER NOW</span>
+                          <span className="trim">register now</span>
                         )}
-                      </button>
-                    </div>
+                      </motion.button>
+                    </motion.div>
 
-                    {/* Switch to Login link */}
-                    <div className="text-center pt-2">
-                      <p className="text-xs sm:text-sm text-stone-600 font-normal">
-                        Already have an account?{" "}
-                        <button
-                          type="button"
-                          onClick={() => switchMode("login")}
-                          className="font-normal text-[#044133] hover:underline transition-colors cursor-pointer inline-flex items-center gap-0.5"
-                        >
-                          Log in.
-                        </button>
-                      </p>
-                    </div>
+                    {/* Switch to Login Row (Styled with Remember/Forgot typography & layout) */}
+                    <motion.div
+                      variants={formItemVariants}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <span className="font-sans text-[14px] leading-[20px] text-[#344054] font-normal">
+                        Already have an account?
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => switchMode("login")}
+                        className="font-sans text-[14px] leading-[20px] font-semibold text-[#054b3c] hover:underline transition-colors whitespace-nowrap cursor-pointer"
+                      >
+                        Log in
+                      </button>
+                    </motion.div>
                   </form>
                 </motion.div>
               )}
@@ -1141,196 +1207,264 @@ export default function AuthPageContent({
             x: isDesktop ? (isRegister ? "-100%" : "0%") : "0%",
           }}
           transition={{
-            duration: 0.75,
-            ease: [0.32, 0.72, 0, 1],
+            duration: 0.8,
+            ease: [0.16, 1, 0.3, 1],
           }}
-          className="hidden lg:block lg:w-1/2 relative min-h-screen overflow-hidden bg-stone-900 select-none z-20 shadow-2xl"
+          className={cn(
+            "hidden lg:flex lg:w-1/2 relative min-h-screen bg-white select-none z-20 p-[24px]",
+            isRegister ? "lg:pr-0" : "lg:pl-0",
+          )}
         >
-          {isLoadingProjects || !currentProject ? (
-            /* Skeleton Loading State (No mock/fallback data) */
-            <div className="absolute inset-0 w-full h-full">
-              {/* Shimmering backdrop skeleton */}
-              <div className="absolute inset-0 w-full h-full bg-stone-900 animate-pulse" />
+          <div className="relative w-full min-h-[calc(100vh-48px)] overflow-hidden bg-[#d9d9d9]">
+            {isLoadingProjects || !currentProject ? (
+              /* Skeleton Loading State */
+              <div className="absolute inset-0 w-full h-full">
+                {/* Shimmering backdrop skeleton */}
+                <div className="absolute inset-0 w-full h-full bg-stone-900 animate-pulse" />
 
-              {/* Floating Skeleton Card */}
-              <div
-                className={cn(
-                  "absolute bottom-8 xl:bottom-10 z-30 w-[340px] xl:w-[370px]",
-                  isRegister ? "left-8 xl:left-10" : "right-8 xl:right-10",
-                )}
-              >
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl p-5 xl:p-6 shadow-2xl border border-white/60 animate-pulse">
-                  {/* Category skeleton */}
-                  <div className="h-3 w-24 bg-stone-200 rounded-full mx-auto" />
-
-                  {/* Title skeleton */}
-                  <div className="h-6 w-48 bg-stone-200 rounded-md mx-auto mt-2.5" />
-
-                  {/* Location skeleton */}
-                  <div className="h-3 w-36 bg-stone-200 rounded-md mx-auto mt-2" />
-
-                  {/* Thumbnail Image Skeleton */}
-                  <div className="w-full h-[155px] xl:h-[170px] rounded-xl bg-stone-200 mt-3.5" />
-
-                  {/* Slider bar indicator skeleton */}
-                  <div className="flex items-center justify-between mt-3 px-1">
-                    <div className="w-4 h-4 rounded-full bg-stone-200" />
-                    <div className="flex-1 mx-3 h-1.5 rounded-full bg-stone-200" />
-                    <div className="w-4 h-4 rounded-full bg-stone-200" />
+                {/* Floating Skeleton Card */}
+                <div
+                  className={cn(
+                    "absolute inset-x-[32px] bottom-[30px] z-30 flex pointer-events-none",
+                    isRegister ? "justify-start" : "justify-end",
+                  )}
+                >
+                  <div className="w-[336px] bg-white/90 backdrop-blur-[5.13px] px-[30.779px] py-[25.649px] animate-pulse pointer-events-auto">
+                    <div className="flex flex-col gap-[20.519px] items-center w-[274.443px] mx-auto">
+                      <div className="flex flex-col gap-[10.26px] items-center w-full">
+                        <div className="h-3 w-24 bg-stone-200" />
+                        <div className="h-6 w-48 bg-stone-200" />
+                        <div className="h-3 w-36 bg-stone-200" />
+                      </div>
+                      <div className="w-full h-[174.412px] bg-stone-200" />
+                      <div className="flex items-center justify-between w-full">
+                        <div className="w-6 h-3 bg-stone-200" />
+                        <div className="w-[164.778px] h-[1.603px] bg-stone-200" />
+                        <div className="w-6 h-3 bg-stone-200" />
+                      </div>
+                      <div className="space-y-1.5 w-full">
+                        <div className="h-2.5 w-full bg-stone-200" />
+                        <div className="h-2.5 w-4/5 bg-stone-200 mx-auto" />
+                      </div>
+                      <div className="h-[36px] w-[140px] rounded-full bg-stone-200" />
+                    </div>
                   </div>
-
-                  {/* Description skeleton */}
-                  <div className="space-y-1.5 mt-3 px-1">
-                    <div className="h-2.5 w-full bg-stone-200 rounded" />
-                    <div className="h-2.5 w-4/5 bg-stone-200 rounded mx-auto" />
-                  </div>
-
-                  {/* CTA button skeleton */}
-                  <div className="mt-3.5 h-10 w-full rounded-full bg-stone-200" />
                 </div>
               </div>
-            </div>
-          ) : (
-            <>
-              {/* Dynamic Background Image with Smooth Fade (NO dark vignette overlay, 100% clear and bright) */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentProject.bgImage}
-                  initial={{ opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full"
-                >
-                  {currentProject.bgImage ? (
-                    <Image
-                      src={currentProject.bgImage}
-                      alt={currentProject.bgAlt}
-                      fill
-                      priority
-                      sizes="50vw"
-                      className="object-cover object-center"
+            ) : (
+              <>
+                {/* Dynamic Background Image with Seamless Motion Cross-Dissolve & Figma Gradient */}
+                <AnimatePresence initial={false}>
+                  <motion.div
+                    key={currentProject.bgImage}
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{
+                      duration: 0.85,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    {currentProject.bgImage ? (
+                      <Image
+                        src={currentProject.bgImage}
+                        alt={currentProject.bgAlt}
+                        fill
+                        priority
+                        sizes="50vw"
+                        className="object-cover object-center"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-stone-900" />
+                    )}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(231.8289851092908deg, rgba(0, 0, 0, 0.7) 7.5858%, rgba(0, 0, 0, 0) 57.021%, rgba(0, 0, 0, 0.7) 100.09%)",
+                      }}
                     />
-                  ) : (
-                    <div className="w-full h-full bg-stone-900" />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Floating Showcase Project Card (Figma 8232:20829) */}
+                <div
+                  className={cn(
+                    "absolute inset-x-[32px] bottom-[30px] z-30 flex pointer-events-none",
+                    isRegister ? "justify-start" : "justify-end",
                   )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Floating Showcase Project Card */}
-              <div
-                className={cn(
-                  "absolute bottom-8 xl:bottom-10 z-30 w-[340px] xl:w-[370px] transition-all duration-500",
-                  // When on left (Register mode), dock neatly on left/right
-                  isRegister ? "left-8 xl:left-10" : "right-8 xl:right-10",
-                )}
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="bg-white/95 backdrop-blur-md rounded-2xl p-5 xl:p-6 shadow-2xl border border-white/60 text-[#1f2723]"
                 >
-                  {/* Category */}
-                  <div className="text-center">
-                    <span className="text-[10px] xl:text-[11px] font-normal tracking-[0.2em] uppercase text-[#055b4b]">
-                      {currentProject.category}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-[family-name:var(--font-heading)] font-serif text-xl xl:text-2xl font-normal text-stone-900 text-center mt-1 leading-snug">
-                    {currentProject.title}
-                  </h3>
-
-                  {/* Location */}
-                  <p className="text-[11px] xl:text-xs text-stone-500 text-center mt-0.5">
-                    {currentProject.location}
-                  </p>
-
-                  {/* Thumbnail Image Container */}
-                  <div className="relative w-full h-[155px] xl:h-[170px] rounded-xl overflow-hidden mt-3.5 shadow-sm bg-stone-100">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentProject.cardImage}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="relative w-full h-full"
-                      >
-                        {currentProject.cardImage ? (
-                          <Image
-                            src={currentProject.cardImage}
-                            alt={currentProject.cardAlt}
-                            fill
-                            sizes="350px"
-                            className="object-cover object-center"
-                          />
-                        ) : null}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Navigation Slider Bar: < 1 —— N > */}
-                  <div className="flex items-center justify-between mt-3 px-1">
-                    <button
-                      type="button"
-                      onClick={handlePrevSlide}
-                      aria-label="Previous project"
-                      className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-
-                    <div className="flex items-center gap-2 flex-1 px-3">
-                      <span className="text-[11px] font-normal text-stone-700 min-w-[14px] text-center">
-                        {activeSlide + 1}
-                      </span>
-
-                      {/* Progress Bar Indicator */}
-                      <div className="relative flex-1 h-[2px] bg-stone-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#044133] transition-all duration-300 rounded-full"
-                          style={{
-                            width: `${Math.round(((activeSlide + 1) / Math.max(showcaseProjects.length, 1)) * 100)}%`,
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      layout: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+                      opacity: { duration: 0.6, delay: 0.12 },
+                      y: {
+                        duration: 0.65,
+                        delay: 0.12,
+                        ease: [0.16, 1, 0.3, 1],
+                      },
+                    }}
+                    className="pointer-events-auto w-[336px] backdrop-blur-[5.13px] bg-[rgba(255,255,255,0.9)] px-[30.779px] py-[25.649px] flex items-center justify-center text-[#3b3e40]"
+                  >
+                    <div className="flex flex-col gap-[20.519px] items-center w-[274.443px]">
+                      {/* Category, Title & Location (Figma 8232:20831) */}
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                          key={`meta-${currentProject.id}`}
+                          initial={{ opacity: 0, x: slideDirection * 14 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: slideDirection * -14 }}
+                          transition={{
+                            duration: 0.38,
+                            ease: [0.16, 1, 0.3, 1],
                           }}
-                        />
+                          className="flex flex-col gap-[10.26px] items-center justify-center w-full"
+                        >
+                          <div className="flex flex-col gap-[7.695px] items-center">
+                            <p className="trim font-sans text-[10px] font-normal leading-[1.5] tracking-[0.8px] uppercase text-[#054b3c] text-center">
+                              {currentProject.category}
+                            </p>
+                            <h3 className="font-[family-name:var(--font-heading)] text-[24px] font-normal leading-none capitalize text-[#3b3e40] text-center">
+                              {currentProject.title}
+                            </h3>
+                          </div>
+                          <p className="font-sans text-[12px] font-normal leading-[1.6] text-[rgba(59,62,64,0.8)] text-center">
+                            {currentProject.location}
+                          </p>
+                        </motion.div>
+                      </AnimatePresence>
+
+                      {/* Thumbnail, Pagination & Description/CTA (Figma 8232:20836) */}
+                      <div className="flex flex-col gap-[20.519px] items-start w-full">
+                        {/* Thumbnail + Slider Bar (Figma 8232:20837) */}
+                        <div className="flex flex-col gap-[12.824px] items-start w-full">
+                          <div className="zoom-frame relative w-full h-[174.412px] overflow-hidden bg-stone-200">
+                            <AnimatePresence initial={false}>
+                              <motion.div
+                                key={currentProject.cardImage}
+                                initial={{
+                                  opacity: 0,
+                                  scale: 1.08,
+                                  x: slideDirection * 18,
+                                }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{
+                                  opacity: 0,
+                                  scale: 1.02,
+                                  x: slideDirection * -18,
+                                }}
+                                transition={{
+                                  duration: 0.55,
+                                  ease: [0.16, 1, 0.3, 1],
+                                }}
+                                className="absolute inset-0 w-full h-full"
+                              >
+                                {currentProject.cardImage ? (
+                                  <Image
+                                    src={currentProject.cardImage}
+                                    alt={currentProject.cardAlt}
+                                    fill
+                                    sizes="280px"
+                                    className="object-cover object-center"
+                                  />
+                                ) : null}
+                              </motion.div>
+                            </AnimatePresence>
+                          </div>
+
+                          {/* Navigation Slider Bar: < 1 —— 2 > (Figma 8232:20839) */}
+                          <div className="flex items-center justify-between w-full">
+                            <motion.button
+                              whileHover={{ x: -1.5 }}
+                              whileTap={{ scale: 0.92 }}
+                              type="button"
+                              onClick={handlePrevSlide}
+                              aria-label="Previous project"
+                              className="flex items-center text-[rgba(59,62,64,0.8)] hover:text-[#054b3c] transition-colors cursor-pointer"
+                            >
+                              <ChevronLeft className="size-[15.389px] stroke-[1.5]" />
+                              <span className="font-sans text-[10.26px] font-normal leading-none min-w-[5.771px] text-center">
+                                {activeSlide + 1}
+                              </span>
+                            </motion.button>
+
+                            <div className="relative h-[1.603px] w-[164.778px] bg-white overflow-hidden">
+                              <motion.div
+                                initial={false}
+                                animate={{
+                                  width: `${Math.round(((activeSlide + 1) / Math.max(showcaseProjects.length, 1)) * 100)}%`,
+                                }}
+                                transition={{
+                                  duration: 0.55,
+                                  ease: [0.16, 1, 0.3, 1],
+                                }}
+                                className="h-full bg-[#054b3c]"
+                              />
+                            </div>
+
+                            <motion.button
+                              whileHover={{ x: 1.5 }}
+                              whileTap={{ scale: 0.92 }}
+                              type="button"
+                              onClick={handleNextSlide}
+                              aria-label="Next project"
+                              className="flex items-center text-[rgba(59,62,64,0.8)] hover:text-[#054b3c] transition-colors cursor-pointer"
+                            >
+                              <span className="font-sans text-[10.26px] font-normal leading-none min-w-[5.771px] text-center">
+                                {showcaseProjects.length}
+                              </span>
+                              <ChevronRight className="size-[15.389px] stroke-[1.5]" />
+                            </motion.button>
+                          </div>
+                        </div>
+
+                        {/* Description & VIEW PROJECT CTA (Figma 8232:20853) */}
+                        <div className="flex flex-col gap-[15.389px] items-center justify-center w-full">
+                          <AnimatePresence mode="wait" initial={false}>
+                            <motion.p
+                              key={`desc-${currentProject.id}`}
+                              initial={{ opacity: 0, x: slideDirection * 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: slideDirection * -10 }}
+                              transition={{
+                                duration: 0.35,
+                                ease: [0.16, 1, 0.3, 1],
+                              }}
+                              className="font-sans text-[12px] font-normal leading-[1.6] text-[rgba(59,62,64,0.8)] text-center w-full line-clamp-2"
+                            >
+                              {currentProject.description}
+                            </motion.p>
+                          </AnimatePresence>
+
+                          <Link
+                            href={currentProject.href}
+                            className="press relative inline-flex h-[36px] items-center justify-center overflow-hidden rounded-[64.122px] border-[0.641px] border-solid border-[#cfa564] px-[25.649px] py-[11.542px] shadow-[0px_2.565px_14.235px_-6.412px_rgba(50,38,29,0),0px_7.695px_12.824px_0px_rgba(108,73,19,0.1)] group"
+                          >
+                            <span
+                              aria-hidden
+                              className="absolute inset-0 rounded-[64.122px] backdrop-blur-[32.061px] bg-[rgba(207,165,100,0.15)] group-hover:bg-[rgba(207,165,100,0.24)] transition-colors duration-300 pointer-events-none"
+                            />
+                            <span className="trim relative z-10 font-sans text-[12px] font-medium leading-[1.7] tracking-[1.2824px] uppercase text-[#2f3233] text-center whitespace-nowrap">
+                              View project
+                            </span>
+                            <span
+                              aria-hidden
+                              className="absolute inset-[-0.321px] rounded-[inherit] shadow-[inset_0px_4.489px_13.466px_0px_rgba(255,255,255,0.27),inset_0px_-3.847px_13.466px_0px_rgba(207,165,100,0.07)] pointer-events-none"
+                            />
+                          </Link>
+                        </div>
                       </div>
-
-                      <span className="text-[11px] font-normal text-stone-700 min-w-[14px] text-center">
-                        {showcaseProjects.length}
-                      </span>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={handleNextSlide}
-                      aria-label="Next project"
-                      className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Project Short Description */}
-                  <p className="text-[11px] xl:text-xs text-stone-600 text-center leading-relaxed mt-2.5 px-1 line-clamp-2">
-                    {currentProject.description}
-                  </p>
-
-                  {/* VIEW PROJECT CTA Button */}
-                  <div className="mt-3.5">
-                    <Link
-                      href={currentProject.href}
-                      className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-full bg-[#ede6d9] hover:bg-[#e2d8c7] active:scale-[0.99] text-[#1f2723] text-[11px] font-normal tracking-[0.14em] uppercase transition-all duration-200 shadow-sm"
-                    >
-                      VIEW PROJECT
-                    </Link>
-                  </div>
-                </motion.div>
-              </div>
-            </>
-          )}
+                  </motion.div>
+                </div>
+              </>
+            )}
+          </div>
         </motion.div>
       </div>
 

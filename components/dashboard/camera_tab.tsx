@@ -1,75 +1,128 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import Image from "next/image";
+import Link from "next/link";
 import {
-  Video,
-  VideoOff,
   RefreshCw,
   Maximize2,
   Minimize2,
-  ShieldCheck,
   Play,
   Pause,
   Volume2,
   VolumeX,
-  Building2,
-  MapPin,
-  AlertCircle,
   Loader2,
-  ChevronDown,
-  Check,
   Radio,
-  HardHat,
-  ArrowRight,
-  ExternalLink,
+  Settings,
+  Tv,
+  RectangleHorizontal,
+  VideoOff,
+  Building2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { ClientFlat, LiveCamera } from "./types";
 import { cn } from "@/lib/utils";
 
 interface CameraTabProps {
   myFlats?: ClientFlat[];
+  isLoading?: boolean;
   onNavigateTab?: (tab: string) => void;
 }
 
-const FALLBACK_USER_PROJECTS: ClientFlat[] = [
-  {
-    id: "50",
-    project_id: 50,
-    title: "The Noble Court",
-    flatNo: "3A",
-    location: "Ashulia Model Town",
-    image: "/image/progress/tph_green_valley.png",
-    status: "Under Construction",
-    construction_pct: 75,
-    handover_date: "Dec 2027",
-    price: "From ৳2.2 Cr",
+interface WorkCategoryProgress {
+  structural_work?: string;
+  plaster_work?: string;
+  brick_work?: string;
+  electrical_work?: string;
+  plumbing_work?: string;
+  tiles_work?: string;
+  paint_work?: string;
+  [key: string]: string | undefined;
+}
+
+interface ApiConstructionProgressItem {
+  property_id: number;
+  property_name?: string;
+  lastUpdatedDate?: string;
+  lastMonthTarget?: string;
+  lastMonthAchieved?: string;
+  totalProgress?: string;
+  work_category_progress?: WorkCategoryProgress;
+  project_name?: string;
+  project_slug?: string;
+  project_location?: string;
+  project_image?: string;
+  overall_progress?: string;
+  cameras?: LiveCamera[];
+}
+
+export interface StageProgressRow {
+  label: string;
+  pct: number;
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.04,
+    },
   },
-  {
-    id: "54",
-    project_id: 54,
-    title: "The Premium Green Valley",
-    flatNo: "5B",
-    location: "Ashulia Model Town",
-    image: "/image/progress/tph_green_valley.png",
-    status: "Under Construction",
-    construction_pct: 82,
-    handover_date: "Dec 2026",
-    price: "From ৳3.1 Cr",
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 18 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
   },
-  {
-    id: "999",
-    project_id: 999,
-    title: "The Premium Sky Horizon",
-    flatNo: "8A",
-    location: "Gulshan 2, Dhaka",
-    image: "/image/progress/tph_green_valley.png",
-    status: "Foundation Phase",
-    construction_pct: 18,
-    handover_date: "Dec 2029",
-    price: "From ৳4.5 Cr",
-  },
-];
+};
+
+function parsePercentage(val?: string | number | null): number {
+  if (typeof val === "number") return Math.min(100, Math.max(0, Math.round(val)));
+  if (!val) return 0;
+  const num = parseFloat(String(val).replace(/%/g, "").trim());
+  return isNaN(num) ? 0 : Math.min(100, Math.max(0, Math.round(num)));
+}
+
+function normalizeProjectName(name?: string): string {
+  if (!name) return "";
+  return name
+    .toLowerCase()
+    .replace(/^(the\s+)?(premium\s+)?/i, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildStageProgressRows(wcp?: WorkCategoryProgress | null): StageProgressRow[] {
+  if (!wcp) {
+    return [
+      { label: "Structural Work", pct: 0 },
+      { label: "Brickwork", pct: 0 },
+      { label: "Plaster Work", pct: 0 },
+      { label: "Electrical", pct: 0 },
+      { label: "Plumbing", pct: 0 },
+      { label: "Interior / Tiles", pct: 0 },
+      { label: "Finishing / Paint", pct: 0 },
+    ];
+  }
+
+  return [
+    { label: "Structural Work", pct: parsePercentage(wcp.structural_work) },
+    { label: "Brickwork", pct: parsePercentage(wcp.brick_work) },
+    { label: "Plaster Work", pct: parsePercentage(wcp.plaster_work) },
+    { label: "Electrical", pct: parsePercentage(wcp.electrical_work) },
+    { label: "Plumbing", pct: parsePercentage(wcp.plumbing_work) },
+    { label: "Interior / Tiles", pct: parsePercentage(wcp.tiles_work) },
+    { label: "Finishing / Paint", pct: parsePercentage(wcp.paint_work) },
+  ];
+}
 
 // Helper to dynamically load Hls.js from CDN without requiring npm dependency
 function loadHlsScript(): Promise<any> {
@@ -93,169 +146,66 @@ function loadHlsScript(): Promise<any> {
   });
 }
 
-export function CameraTab({ myFlats = [] }: CameraTabProps) {
-  const [allCameras, setAllCameras] = useState<LiveCamera[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [apiError, setApiError] = useState<string | null>(null);
+interface ProjectCameraCardProps {
+  project: ClientFlat;
+  matchedProgress: ApiConstructionProgressItem | null;
+  cameras: LiveCamera[];
+  isLoadingData: boolean;
+}
 
-  // Determine user's active projects list (deduplicated by title/id)
-  const userProjects: ClientFlat[] = useMemo(() => {
-    if (myFlats && myFlats.length > 0) {
-      const seen = new Set<string>();
-      const list: ClientFlat[] = [];
-      myFlats.forEach((flat) => {
-        const key = (flat.title || String(flat.id)).toLowerCase().trim();
-        if (!seen.has(key)) {
-          seen.add(key);
-          list.push(flat);
-        }
-      });
-      return list;
-    }
-    return FALLBACK_USER_PROJECTS;
-  }, [myFlats]);
+function ProjectCameraCard({
+  project,
+  matchedProgress,
+  cameras,
+  isLoadingData,
+}: ProjectCameraCardProps) {
+  const [selectedCamIdx, setSelectedCamIdx] = useState(0);
+  const activeCamera = cameras[selectedCamIdx] || cameras[0] || null;
+  const hasLiveCamera = Boolean(activeCamera && activeCamera.camera_link);
 
-  // Selected project state (defaults to first user project)
-  const [selectedProjectId, setSelectedProjectId] = useState<string | number>(
-    userProjects[0]?.project_id || userProjects[0]?.id || ""
-  );
-
-  // Sync selected project if user projects change
-  useEffect(() => {
-    if (userProjects.length > 0) {
-      const exists = userProjects.some(
-        (p) => String(p.project_id || p.id) === String(selectedProjectId)
-      );
-      if (!exists) {
-        setSelectedProjectId(userProjects[0].project_id || userProjects[0].id);
-      }
-    }
-  }, [userProjects, selectedProjectId]);
-
-  const activeProject = useMemo(() => {
-    return (
-      userProjects.find(
-        (p) => String(p.project_id || p.id) === String(selectedProjectId)
-      ) || userProjects[0]
-    );
-  }, [userProjects, selectedProjectId]);
-
-  // Fetch cameras from API
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchCameras() {
-      try {
-        setIsLoading(true);
-        setApiError(null);
-
-        const res = await fetch("https://api.dpremiumhomes.com/api/cameras", {
-          cache: "no-store",
-          headers: {
-            Accept: "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch cameras (status ${res.status})`);
-        }
-
-        const data = await res.json();
-        const cameraList: LiveCamera[] = data.cameras || [];
-
-        if (!isMounted) return;
-        setAllCameras(cameraList);
-      } catch (err: any) {
-        if (!isMounted) return;
-        console.error("Error loading cameras:", err);
-        setApiError(err.message || "Failed to load live cameras");
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchCameras();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Filter cameras strictly for the active user project
-  const projectCameras = useMemo(() => {
-    if (!activeProject || allCameras.length === 0) return [];
-
-    const pId = activeProject.project_id || activeProject.id;
-    // 1. Try matching by numerical project_id
-    if (pId) {
-      const matchedById = allCameras.filter(
-        (c) => String(c.project_id) === String(pId)
-      );
-      if (matchedById.length > 0) return matchedById;
-    }
-
-    // 2. Try matching by normalized project name
-    const cleanUserProj = activeProject.title
-      .toLowerCase()
-      .replace(/^(the\s+)?(premium\s+)?/i, "")
-      .replace(/residence|garden|villa|court|terrace|valley|heaven/gi, "")
-      .trim();
-
-    const matchedByName = allCameras.filter((c) => {
-      const cleanCamProj = c.project_name
-        .toLowerCase()
-        .replace(/^(the\s+)?(premium\s+)?/i, "")
-        .replace(/residence|garden|villa|court|terrace|valley|heaven/gi, "")
-        .trim();
-
-      return (
-        cleanCamProj.includes(cleanUserProj) ||
-        cleanUserProj.includes(cleanCamProj)
-      );
-    });
-
-    return matchedByName;
-  }, [activeProject, allCameras]);
-
-  // Selected camera state
-  const [selectedCameraId, setSelectedCameraId] = useState<number | null>(null);
-
-  // Auto-select first camera when project cameras change
-  useEffect(() => {
-    if (projectCameras.length > 0) {
-      const stillValid = projectCameras.some((c) => c.id === selectedCameraId);
-      if (!stillValid) {
-        setSelectedCameraId(projectCameras[0].id);
-      }
-    } else {
-      setSelectedCameraId(null);
-    }
-  }, [projectCameras, selectedCameraId]);
-
-  const activeCamera = useMemo(() => {
-    if (projectCameras.length === 0) return null;
-    return (
-      projectCameras.find((c) => c.id === selectedCameraId) ||
-      projectCameras[0]
-    );
-  }, [projectCameras, selectedCameraId]);
-
-  // Video player states
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [streamBuffering, setStreamBuffering] = useState(true);
+  const [streamBuffering, setStreamBuffering] = useState(false);
   const [streamError, setStreamError] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const playerContainerRef = useRef<HTMLDivElement | null>(null);
   const hlsInstanceRef = useRef<any>(null);
 
-  // Setup HLS live stream player
+  const displayTitle =
+    matchedProgress?.project_name ||
+    matchedProgress?.property_name ||
+    project.title;
+
+  const displayLocation =
+    matchedProgress?.project_location ||
+    activeCamera?.location ||
+    project.location;
+
+  const stageRows = useMemo(
+    () => buildStageProgressRows(matchedProgress?.work_category_progress),
+    [matchedProgress]
+  );
+
+  const hasProgressRecord = Boolean(matchedProgress?.work_category_progress);
+
   const setupStream = () => {
-    if (!activeCamera?.camera_link || !videoRef.current) return;
+    if (!activeCamera?.camera_link || !videoRef.current) {
+      setStreamBuffering(false);
+      return;
+    }
+
+    // If YouTube or Vimeo embed link, iframe handles playback directly
+    if (
+      activeCamera.camera_link.includes("youtube.com") ||
+      activeCamera.camera_link.includes("youtu.be") ||
+      activeCamera.camera_link.includes("vimeo.com")
+    ) {
+      setStreamBuffering(false);
+      setStreamError(false);
+      return;
+    }
 
     setStreamBuffering(true);
     setStreamError(false);
@@ -271,7 +221,6 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
     videoEl.removeAttribute("src");
     videoEl.load();
 
-    // Prioritize Hls.js for Chromium / Firefox / Edge
     loadHlsScript()
       .then((Hls) => {
         if (Hls && Hls.isSupported()) {
@@ -295,8 +244,7 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
             videoEl
               .play()
               .then(() => setIsPlaying(true))
-              .catch((err) => {
-                console.warn("Autoplay muted required:", err);
+              .catch(() => {
                 videoEl.muted = true;
                 setIsMuted(true);
                 videoEl.play().catch(() => {});
@@ -305,7 +253,6 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
 
           hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
             if (data.fatal) {
-              console.warn("HLS fatal error encountered:", data.type, data.details);
               setStreamBuffering(false);
               setStreamError(true);
               switch (data.type) {
@@ -324,7 +271,6 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
           return;
         }
 
-        // Native HLS for Safari / iOS
         if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
           videoEl.src = streamUrl;
           videoEl.muted = isMuted;
@@ -344,12 +290,10 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
           return;
         }
 
-        console.error("HLS is not supported in this browser");
         setStreamError(true);
         setStreamBuffering(false);
       })
-      .catch((err) => {
-        console.error("Failed to load Hls library:", err);
+      .catch(() => {
         if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
           videoEl.src = streamUrl;
           videoEl.muted = isMuted;
@@ -371,7 +315,6 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
 
   useEffect(() => {
     setupStream();
-
     return () => {
       if (hlsInstanceRef.current) {
         hlsInstanceRef.current.destroy();
@@ -380,9 +323,8 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
     };
   }, [activeCamera?.id, activeCamera?.camera_link]);
 
-  // Video controls
   const togglePlay = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !activeCamera?.camera_link) return;
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -404,415 +346,638 @@ export function CameraTab({ myFlats = [] }: CameraTabProps) {
   const toggleFullscreen = () => {
     if (!playerContainerRef.current) return;
     if (!document.fullscreenElement) {
-      playerContainerRef.current.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(() => {});
+      playerContainerRef.current
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => {
-        setIsFullscreen(false);
-      }).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   };
 
-  const handleReload = () => {
-    setupStream();
-  };
+  const isEmbedUrl = Boolean(
+    activeCamera?.camera_link &&
+      (activeCamera.camera_link.includes("youtube.com") ||
+        activeCamera.camera_link.includes("youtu.be") ||
+        activeCamera.camera_link.includes("vimeo.com"))
+  );
+
+  const detailSlug =
+    matchedProgress?.project_slug ||
+    project.slug ||
+    matchedProgress?.property_id ||
+    project.project_id ||
+    project.id;
 
   return (
-    <div className="space-y-6">
-      {/* Tab Header & Title */}
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="flex h-2.5 w-2.5 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-          </span>
-          <h1 className="font-serif text-2xl sm:text-[30px] font-bold text-[#044133] tracking-tight">
-            Live Site Surveillance
-          </h1>
-        </div>
-        <p className="text-xs sm:text-sm text-stone-500 mt-1">
-          Real-time 24/7 high-definition camera surveillance for your assigned property site.
-        </p>
-      </div>
-
-      {/* User's Projects Selector Tabs */}
-      {userProjects.length > 0 && (
-        <div className="bg-white rounded-2xl p-3 sm:p-4 border border-stone-200/80 shadow-xs space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 font-mono">
-              Your Registered Projects ({userProjects.length})
-            </span>
-            <span className="text-[11px] text-stone-400">
-              Select project to switch camera feed
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {userProjects.map((proj) => {
-              const projKey = proj.project_id || proj.id;
-              const isSelected = String(projKey) === String(selectedProjectId);
-
-              // Quick check if this project has any camera in allCameras
-              const hasCams = allCameras.some((c) => {
-                if (proj.project_id && String(c.project_id) === String(proj.project_id)) return true;
-                const cleanUserProj = proj.title.toLowerCase().replace(/^(the\s+)?(premium\s+)?/i, "").trim();
-                const cleanCamProj = c.project_name.toLowerCase().replace(/^(the\s+)?(premium\s+)?/i, "").trim();
-                return cleanCamProj.includes(cleanUserProj) || cleanUserProj.includes(cleanCamProj);
-              });
-
-              return (
-                <button
-                  key={String(projKey)}
-                  type="button"
-                  onClick={() => setSelectedProjectId(projKey)}
-                  className={cn(
-                    "flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer border select-none",
-                    isSelected
-                      ? "bg-[#044133] text-white border-[#044133] shadow-xs"
-                      : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
-                  )}
-                >
-                  <Building2
-                    className={cn(
-                      "w-4 h-4 shrink-0",
-                      isSelected ? "text-[#dfb775]" : "text-stone-400"
-                    )}
-                  />
-                  <div className="text-left">
-                    <p className="font-semibold leading-tight">{proj.title}</p>
-                    <p
-                      className={cn(
-                        "text-[10px] mt-0.5",
-                        isSelected ? "text-white/70" : "text-stone-400"
-                      )}
-                    >
-                      {proj.flatNo ? `Unit ${proj.flatNo} • ` : ""}
-                      {proj.location}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full ml-1 shrink-0 uppercase",
-                      isSelected
-                        ? hasCams
-                          ? "bg-red-500/20 text-red-200 border border-red-400/40"
-                          : "bg-white/20 text-white/80"
-                        : hasCams
-                        ? "bg-red-50 text-red-600 border border-red-200"
-                        : "bg-stone-200/70 text-stone-500"
-                    )}
-                  >
-                    {hasCams ? "● Live" : "Offline"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      {isLoading ? (
-        <div className="w-full aspect-video rounded-2xl bg-stone-900 flex flex-col items-center justify-center text-white/70 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#dfb775]" />
-          <p className="text-xs font-mono tracking-wider uppercase">
-            Loading Live Cameras for {activeProject?.title}...
-          </p>
-        </div>
-      ) : apiError ? (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center space-y-3">
-          <AlertCircle className="w-8 h-8 text-red-600 mx-auto" />
-          <p className="text-sm font-semibold text-red-900">Failed to load camera feeds</p>
-          <p className="text-xs text-red-600">{apiError}</p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition cursor-pointer"
-          >
-            Retry
-          </button>
-        </div>
-      ) : projectCameras.length === 0 ? (
-        /* RELEVANT EMPTY STATE: WHEN NO CAMERAS EXIST FOR THIS PROJECT */
-        <div className="bg-white rounded-2xl p-8 sm:p-12 border border-stone-200/90 text-center space-y-6 shadow-xs max-w-3xl mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center mx-auto text-amber-700 shadow-2xs">
-            <VideoOff className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-2.5 max-w-lg mx-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold uppercase bg-amber-100/80 text-amber-900 border border-amber-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-              Surveillance Camera Not Configured
-            </span>
-            <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
-              No Live Camera Available for {activeProject?.title}
+    <motion.div
+      variants={itemVariants}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.25 }}
+      className="bg-white flex flex-col gap-[20px] items-start overflow-hidden p-[16px] rounded-[20px] w-full"
+    >
+      {/* Card Header (Figma node 8313:24375) */}
+      <div className="flex gap-[8px] items-center justify-between w-full">
+        <div className="flex flex-1 flex-col gap-[5px] items-start min-w-0">
+          <div className="flex items-center gap-2 w-full min-w-0">
+            <h2 className="font-sans font-medium leading-[20px] text-[#232f43] text-[18px] truncate">
+              {displayTitle}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 leading-relaxed">
-              Currently, there are no 24/7 live surveillance cameras active or deployed for{" "}
-              <strong className="text-stone-800">{activeProject?.title}</strong> ({activeProject?.location}). 
-              Live site cameras are typically mounted during key structural deck casting and exterior finishing phases.
+            {project.flatNo && (
+              <span className="px-2 py-0.5 rounded-full bg-[#f1f6f5] text-[#054b3c] text-[11px] font-semibold shrink-0">
+                Unit {project.flatNo}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-[4px] items-center w-full min-w-0">
+            {/* 18x18 location-04 pin icon (Figma node 8313:24379) */}
+            <svg
+              className="size-[18px] text-[#59657b] shrink-0"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" />
+              <path d="M9 16.5C12 13.5 15 10.8137 15 7.5C15 4.18629 12.3137 1.5 9 1.5C5.68629 1.5 3 4.18629 3 7.5C3 10.8137 6 13.5 9 16.5Z" />
+            </svg>
+            <p className="font-sans font-normal leading-[18px] text-[#59657b] text-[14px] truncate">
+              {displayLocation}
             </p>
           </div>
-
-          {/* Project Details Banner */}
-          <div className="bg-stone-50 rounded-xl p-4 border border-stone-200/70 max-w-md mx-auto flex items-center justify-around text-xs">
-            <div className="text-center">
-              <p className="text-[10px] uppercase font-mono text-stone-400">Current Phase</p>
-              <p className="font-semibold text-stone-800 mt-0.5">
-                {activeProject?.status || "Under Construction"}
-              </p>
-            </div>
-            <div className="h-8 w-px bg-stone-200" />
-            <div className="text-center">
-              <p className="text-[10px] uppercase font-mono text-stone-400">Completion</p>
-              <p className="font-semibold text-[#044133] mt-0.5">
-                {activeProject?.construction_pct || 75}%
-              </p>
-            </div>
-            <div className="h-8 w-px bg-stone-200" />
-            <div className="text-center">
-              <p className="text-[10px] uppercase font-mono text-stone-400">Handover</p>
-              <p className="font-semibold text-stone-800 mt-0.5">
-                {activeProject?.handover_date || "Dec 2027"}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Guidance Actions */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="/dashboard?tab=progress"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#044133] text-white text-xs font-semibold hover:bg-[#032f25] active:scale-95 transition shadow-xs cursor-pointer"
-            >
-              <HardHat className="w-4 h-4 text-[#dfb775]" />
-              <span>View Construction Progress Photos</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="/dashboard?tab=support"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium transition cursor-pointer"
-            >
-              <span>Inquire with Project Engineer</span>
-            </a>
-          </div>
         </div>
-      ) : (
-        /* CAMERA PLAYER & LIST FOR THIS PROJECT */
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column: Live Video Player (3 cols) */}
-          <div className="lg:col-span-3 space-y-4">
-            <div
-              ref={playerContainerRef}
-              className="bg-black rounded-2xl overflow-hidden border border-stone-800 shadow-2xl relative aspect-video flex flex-col justify-between group"
-            >
-              {/* HTML5 Video Element */}
+
+        {/* Multi-camera switcher pills + Link to full project progress details */}
+        <div className="flex items-center gap-2 shrink-0">
+          {cameras.length > 1 && (
+            <div className="flex items-center gap-1">
+              {cameras.map((cam, idx) => (
+                <button
+                  key={cam.id}
+                  type="button"
+                  onClick={() => setSelectedCamIdx(idx)}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors cursor-pointer",
+                    selectedCamIdx === idx
+                      ? "bg-[#054b3c] text-white"
+                      : "bg-[#f1f2f6] text-[#546360] hover:bg-[#e4e6ed]"
+                  )}
+                >
+                  {cam.camera_name || `Cam ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <Link
+            href={`/project-progress/${detailSlug}`}
+            title="View Full Project Progress"
+            className="relative shrink-0 size-[24px] text-[#232f43] hover:text-[#054b3c] transition-colors flex items-center justify-center"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="size-full">
+              <path
+                d="M7 17L17 7M17 7H8M17 7V16"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        </div>
+      </div>
+
+      {/* Video Player Frame (Figma node 8313:24385: h-[349px] rounded-[16px] w-full) */}
+      <div
+        ref={playerContainerRef}
+        className="h-[260px] sm:h-[349px] overflow-hidden relative rounded-[16px] shrink-0 w-full bg-[#111917] group"
+      >
+        {isLoadingData ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-2.5">
+            <Loader2 className="w-7 h-7 animate-spin text-white" />
+            <span className="text-xs font-medium tracking-wider uppercase text-white/80">
+              Checking Live Camera Feed...
+            </span>
+          </div>
+        ) : hasLiveCamera && activeCamera ? (
+          <>
+            {isEmbedUrl ? (
+              <iframe
+                src={activeCamera.camera_link}
+                title={activeCamera.camera_name || displayTitle}
+                className="absolute inset-0 w-full h-full border-0 z-[1]"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
               <video
                 ref={videoRef}
                 playsInline
                 autoPlay
                 muted={isMuted}
-                className="w-full h-full object-contain bg-black"
+                poster={matchedProgress?.project_image || project.image}
+                className="absolute inset-0 w-full h-full object-cover z-[1] bg-black"
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onWaiting={() => setStreamBuffering(true)}
                 onPlaying={() => setStreamBuffering(false)}
               />
+            )}
 
-              {/* Buffering Indicator */}
-              {streamBuffering && !streamError && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white z-20 space-y-2">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#dfb775]" />
-                  <span className="text-xs font-mono tracking-wider text-stone-300">
-                    CONNECTING LIVE ENCRYPTED FEED...
-                  </span>
-                </div>
-              )}
-
-              {/* Stream Error / Offline Fallback */}
-              {streamError && (
-                <div className="absolute inset-0 bg-stone-950 flex flex-col items-center justify-center p-6 text-center z-20 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-red-950/80 border border-red-800 flex items-center justify-center text-red-500">
-                    <Radio className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div className="space-y-1 max-w-sm">
-                    <h4 className="text-sm font-semibold text-white">Live Stream Reconnecting</h4>
-                    <p className="text-xs text-stone-400 leading-relaxed">
-                      Camera feed for <span className="text-stone-200 font-medium">{activeCamera?.camera_name}</span> is temporarily offline or undergoing scheduled site maintenance.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleReload}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium transition cursor-pointer border border-white/20"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Reconnect Stream</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Top Stream Info Bar */}
-              <div className="absolute top-0 inset-x-0 p-4 bg-gradient-to-b from-black/85 via-black/40 to-transparent flex items-center justify-between text-white text-xs z-10 pointer-events-none">
-                <div className="flex items-center gap-2.5 pointer-events-auto">
-                  <span className="flex h-2.5 w-2.5 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                  </span>
-                  <span className="font-bold tracking-wider uppercase text-red-500 font-mono text-[11px]">
-                    LIVE FEED
-                  </span>
-                  <span className="text-white/40">|</span>
-                  <span className="font-medium text-white/95 text-[11px] truncate max-w-[200px] sm:max-w-xs">
-                    {activeCamera?.camera_name || activeProject?.title}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 pointer-events-auto">
-                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded bg-white/15 backdrop-blur-md text-[10px] font-mono text-white/90 border border-white/10">
-                    1080P HD
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 backdrop-blur-md text-[10px] font-mono text-emerald-400 border border-emerald-500/30">
-                    AES-256
-                  </span>
-                </div>
-              </div>
-
-              {/* Bottom Stream Controls Bar */}
-              <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-between text-white text-xs z-10">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    aria-label={isPlaying ? "Pause stream" : "Play stream"}
-                    className="p-2 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-                    className="p-2 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
-                  >
-                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleReload}
-                    title="Reload live stream"
-                    aria-label="Reload live stream"
-                    className="p-2 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-
-                  <span className="hidden md:inline font-mono text-white/70 text-[11px]">
-                    {activeProject?.location}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={toggleFullscreen}
-                    title="Toggle Fullscreen"
-                    aria-label="Toggle Fullscreen"
-                    className="p-2 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
-                  >
-                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Current Camera Meta Details */}
-            {activeCamera && (
-              <div className="bg-white rounded-xl p-4 border border-stone-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div>
-                  <h3 className="font-serif font-bold text-stone-900 text-sm">
-                    {activeCamera.camera_name}
-                  </h3>
-                  <p className="text-stone-500 mt-0.5 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                    <span>{activeCamera.location} — {activeProject?.title}</span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                    {activeCamera.status || "Active"}
-                  </span>
-                  <span className="text-stone-400">|</span>
-                  <span className="text-[11px] text-stone-500 font-mono">
-                    ID #{activeCamera.id}
-                  </span>
-                </div>
+            {/* Buffering Overlay */}
+            {streamBuffering && !streamError && (
+              <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] flex flex-col items-center justify-center text-white z-[3] gap-2">
+                <Loader2 className="w-7 h-7 animate-spin text-white" />
+                <span className="text-[11px] font-medium tracking-wider uppercase text-white/90">
+                  Connecting Live Stream ({activeCamera.camera_name || "Site Cam"})...
+                </span>
               </div>
             )}
-          </div>
 
-          {/* Right Column: Project Cameras List Sidebar (1 col) */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-                <div className="flex items-center gap-2 text-[#044133]">
-                  <Video className="w-4 h-4" />
-                  <h3 className="font-serif font-bold text-sm sm:text-base">Project Cameras</h3>
+            {/* Stream Error / Offline Overlay */}
+            {streamError && (
+              <div className="absolute inset-0 bg-[#111917]/95 flex flex-col items-center justify-center p-5 text-center z-[3] gap-2.5">
+                <Radio className="w-6 h-6 text-red-400 animate-pulse" />
+                <p className="text-sm font-medium text-white">
+                  {activeCamera.camera_name || displayTitle} Feed Offline
+                </p>
+                <p className="text-xs text-white/65 max-w-xs">
+                  The live stream URL could not be reached right now. It may be undergoing scheduled site maintenance.
+                </p>
+                <button
+                  type="button"
+                  onClick={setupStream}
+                  className="mt-1 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-medium transition cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retry Connection</span>
+                </button>
+              </div>
+            )}
+
+            {/* Bottom Dark Gradient Overlay (Figma node 8313:24387) */}
+            {!isEmbedUrl && (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-b from-[rgba(35,47,67,0)] via-[rgba(35,47,67,0.08)] to-[rgba(35,47,67,0.72)] pointer-events-none z-[2]" />
+
+                {/* Top-Left LIVE Badge (Figma node 8313:24388) */}
+                <div className="absolute bg-[#bf2318] flex gap-[5px] items-center justify-center left-[12px] top-[12px] px-[8px] py-[3px] rounded-[4px] z-[4]">
+                  <span className="size-[6px] rounded-full bg-white animate-pulse" />
+                  <span className="font-sans font-semibold text-[12px] leading-[14px] text-white uppercase tracking-wide">
+                    LIVE
+                  </span>
+                  {activeCamera.camera_name && (
+                    <span className="text-[11px] font-normal text-white/90 pl-1 border-l border-white/30">
+                      {activeCamera.camera_name}
+                    </span>
+                  )}
                 </div>
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
-                  {projectCameras.length} Active
-                </span>
-              </div>
 
-              {/* Cameras List */}
-              <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                {projectCameras.map((cam, idx) => {
-                  const isActive = activeCamera?.id === cam.id;
-                  return (
+                {/* Timeline Bar (Figma node 8313:24412) */}
+                <div className="absolute bottom-[40px] left-[12px] right-[12px] h-[3px] bg-[rgba(234,234,234,0.25)] rounded-full overflow-hidden z-[4]">
+                  <div className="absolute inset-y-0 left-0 w-full bg-[#fc0d1c] rounded-full" />
+                </div>
+
+                {/* Bottom Controls Bar (Figma node 8313:24391) */}
+                <div className="absolute bottom-[12px] left-[12px] right-[12px] flex items-center justify-between text-white z-[4]">
+                  <div className="flex items-center gap-[18px]">
                     <button
-                      key={cam.id}
                       type="button"
-                      onClick={() => setSelectedCameraId(cam.id)}
-                      className={cn(
-                        "w-full text-left p-3.5 rounded-xl border text-xs transition-all cursor-pointer select-none",
-                        isActive
-                          ? "border-[#044133] bg-[#044133]/5 text-[#044133] font-semibold shadow-2xs"
-                          : "border-stone-200 hover:bg-stone-50 text-stone-700 hover:border-stone-300"
-                      )}
+                      onClick={togglePlay}
+                      aria-label={isPlaying ? "Pause" : "Play"}
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-xs truncate">
-                          {cam.camera_name || `Camera ${idx + 1}`}
-                        </span>
-                        <span className="text-[10px] font-bold text-red-600 font-mono flex items-center gap-1 shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping inline-block" />
-                          LIVE
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-500 mt-1 truncate">
-                        {cam.location || activeProject.title}
-                      </p>
+                      {isPlaying ? (
+                        <Pause className="size-[15px] fill-white text-white" />
+                      ) : (
+                        <Play className="size-[15px] fill-white text-white" />
+                      )}
                     </button>
-                  );
-                })}
-              </div>
 
-              {/* Client Security Notice */}
-              <div className="pt-3 border-t border-stone-100 flex items-start gap-2 text-[11px] text-stone-500 leading-relaxed">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>
-                  Exclusively accessible to registered property owners. Live streams are encrypted and monitored 24/7.
-                </span>
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      aria-label={isMuted ? "Unmute" : "Mute"}
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      {isMuted ? (
+                        <VolumeX className="size-[15px] text-white" />
+                      ) : (
+                        <Volume2 className="size-[15px] text-white" />
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-[16px]">
+                    <button
+                      type="button"
+                      onClick={setupStream}
+                      title="Reconnect Stream (HD)"
+                      className="relative hover:opacity-80 transition-opacity cursor-pointer flex items-center justify-center"
+                    >
+                      <Settings className="size-[14px] text-white" />
+                      <span className="-top-1.5 -right-2.5 bg-[#ee1a26] text-white text-[7px] font-bold px-[2px] leading-[9px] rounded-[1px] absolute">
+                        HD
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleFullscreen}
+                      title="Theater View"
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <RectangleHorizontal className="size-[15px] text-white" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={setupStream}
+                      title="Reload Stream"
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <Tv className="size-[15px] text-white" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleFullscreen}
+                      title="Toggle Fullscreen"
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      {isFullscreen ? (
+                        <Minimize2 className="size-[14px] text-white" />
+                      ) : (
+                        <Maximize2 className="size-[14px] text-white" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          /* Honest Empty Camera State when this project has NO camera in /api/cameras */
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
+            {(matchedProgress?.project_image || project.image) && (
+              <img
+                src={matchedProgress?.project_image || project.image}
+                alt={displayTitle}
+                className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+              />
+            )}
+            <div className="relative z-10 flex flex-col items-center max-w-sm">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mb-3 text-white/80">
+                <VideoOff className="w-6 h-6" />
               </div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/90 border border-white/15 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Camera Offline / Not Deployed
+              </span>
+              <h3 className="font-serif text-lg font-semibold text-white">
+                No Active Camera Feed for {displayTitle}
+              </h3>
+              <p className="text-xs text-white/70 mt-1 leading-relaxed">
+                There is currently no live CCTV stream assigned to this project in the camera server. Real-time engineering progress from the construction API is shown below.
+              </p>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Bottom Real Construction Progress Rows from /api/constructions/projects-progress (Figma node 8313:24416) */}
+      <div className="flex flex-col gap-[16px] items-start px-[4px] w-full">
+        <div className="flex items-center justify-between w-full border-b border-[#f1f2f6] pb-2">
+          <span className="text-[12px] font-semibold uppercase tracking-wider text-[#546360]">
+            Real-Time Construction Breakdown
+          </span>
+          {matchedProgress?.lastUpdatedDate ? (
+            <span className="text-[11px] text-[#59657b]">
+              Updated: {matchedProgress.lastUpdatedDate}
+            </span>
+          ) : !hasProgressRecord && !isLoadingData ? (
+            <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+              Awaiting Milestone Update
+            </span>
+          ) : null}
         </div>
-      )}
-    </div>
+
+        {isLoadingData ? (
+          <div className="flex flex-col gap-[16px] w-full">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <div key={n} className="flex items-center justify-between w-full">
+                <div className="h-4 w-24 bg-stone-200 rounded animate-pulse" />
+                <div className="h-2.5 w-[200px] sm:w-[253px] bg-stone-100 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[16px] items-start w-full">
+            {stageRows.map((stage, idx) => (
+              <div
+                key={stage.label}
+                className="flex items-center justify-between gap-4 w-full"
+              >
+                <p className="font-sans font-medium leading-[18px] text-[#232f43] text-[14px] whitespace-nowrap">
+                  {stage.label}
+                </p>
+
+                {/* 253px Progress Bar + Percentage (Figma node 8313:24419) */}
+                <div className="flex gap-[8px] items-center shrink-0 w-[180px] sm:w-[253px]">
+                  <div className="flex-1 h-[8px] relative rounded-[4px] bg-[#f2f4f7] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${stage.pct}%` }}
+                      transition={{
+                        duration: 0.9,
+                        delay: 0.1 + idx * 0.06,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="bg-[#054b3c] h-full rounded-[4px]"
+                    />
+                  </div>
+                  <p className="font-sans font-normal leading-[18px] text-[#59657b] text-[14px] whitespace-nowrap w-[34px] text-right">
+                    {stage.pct}%
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
+export function CameraTab({
+  myFlats = [],
+  isLoading: isParentLoading = false,
+}: CameraTabProps) {
+  const [allCameras, setAllCameras] = useState<LiveCamera[]>([]);
+  const [progressList, setProgressList] = useState<ApiConstructionProgressItem[]>([]);
+  const [isLoadingApi, setIsLoadingApi] = useState(true);
 
+  // Deduplicate user's real registered projects strictly from myFlats (NO fake fallback projects)
+  const userProjects: ClientFlat[] = useMemo(() => {
+    if (!myFlats || myFlats.length === 0) return [];
+    const seen = new Set<string>();
+    const list: ClientFlat[] = [];
+
+    myFlats.forEach((flat) => {
+      const key =
+        (flat.project_id ? `id:${flat.project_id}` : "") ||
+        (flat.slug ? `slug:${flat.slug.toLowerCase()}` : "") ||
+        `title:${normalizeProjectName(flat.title)}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(flat);
+      }
+    });
+
+    return list;
+  }, [myFlats]);
+
+  // Fetch BOTH /api/cameras and /api/constructions/projects-progress in parallel
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchCameraAndProgressApis() {
+      try {
+        setIsLoadingApi(true);
+        const baseUrl = (
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          "https://api.dpremiumhomes.com/api"
+        ).replace(/\/+$/, "");
+
+        const [camRes, progRes] = await Promise.allSettled([
+          fetch(`${baseUrl}/cameras`, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          }),
+          fetch(`${baseUrl}/constructions/projects-progress`, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          }),
+        ]);
+
+        if (!isMounted) return;
+
+        if (camRes.status === "fulfilled" && camRes.value.ok) {
+          const camJson = await camRes.value.json();
+          const camerasArray: LiveCamera[] = Array.isArray(camJson?.cameras)
+            ? camJson.cameras
+            : Array.isArray(camJson?.data)
+            ? camJson.data
+            : [];
+          setAllCameras(camerasArray);
+        }
+
+        if (progRes.status === "fulfilled" && progRes.value.ok) {
+          const progJson = await progRes.value.json();
+          const progArray: ApiConstructionProgressItem[] = Array.isArray(progJson)
+            ? progJson
+            : Array.isArray(progJson?.data)
+            ? progJson.data
+            : [];
+          setProgressList(progArray);
+        }
+      } catch (err) {
+        console.error("[CameraTab] Error fetching camera & progress APIs:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingApi(false);
+        }
+      }
+    }
+
+    fetchCameraAndProgressApis();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Strictly match construction progress item for a user's project
+  const findProgressForProject = (proj: ClientFlat): ApiConstructionProgressItem | null => {
+    if (progressList.length === 0) return null;
+
+    const rawPropId = Number(proj.project_id) || 0;
+    const flatSlug = (proj.slug || "").toLowerCase().trim();
+    const normUserTitle = normalizeProjectName(proj.title);
+
+    // 1. Strict match by numeric property_id
+    if (rawPropId > 0) {
+      const byId = progressList.find((p) => Number(p.property_id) === rawPropId);
+      if (byId) return byId;
+    }
+
+    // 2. Strict match by project_slug
+    if (flatSlug) {
+      const bySlug = progressList.find(
+        (p) => (p.project_slug || "").toLowerCase().trim() === flatSlug
+      );
+      if (bySlug) return bySlug;
+    }
+
+    // 3. Strict match by normalized project name
+    if (normUserTitle) {
+      const byName = progressList.find((p) => {
+        const normApiName = normalizeProjectName(p.project_name || p.property_name);
+        return (
+          normApiName &&
+          (normApiName === normUserTitle ||
+            normApiName.includes(normUserTitle) ||
+            normUserTitle.includes(normApiName))
+        );
+      });
+      if (byName) return byName;
+    }
+
+    return null;
+  };
+
+  // Strictly match cameras for a user's project (NEVER fallback to another project's camera)
+  const findCamerasForProject = (
+    proj: ClientFlat,
+    matchedProgress: ApiConstructionProgressItem | null
+  ): LiveCamera[] => {
+    const combined: LiveCamera[] = [];
+    const seenIds = new Set<string | number>();
+
+    // Include any cameras directly embedded in the matched progress record
+    if (Array.isArray(matchedProgress?.cameras)) {
+      matchedProgress.cameras.forEach((c) => {
+        if (c && !seenIds.has(c.id)) {
+          seenIds.add(c.id);
+          combined.push(c);
+        }
+      });
+    }
+
+    if (allCameras.length === 0) return combined;
+
+    const targetIds = new Set<number>();
+    if (Number(proj.project_id) > 0) targetIds.add(Number(proj.project_id));
+    if (Number(matchedProgress?.property_id) > 0) {
+      targetIds.add(Number(matchedProgress?.property_id));
+    }
+
+    const normUserTitle = normalizeProjectName(
+      matchedProgress?.project_name || matchedProgress?.property_name || proj.title
+    );
+
+    allCameras.forEach((cam) => {
+      if (seenIds.has(cam.id)) return;
+
+      // 1. Match by numeric project_id
+      if (cam.project_id && targetIds.has(Number(cam.project_id))) {
+        seenIds.add(cam.id);
+        combined.push(cam);
+        return;
+      }
+
+      // 2. Match by normalized project_name
+      const normCamProj = normalizeProjectName(cam.project_name);
+      if (
+        normUserTitle &&
+        normCamProj &&
+        (normCamProj === normUserTitle ||
+          normCamProj.includes(normUserTitle) ||
+          normUserTitle.includes(normCamProj))
+      ) {
+        seenIds.add(cam.id);
+        combined.push(cam);
+      }
+    });
+
+    return combined;
+  };
+
+  const showSkeleton = isParentLoading || (isLoadingApi && userProjects.length === 0);
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="flex flex-col gap-[32px] items-start w-full"
+    >
+      {/* Header (Figma node 8313:24368) */}
+      <motion.div
+        variants={itemVariants}
+        className="flex items-center justify-between w-full"
+      >
+        <div className="flex flex-col gap-[12px] items-start">
+          <h1 className="capitalize font-serif font-semibold leading-[1.1] text-[#054b3c] text-[28px] sm:text-[32px]">
+            Live Project Progress
+          </h1>
+          <p className="font-sans font-normal leading-none text-[#546360] text-[15px] sm:text-[16px]">
+            Watch Real-time construction progress from anywhere.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Content */}
+      {showSkeleton ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] lg:gap-[30px] items-start w-full">
+          {[1, 2].map((n) => (
+            <div
+              key={`cam-skeleton-${n}`}
+              className="bg-white rounded-[20px] p-[16px] flex flex-col gap-[20px] w-full animate-pulse"
+            >
+              <div className="space-y-2">
+                <div className="h-5 w-48 bg-stone-200 rounded" />
+                <div className="h-4 w-32 bg-stone-100 rounded" />
+              </div>
+              <div className="h-[260px] sm:h-[349px] rounded-[16px] bg-stone-200 w-full" />
+              <div className="space-y-3 pt-2">
+                {[1, 2, 3, 4, 5].map((r) => (
+                  <div key={r} className="flex justify-between items-center">
+                    <div className="h-4 w-24 bg-stone-200 rounded" />
+                    <div className="h-2.5 w-[200px] bg-stone-100 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : userProjects.length === 0 ? (
+        <div className="bg-white rounded-[20px] p-10 sm:p-12 text-center flex flex-col items-center justify-center w-full">
+          <div className="w-16 h-16 rounded-2xl bg-[#f1f6f5] flex items-center justify-center text-[#054b3c] mb-4">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <h3 className="font-serif text-xl font-bold text-[#054b3c]">
+            No Registered Properties Found
+          </h3>
+          <p className="text-xs sm:text-sm text-[#546360] mt-1.5 max-w-md leading-relaxed">
+            You do not have any registered properties in your account yet. Once a property is assigned to your profile, its live site camera and real-time construction progress will appear here.
+          </p>
+        </div>
+      ) : (
+        /* 2-Column Project Camera Cards Grid (Figma node 8313:24372: gap-[30px]) */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] lg:gap-[30px] items-start w-full">
+          {userProjects.map((proj, index) => {
+            const matchedProgress = findProgressForProject(proj);
+            const matchedCameras = findCamerasForProject(proj, matchedProgress);
+
+            return (
+              <ProjectCameraCard
+                key={`${proj.id}-${index}`}
+                project={proj}
+                matchedProgress={matchedProgress}
+                cameras={matchedCameras}
+                isLoadingData={isLoadingApi}
+              />
+            );
+          })}
+        </div>
+      )}
+    </motion.div>
+  );
+}

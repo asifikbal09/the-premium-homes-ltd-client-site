@@ -94,13 +94,13 @@ export function NotificationBell() {
         aria-expanded={isOpen}
         aria-haspopup="true"
         className={cn(
-          "relative w-9 h-9 rounded-full active:scale-95 text-stone-600 flex items-center justify-center transition-all cursor-pointer",
-          isOpen ? "bg-stone-200" : "bg-stone-100 hover:bg-stone-200/80"
+          "relative size-[44px] rounded-full border-[1.1px] border-[#eaecf0] bg-gradient-to-b from-white to-[#f8f9fc] active:scale-95 text-[#475467] flex items-center justify-center transition-all cursor-pointer",
+          isOpen && "ring-2 ring-[#054b3c]/15",
         )}
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="size-[22px] stroke-[1.75] text-[#475467]" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
+          <span className="absolute left-[20.9px] top-[6.6px] min-w-[17.6px] h-[17.6px] px-[4px] rounded-full bg-[#f04438] text-white text-[11px] font-semibold leading-none flex items-center justify-center border-[1.1px] border-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

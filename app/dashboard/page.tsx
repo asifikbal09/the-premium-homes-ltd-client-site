@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { DashboardSidebar, DashboardTab } from "@/components/dashboard/dashboard_sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard_header";
 import { OverviewTab } from "@/components/dashboard/overview_tab";
 import { PaymentTab } from "@/components/dashboard/payment_tab";
 import { ProgressTab } from "@/components/dashboard/progress_tab";
+import { WishlistTab } from "@/components/dashboard/wishlist_tab";
 import { NoticeTab } from "@/components/dashboard/notice_tab";
 import { CameraTab } from "@/components/dashboard/camera_tab";
 import { ReferTab } from "@/components/dashboard/refer_tab";
@@ -14,6 +16,7 @@ import { SupportTab } from "@/components/dashboard/support_tab";
 import { ProfileTab } from "@/components/dashboard/profile_tab";
 import { ClientUser, ClientFlat, ClientPayment } from "@/components/dashboard/types";
 import { fetchUserPaymentInfo } from "@/lib/client-dashboard";
+import { Preloader, LoadingScreen } from "@/components/preloader";
 
 function DashboardContent() {
   const router = useRouter();
@@ -144,6 +147,7 @@ function DashboardContent() {
           "overviews",
           "payment",
           "progress",
+          "wishlist",
           "notice",
           "live-camera",
           "refer",
@@ -186,7 +190,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[#f8faf9] text-[#1f2723]">
+    <div className="h-screen flex overflow-hidden bg-[#f1f6f5] text-[#1f2723]">
       {/* 1. Left Sidebar Navigation */}
       <DashboardSidebar
         activeTab={activeTab}
@@ -209,52 +213,68 @@ function DashboardContent() {
         />
 
         {/* Scrollable Tab Content Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {activeTab === "overviews" && (
-            <OverviewTab
-              user={user}
-              myFlats={myFlats}
-              isLoading={isLoading}
-              onViewAllFlats={() => setActiveTab("progress")}
-              onViewAllProjects={() => router.push("/projects")}
-              onSelectProject={handleSelectProject}
-            />
-          )}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1320px] w-full mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12, filter: "blur(3px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, filter: "blur(2px)" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {activeTab === "overviews" && (
+                <OverviewTab
+                  user={user}
+                  myFlats={myFlats}
+                  isLoading={isLoading}
+                  onViewAllFlats={() => setActiveTab("progress")}
+                  onViewAllProjects={() => router.push("/projects")}
+                  onSelectProject={handleSelectProject}
+                />
+              )}
 
-          {activeTab === "payment" && (
-            <PaymentTab
-              payments={dynamicPayments}
-              stats={dynamicStats}
-              user={user}
-              myFlats={myFlats}
-              isLoading={isLoading}
-            />
-          )}
+              {activeTab === "payment" && (
+                <PaymentTab
+                  payments={dynamicPayments}
+                  stats={dynamicStats}
+                  user={user}
+                  myFlats={myFlats}
+                  isLoading={isLoading}
+                />
+              )}
 
-          {activeTab === "progress" && (
-            <ProgressTab
-              myFlats={myFlats}
-              user={user}
-              isLoading={isLoading}
-            />
-          )}
+              {activeTab === "progress" && (
+                <ProgressTab
+                  myFlats={myFlats}
+                  user={user}
+                  isLoading={isLoading}
+                />
+              )}
 
-          {activeTab === "notice" && <NoticeTab projects={myFlats} />}
+              {activeTab === "wishlist" && <WishlistTab user={user} />}
 
-          {activeTab === "live-camera" && <CameraTab myFlats={myFlats} />}
+              {activeTab === "notice" && (
+                <NoticeTab projects={myFlats} isLoading={isLoading} />
+              )}
 
-          {activeTab === "refer" && <ReferTab user={user} />}
+              {activeTab === "live-camera" && (
+                <CameraTab myFlats={myFlats} isLoading={isLoading} />
+              )}
 
-          {activeTab === "support" && <SupportTab />}
+              {activeTab === "refer" && <ReferTab user={user} />}
 
-          {activeTab === "profile" && (
-            <ProfileTab
-              user={user}
-              isLoading={isLoading}
-              myFlats={myFlats}
-              onUpdateUser={handleUpdateUser}
-            />
-          )}
+              {activeTab === "support" && <SupportTab />}
+
+              {activeTab === "profile" && (
+                <ProfileTab
+                  user={user}
+                  isLoading={isLoading}
+                  myFlats={myFlats}
+                  onUpdateUser={handleUpdateUser}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
@@ -263,13 +283,8 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#f8faf9] text-stone-400 text-sm font-medium">
-          Loading dashboard...
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingScreen />}>
+      <Preloader />
       <DashboardContent />
     </Suspense>
   );

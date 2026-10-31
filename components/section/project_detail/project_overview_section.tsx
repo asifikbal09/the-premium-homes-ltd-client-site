@@ -10,12 +10,15 @@ import {
 } from "@/components/section/shared/icon_card";
 import { Appear, Shutter } from "@/components/ui/motion";
 import { Eyebrow, GreenPill, Heading } from "@/components/ui/primitives";
-import { API_BASE } from "@/lib/api";
 import {
-  getClientToken,
   getClientUserId,
   hasClientSession,
 } from "@/lib/client-auth";
+import {
+  addToUserWishlist,
+  fetchUserWishlist,
+  removeFromUserWishlist,
+} from "@/lib/client-dashboard";
 import type { ProjectDetail } from "@/lib/projects";
 import { cn, fluid } from "@/lib/utils";
 
@@ -74,47 +77,37 @@ export function ProjectOverviewSection({ project }: ProjectOverviewProps) {
 
     // Check locally stored wishlist first for instant feedback
     const localIds = readStoredWishlist(uid);
-    if (localIds.includes(propertyIdStr)) {
+    const cleanPropId = propertyIdStr.replace(/^prop_/i, "").trim();
+    if (
+      localIds.some(
+        (id) =>
+          id === propertyIdStr ||
+          id.replace(/^prop_/i, "").trim() === cleanPropId,
+      )
+    ) {
       setSaved(true);
     }
 
-    // Also check user profile / wishlist from API if available
+    // Sync wishlist state with GET /users/{userId}/wishlist
     let cancelled = false;
     (async () => {
       try {
-        const token = getClientToken();
-        const headers: Record<string, string> = { Accept: "application/json" };
-        if (token) headers.Authorization = `Bearer ${token}`;
-
-        const res = await fetch(`${API_BASE}/users/${uid}`, {
-          method: "GET",
-          headers,
-          cache: "no-store",
+        const items = await fetchUserWishlist(uid);
+        if (cancelled) return;
+        const matched = items.some((item) => {
+          const itemClean = String(item.propertyId)
+            .replace(/^prop_/i, "")
+            .trim();
+          return (
+            String(item.propertyId) === propertyIdStr ||
+            itemClean === cleanPropId
+          );
         });
-        if (!res.ok || cancelled) return;
-        const json = await res.json();
-        const userPayload =
-          json?.user ||
-          (Array.isArray(json?.data) ? json.data[0] : json?.data) ||
-          null;
-        const list: unknown[] =
-          userPayload?.wishlist ||
-          userPayload?.wishlistProperties ||
-          userPayload?.saved_wishlist ||
-          [];
-        if (Array.isArray(list) && list.length > 0 && !cancelled) {
-          const matched = list.some((item: any) => {
-            const itemId =
-              typeof item === "object" && item !== null
-                ? (item.propertyId ?? item.property_id ?? item.id)
-                : item;
-            return String(itemId) === propertyIdStr;
-          });
-          if (matched) {
-            setSaved(true);
-            writeStoredWishlist(uid, [...localIds, propertyIdStr]);
-          }
-        }
+        setSaved(matched);
+        writeStoredWishlist(
+          uid,
+          items.map((i) => String(i.propertyId)),
+        );
       } catch {
         // ignore background check error
       }
@@ -135,41 +128,33 @@ export function ProjectOverviewSection({ project }: ProjectOverviewProps) {
     setSaved(nextSaved);
 
     try {
-      const token = getClientToken();
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
-      if (token) headers.Authorization = `Bearer ${token}`;
+      const result = nextSaved
+        ? await addToUserWishlist(uid, propertyIdStr)
+        : await removeFromUserWishlist(uid, propertyIdStr);
 
-      const res = await fetch(`${API_BASE}/users/${uid}/wishlist`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ propertyId: propertyIdStr }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || data?.success === false) {
+      if (!result.success) {
         setSaved(!nextSaved);
-        toast.error(
-          data?.message ||
-            data?.error ||
-            "Could not update saved property. Please try again.",
-        );
+        toast.error(result.message);
         return;
       }
 
       const currentIds = readStoredWishlist(uid);
+      const cleanPropId = propertyIdStr.replace(/^prop_/i, "").trim();
       if (nextSaved) {
         writeStoredWishlist(uid, [...currentIds, propertyIdStr]);
-        toast.success(data?.message || "Property saved to your wishlist.");
+        toast.success(result.message || "Property saved to your wishlist.");
       } else {
         writeStoredWishlist(
           uid,
-          currentIds.filter((id) => id !== propertyIdStr),
+          currentIds.filter(
+            (id) =>
+              id !== propertyIdStr &&
+              id.replace(/^prop_/i, "").trim() !== cleanPropId,
+          ),
         );
-        toast.success(data?.message || "Property removed from your wishlist.");
+        toast.success(
+          result.message || "Property removed from your wishlist.",
+        );
       }
     } catch {
       setSaved(!nextSaved);

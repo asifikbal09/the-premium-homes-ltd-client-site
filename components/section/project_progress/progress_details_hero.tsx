@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { MapPin, Calendar } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
+import { Appear, Counter } from "@/components/ui/motion";
+import { Eyebrow, Heading } from "@/components/ui/primitives";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { fluid, SETTLE } from "@/lib/utils";
 
 interface ProgressDetailsHeroProps {
   projectName: string;
@@ -21,108 +21,151 @@ export function ProgressDetailsHero({
   tagline,
   progressPercentage = 0,
   expectedHandover,
-  status = "ONGOING PROJECT",
+  status = "ongoing project",
 }: ProgressDetailsHeroProps) {
-  // SVG Circular Gauge calculation
-  const radius = 22;
+  const reduce = useReducedMotion();
+  const radius = 27;
   const circumference = 2 * Math.PI * radius;
-  const safePct = Math.min(100, Math.max(0, progressPercentage));
+  const safePct = Math.min(100, Math.max(0, Math.round(progressPercentage)));
   const strokeDashoffset = circumference - (safePct / 100) * circumference;
 
   return (
     <section
       aria-label="Project Progress Details Hero"
-      className="relative w-full bg-[#061d16] bg-[radial-gradient(ellipse_100%_80%_at_50%_25%,#092e24_0%,#061d16_65%,#03130f_100%)] text-white overflow-hidden"
+      className="relative w-full overflow-hidden bg-[#09221c] text-white"
     >
-      {/* Background Ambience Overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-30"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 50% 30%, rgba(208, 166, 91, 0.08) 0%, transparent 65%)",
-        }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-36 pb-16 sm:pb-20 md:pb-24 flex flex-col justify-between min-h-[420px] sm:min-h-[460px]">
-
-        {/* Hero Main Content */}
-        <div className="flex-1 flex flex-col justify-center mt-12 sm:mt-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12">
-            {/* Left Content */}
-            <div className="max-w-2xl">
-              <span className="inline-block text-[#d0a65b] font-medium text-xs sm:text-[13px] tracking-[0.22em] uppercase mb-3 sm:mb-4">
-                {status}
-              </span>
-
-              <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-[68px] font-normal text-white leading-[1.08] tracking-tight">
+      <div className="shell relative z-10 flex min-h-[480px] flex-col justify-end pb-14 pt-32 sm:min-h-[540px] sm:pb-[85px] sm:pt-40">
+        <div className="flex flex-col justify-between gap-10 lg:flex-row lg:items-end lg:gap-12">
+          {/* Left Content (Figma 8036:24968) */}
+          <div className="flex max-w-[758px] flex-col gap-6">
+            <div className="flex flex-col gap-4">
+              <Eyebrow className="text-[#cfa564]">{status}</Eyebrow>
+              <Heading
+                as="h1"
+                size={100}
+                min={44}
+                leading={1}
+                mask
+                className="text-white"
+              >
                 {projectName}
-              </h1>
-
-              {tagline && (
-                <p className="font-sans text-sm sm:text-base text-white/80 font-light mt-3 sm:mt-4 leading-relaxed">
-                  {tagline}
-                </p>
-              )}
-
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-white/70 mt-4 sm:mt-5">
-                <MapPin className="h-4 w-4 text-[#d0a65b] shrink-0" />
-                <span>{location}</span>
-              </div>
+              </Heading>
             </div>
 
-            {/* Right Stat Cards */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
-              {/* Construction Complete Card */}
-              <div className="flex-1 sm:flex-initial min-w-[210px] flex items-center gap-4 px-5 py-4 rounded-xl bg-[#0c2620]/80 backdrop-blur-md border border-white/10 shadow-lg">
-                {/* Circular Gauge */}
-                <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
-                  <svg className="w-14 h-14 -rotate-90" viewBox="0 0 52 52">
+            {tagline && (
+              <Appear preset="lift" delay={0.18}>
+                <p
+                  className="max-w-[672px] font-sans font-normal leading-[1.6] text-white/80"
+                  style={{ fontSize: fluid(20, 15) }}
+                >
+                  {tagline}
+                </p>
+              </Appear>
+            )}
+
+            {location && (
+              <Appear preset="lift" delay={0.24}>
+                <div className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/image/progress/icons/hero-location.svg"
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="size-6 shrink-0"
+                  />
+                  <span
+                    className="font-sans font-normal leading-[1.4] text-white"
+                    style={{ fontSize: fluid(20, 15) }}
+                  >
+                    {location}
+                  </span>
+                </div>
+              </Appear>
+            )}
+          </div>
+
+          {/* Right Stat Cards (Figma 8036:24981) */}
+          <div className="flex flex-wrap items-center gap-5 sm:flex-nowrap lg:gap-[40px]">
+            {/* Construction Complete Card (288 × 104) */}
+            <Appear
+              preset="lift"
+              delay={0.22}
+              className="flex h-[104px] min-w-[260px] flex-1 items-center bg-white/[0.08] p-[20px] sm:w-[288px] sm:flex-initial"
+            >
+              <div className="flex w-full items-center gap-[20px]">
+                <div className="relative flex size-[64px] shrink-0 items-center justify-center">
+                  <svg
+                    className="size-[64px] -rotate-90"
+                    viewBox="0 0 64 64"
+                    aria-hidden
+                  >
                     <circle
-                      cx="26"
-                      cy="26"
+                      cx="32"
+                      cy="32"
                       r={radius}
-                      className="stroke-white/15 fill-none"
-                      strokeWidth="4"
+                      className="fill-none stroke-white/15"
+                      strokeWidth="5"
                     />
-                    <circle
-                      cx="26"
-                      cy="26"
+                    <motion.circle
+                      cx="32"
+                      cy="32"
                       r={radius}
-                      className="stroke-[#d0a65b] fill-none transition-all duration-1000 ease-out"
-                      strokeWidth="4"
+                      className="fill-none stroke-[#cfa564]"
+                      strokeWidth="5"
                       strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
+                      initial={{ strokeDashoffset: circumference }}
+                      animate={{ strokeDashoffset }}
+                      transition={
+                        reduce
+                          ? { duration: 0 }
+                          : { duration: 1.6, ease: SETTLE, delay: 0.3 }
+                      }
                       strokeLinecap="round"
                     />
                   </svg>
                 </div>
 
-                <div>
-                  <span className="font-heading text-2xl sm:text-3xl text-white font-normal leading-none block">
-                    {progressPercentage}%
-                  </span>
-                  <span className="text-[11px] sm:text-xs text-white/60 font-sans tracking-wide block mt-1">
+                <div className="flex flex-col items-start gap-[10px]">
+                  <Counter
+                    value={`${safePct}%`}
+                    className="trim font-display text-[32px] font-medium leading-[1.1] text-white"
+                  />
+                  <span className="trim whitespace-nowrap font-sans text-[14px] font-normal leading-[1.7] tracking-[1px] text-white">
                     Construction Complete
                   </span>
                 </div>
               </div>
+            </Appear>
 
-              {/* Expected Handover Card */}
-              <div className="flex-1 sm:flex-initial min-w-[210px] flex items-center gap-4 px-5 py-4 rounded-xl bg-[#0c2620]/80 backdrop-blur-md border border-white/10 shadow-lg">
-                <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-6 w-6 text-[#d0a65b]" />
-                </div>
+            {/* Expected Handover Card (254 × 106) */}
+            {expectedHandover && (
+              <Appear
+                preset="lift"
+                delay={0.3}
+                className="flex h-[106px] min-w-[240px] flex-1 items-center bg-white/[0.08] p-[20px] sm:w-[254px] sm:flex-initial"
+              >
+                <div className="flex items-center gap-[20px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/image/progress/icons/hero-calendar.svg"
+                    alt=""
+                    width={56}
+                    height={56}
+                    className="size-[56px] shrink-0"
+                  />
 
-                <div>
-                  <span className="font-heading text-2xl sm:text-3xl text-white font-normal leading-none block">
-                    {expectedHandover}
-                  </span>
-                  <span className="text-[11px] sm:text-xs text-white/60 font-sans tracking-wide block mt-1">
-                    Expected Handover
-                  </span>
+                  <div className="flex flex-col items-start gap-[10px]">
+                    <span className="trim whitespace-nowrap font-display text-[32px] font-medium leading-[1.1] text-white">
+                      {expectedHandover}
+                    </span>
+                    <span className="trim whitespace-nowrap font-sans text-[14px] font-normal leading-[1.7] tracking-[1px] text-white">
+                      Expected Handover
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Appear>
+            )}
           </div>
         </div>
       </div>

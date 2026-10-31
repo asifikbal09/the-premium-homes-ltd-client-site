@@ -123,3 +123,22 @@ export interface LiveCamera {
   status: string;
 }
 
+export interface WishlistPropertyItem {
+  id: string | number;
+  propertyId: string;
+  title: string;
+  slug?: string;
+  location?: string;
+  image?: string;
+  status?: string;
+  price?: string;
+  flatNo?: string;
+  flatSize?: string;
+  buildingType?: string;
+  propertyType?: string;
+  beds?: number | string;
+  constructionPct?: number;
+  handoverDate?: string;
+}
+
+
