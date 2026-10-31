@@ -1,176 +1,263 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Image from "next/image";
-import { Send, CheckCircle2 } from "lucide-react";
+import { MapPin, Phone, Mail, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import type { ProjectDetail } from "@/lib/projects";
+import { submitContact } from "@/app/actions/contact";
+import { Appear, Shutter } from "@/components/ui/motion";
+import { Heading, GreenPill } from "@/components/ui/primitives";
 
 interface ProjectContactSectionProps {
-  projectName: string;
+  project: ProjectDetail;
 }
 
-export function ProjectContactSection({
-  projectName,
-}: ProjectContactSectionProps) {
+export function ProjectContactSection({ project }: ProjectContactSectionProps) {
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     phone: "",
-    message: `Hello, I am interested in learning more about ${projectName}. Please connect with me.`,
+    email: "",
+    message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  const contactLocation =
+    project.location ||
+    "House 15, Road 7, Block B\nBashundhara R/A, Dhaka 1229";
+  const contactPhone = project.contact_phone || "+971 54 308 6000";
+  const contactEmail = project.contact_email || "hello@premiumhomes.com.bd";
+  const sideImage = "/image/prediction/predictionBg.png";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    startTransition(async () => {
+      const result = await submitContact({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: "Project Consultation",
+        message:
+          formData.message ||
+          `Hello, I am interested in learning more about ${project.name}. Please connect with me.`,
+        property_id: String(project.id),
+        property_name: project.name,
+        source: "project_detail",
+      });
+
+      if (result.success) {
+        toast.success(result.message);
+        setSubmitted(true);
+        setFormData({ name: "", phone: "", email: "", message: "" });
+      } else {
+        toast.error(result.error);
+      }
+    });
   };
 
   return (
     <section
       id="contact"
-      aria-label="Get In Touch"
-      className="w-full bg-white py-16 sm:py-20 lg:py-24"
+      aria-label="Get in touch"
+      className="w-full bg-white py-20 lg:py-[100px]"
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
-        {/* Section Heading */}
-        <div className="mb-10 sm:mb-14">
-          <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#d0a65b] block">
-            REACH OUR EXPERTS
-          </span>
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-normal text-[#044133] mt-1 tracking-tight">
-            Get In Touch
-          </h2>
-        </div>
+      <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-0">
+        {/* Top Header + Contact Info Row */}
+        <div className="mb-10 lg:mb-12">
+          <Heading size={64} min={36} mask className="mb-8 text-green">
+            Get in touch
+          </Heading>
 
-        {/* 2-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-          {/* Left Column: Artistic Sculpture / Interior Decor Image */}
-          <div className="lg:col-span-5 relative w-full aspect-[4/5] max-h-[560px] rounded-3xl overflow-hidden bg-[#f4efe8] shadow-md border border-[#ede7dc]">
-            <Image
-              src="/image/prediction/predictionBg.png"
-              alt="Artistic luxury living element"
-              fill
-              sizes="(max-width: 1024px) 100vw, 45vw"
-              className="object-cover object-center"
-            />
-          </div>
-
-          {/* Right Column: "Let's Talk" Form */}
-          <div className="lg:col-span-7 bg-[#fbf9f5] border border-[#ede7dc] rounded-3xl p-6 sm:p-10 md:p-12 shadow-sm">
-            <h3 className="font-heading text-3xl sm:text-4xl text-[#044133] font-normal mb-2">
-              Let&apos;s Talk
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-light mb-8">
-              Speak directly with our dedicated real estate concierge regarding
-              pricing, unit availability, and on-site visits.
-            </p>
-
-            {submitted ? (
-              <div className="p-8 text-center bg-white rounded-2xl border border-[#044133]/20 space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-[#044133] mx-auto" />
-                <h4 className="font-heading text-2xl text-[#044133]">
-                  Inquiry Received
-                </h4>
-                <p className="text-xs text-gray-600 max-w-sm mx-auto">
-                  Thank you for your interest in {projectName}. Our executive
-                  team will reach out to you within 24 hours.
+          <Appear preset="lift">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-12">
+              {/* Address */}
+              <div className="flex items-start gap-4">
+                <MapPin
+                  className="mt-1 h-8 w-8 shrink-0 text-[#546360] lg:h-10 lg:w-10"
+                  strokeWidth={1.5}
+                />
+                <p className="whitespace-pre-line font-sans text-lg leading-[1.35] text-[#546360] lg:text-[24px] lg:leading-[28.8px]">
+                  {contactLocation}
                 </p>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="contact-name"
-                    className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1"
-                  >
-                    Your Name
-                  </label>
-                  <input
-                    id="contact-name"
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Enter your full name"
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#ede7dc] focus:border-[#044133] focus:outline-none text-xs sm:text-sm transition-colors text-gray-800"
-                  />
-                </div>
 
-                {/* Email and Phone Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="contact-email"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      placeholder="name@example.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#ede7dc] focus:border-[#044133] focus:outline-none text-xs sm:text-sm transition-colors text-gray-800"
-                    />
-                  </div>
+              {/* Phone */}
+              <div className="flex items-center gap-4">
+                <Phone
+                  className="h-8 w-8 shrink-0 text-[#546360] lg:h-10 lg:w-10"
+                  strokeWidth={1.5}
+                />
+                <a
+                  href={`tel:${contactPhone.replace(/\s+/g, "")}`}
+                  className="font-sans text-lg leading-[1.35] text-[#546360] transition-colors hover:text-green lg:text-[24px] lg:leading-[28.8px]"
+                >
+                  {contactPhone}
+                </a>
+              </div>
 
-                  <div>
-                    <label
-                      htmlFor="contact-phone"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      id="contact-phone"
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      placeholder="+880 1XXX-XXXXXX"
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#ede7dc] focus:border-[#044133] focus:outline-none text-xs sm:text-sm transition-colors text-gray-800"
-                    />
-                  </div>
-                </div>
+              {/* Email */}
+              <div className="flex items-center gap-4">
+                <Mail
+                  className="h-8 w-8 shrink-0 text-[#546360] lg:h-10 lg:w-10"
+                  strokeWidth={1.5}
+                />
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="break-all font-sans text-lg leading-[1.35] text-[#546360] transition-colors hover:text-green lg:text-[24px] lg:leading-[28.8px]"
+                >
+                  {contactEmail}
+                </a>
+              </div>
+            </div>
+          </Appear>
+        </div>
 
-                {/* Message */}
-                <div>
-                  <label
-                    htmlFor="contact-message"
-                    className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1"
-                  >
-                    Message / Preferred Visit Time
-                  </label>
-                  <textarea
-                    id="contact-message"
-                    rows={3}
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#ede7dc] focus:border-[#044133] focus:outline-none text-xs sm:text-sm transition-colors text-gray-800 resize-none"
-                  />
-                </div>
+        {/* Horizontal Divider Rule */}
+        <div className="mb-12 h-px w-full bg-[#5C5451] lg:mb-16" />
 
-                {/* Submit */}
-                <div className="pt-2">
+        {/* Bottom 2-Column Layout: Image (537×719) + Form (855px) */}
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
+          {/* Left Column: Architectural / Interior Image */}
+          <div className="lg:col-span-5">
+            <Shutter className="relative aspect-[537/719] w-full max-w-[537px] overflow-hidden bg-[#f4efe8]">
+              <Image
+                src={sideImage}
+                alt={`${project.name} contact showcase`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 537px"
+                className="object-cover"
+              />
+            </Shutter>
+          </div>
+
+          {/* Right Column: "Let's talk" Form */}
+          <div className="lg:col-span-7">
+            <Heading size={64} min={36} mask className="mb-8 text-green">
+              Let’s talk
+            </Heading>
+
+            {submitted ? (
+              <Appear preset="lift">
+                <div className="border border-[#E6E6E6] bg-[#FAF8F5] p-8 sm:p-12">
+                  <CheckCircle2 className="mb-4 h-12 w-12 text-green" />
+                  <h4 className="font-heading text-[32px] font-medium text-green">
+                    Inquiry Received
+                  </h4>
+                  <p className="mt-2 max-w-md font-sans text-base leading-relaxed text-[#546360]">
+                    Thank you for your interest in {project.name}. Our property
+                    advisory team will connect with you shortly.
+                  </p>
                   <button
-                    type="submit"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#044133] hover:bg-[#055b4b] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all shadow-md active:scale-95 cursor-pointer"
+                    type="button"
+                    onClick={() => setSubmitted(false)}
+                    className="mt-6 cursor-pointer font-sans text-sm font-medium uppercase tracking-[0.14em] text-green underline underline-offset-4 hover:text-gold"
                   >
-                    <span>Submit Request</span>
-                    <Send className="w-4 h-4 text-[#d0a65b]" />
+                    Send another message
                   </button>
                 </div>
-              </form>
+              </Appear>
+            ) : (
+              <Appear preset="lift" delay={0.08}>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Full Name */}
+                  <div>
+                    <label
+                      htmlFor="contact-name"
+                      className="mb-2.5 block font-sans text-lg font-normal text-green lg:text-[24px] lg:leading-[28.8px]"
+                    >
+                      Full Name*
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Enter full name*"
+                      className="h-[60px] w-full border border-[#E6E6E6] bg-white px-5 font-sans text-base text-[#1E1E1E] placeholder:text-[#767676] focus:border-green focus:outline-none lg:h-[67px] lg:text-[18px]"
+                    />
+                  </div>
+
+                  {/* Phone & Email Row */}
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="contact-phone"
+                        className="mb-2.5 block font-sans text-lg font-normal text-green lg:text-[24px] lg:leading-[28.8px]"
+                      >
+                        Phone Number*
+                      </label>
+                      <div className="flex h-[60px] w-full items-center border border-[#E6E6E6] bg-white focus-within:border-green lg:h-[67px]">
+                        <span className="flex h-full items-center gap-2 border-r border-[#E6E6E6] px-4 font-sans text-sm text-[#546360]">
+                          <span aria-hidden="true">🇧🇩</span>
+                          <span>+880</span>
+                        </span>
+                        <input
+                          id="contact-phone"
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
+                          placeholder="01XXX-XXXXXX"
+                          className="h-full w-full bg-transparent px-4 font-sans text-base text-[#1E1E1E] placeholder:text-[#767676] focus:outline-none lg:text-[18px]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="contact-email"
+                        className="mb-2.5 block font-sans text-lg font-normal text-green lg:text-[24px] lg:leading-[28.8px]"
+                      >
+                        E-mail Address*
+                      </label>
+                      <input
+                        id="contact-email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        placeholder="Enter your e-mail address"
+                        className="h-[60px] w-full border border-[#E6E6E6] bg-white px-5 font-sans text-base text-[#1E1E1E] placeholder:text-[#767676] focus:border-green focus:outline-none lg:h-[67px] lg:text-[18px]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label
+                      htmlFor="contact-message"
+                      className="mb-2.5 block font-sans text-lg font-normal text-green lg:text-[24px] lg:leading-[28.8px]"
+                    >
+                      Message*
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      required
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                      placeholder="Enter your message"
+                      className="h-[180px] w-full resize-none border border-[#E6E6E6] bg-white p-5 font-sans text-base text-[#1E1E1E] placeholder:text-[#767676] focus:border-green focus:outline-none lg:h-[214px] lg:text-[18px]"
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-2">
+                    <GreenPill type="submit" disabled={pending} arrow>
+                      {pending ? "Sending…" : "send your message"}
+                    </GreenPill>
+                  </div>
+                </form>
+              </Appear>
             )}
           </div>
         </div>
@@ -178,3 +265,4 @@ export function ProjectContactSection({
     </section>
   );
 }
+

@@ -1,84 +1,135 @@
 "use client";
 
-import React, { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
+import {
+  Coffee,
+  Cross,
+  School as SchoolIcon,
+  Trees,
+  type LucideIcon,
+} from "lucide-react";
+import { Appear, Shutter } from "@/components/ui/motion";
+import { Eyebrow, Heading } from "@/components/ui/primitives";
 import type { ProjectDetail } from "@/lib/projects";
+import { cn, fluid } from "@/lib/utils";
 
 interface AroundTheHomeProps {
   project: ProjectDetail;
 }
 
+type CategoryTab = {
+  id: string | number;
+  name: string;
+  image?: string;
+  fallbackIcon: LucideIcon;
+};
+
+const DEFAULT_TABS: CategoryTab[] = [
+  { id: "school", name: "School", fallbackIcon: SchoolIcon },
+  { id: "hospital", name: "Hospital", fallbackIcon: Cross },
+  { id: "playground", name: "Playground", fallbackIcon: Trees },
+  { id: "restaurant", name: "Restaurant", fallbackIcon: Coffee },
+];
+
 export function AroundTheHome({ project }: AroundTheHomeProps) {
-  // ponytail: tab only highlights for now; will filter map pins once the map is dynamic.
   const [activeIdx, setActiveIdx] = useState(0);
-  const amenities = project.amenities || [];
+
+  const tabs: CategoryTab[] =
+    project.amenities && project.amenities.length > 0
+      ? project.amenities.map((a, idx) => ({
+          id: a.id || idx,
+          name: a.name,
+          image: a.image || a.img,
+          fallbackIcon: DEFAULT_TABS[idx % DEFAULT_TABS.length].fallbackIcon,
+        }))
+      : DEFAULT_TABS;
+
+  const mapSrc = project.map_image || "/image/progress/Group.svg";
 
   return (
     <section
       aria-label="Nearby Locations"
-      className="w-full bg-white py-16 sm:py-20 lg:py-24"
+      className="bg-white py-[clamp(56px,6.25vw,100px)]"
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
-        {/* Section Heading */}
-        <div className="mb-10 sm:mb-12">
-          <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#d0a65b] block">
-            NEARBY LOCATIONS
-          </span>
-          <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl font-normal text-[#044133] mt-2 tracking-tight leading-tight">
-            See What&apos;s Around <br className="hidden sm:inline" />
-            The Home
-          </h2>
+      <div className="shell flex flex-col gap-10">
+        {/* Figma Section Header (1440 × 169) */}
+        <div className="flex max-w-[714px] flex-col gap-4">
+          <Eyebrow>nearby locations</Eyebrow>
+          <Heading size={64} min={36} leading={1.1} mask>
+            See what’s around the Home
+          </Heading>
         </div>
 
-        {/* Map: project.map_image only; empty box if missing */}
-        <div className="relative w-full aspect-[663/295] bg-[#f4f2ee] overflow-hidden">
-          {project.map_image && (
+        {/* Map & Category Tabs Block (1440 × 777) */}
+        <div className="flex flex-col gap-6">
+          <Shutter className="relative aspect-[1440/641] w-full bg-warm">
             <Image
-              src={project.map_image}
+              src={mapSrc}
               alt={`${project.name} Location Map`}
               fill
               sizes="(max-width: 1440px) 100vw, 1440px"
               className="object-cover object-center"
             />
-          )}
-        </div>
+          </Shutter>
 
-        {/* Dynamic amenity tabs */}
-        {amenities.length > 0 && (
-          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-none md:grid-flow-col md:auto-cols-fr">
-            {amenities.map((a, idx) => {
+          {/* Figma Category Tabs (354 × 112 each, 8px gap, #E6E6E6 border, active #054B3C) */}
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {tabs.map((tab, idx) => {
               const active = idx === activeIdx;
+              const FallbackIcon = tab.fallbackIcon;
               return (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setActiveIdx(idx)}
-                  aria-pressed={active}
-                  className={`flex items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4 border text-left transition-colors cursor-pointer ${
-                    active
-                      ? "bg-[#044133] border-[#044133] text-white"
-                      : "bg-white border-[#ede7dc] text-[#14261f] hover:border-[#044133]/40"
-                  }`}
-                >
-                  {a.image && (
-                    <span className="relative w-6 h-6 shrink-0">
-                      <Image
-                        src={a.image}
-                        alt=""
-                        fill
-                        sizes="24px"
-                        className={`object-contain ${active ? "brightness-0 invert" : ""}`}
-                      />
+                <Appear key={tab.id} preset="lift" delay={0.1 + idx * 0.06}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveIdx(idx)}
+                    aria-pressed={active}
+                    className={cn(
+                      "flex h-[84px] w-full items-center gap-4 border px-5 text-left transition-colors duration-300 sm:h-[112px] sm:px-8",
+                      active
+                        ? "border-green bg-green text-white"
+                        : "border-[#E6E6E6] bg-white text-ink hover:border-green/50 hover:bg-warm",
+                    )}
+                  >
+                    {tab.image ? (
+                      <span className="relative size-9 shrink-0 sm:size-12">
+                        <Image
+                          src={tab.image}
+                          alt=""
+                          fill
+                          sizes="48px"
+                          className={cn(
+                            "object-contain",
+                            active && "brightness-0 invert",
+                          )}
+                        />
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          "grid size-9 shrink-0 place-items-center sm:size-12",
+                          active ? "text-white" : "text-green",
+                        )}
+                      >
+                        <FallbackIcon className="size-6 sm:size-8" strokeWidth={1.5} />
+                      </span>
+                    )}
+
+                    <span
+                      className={cn(
+                        "trim font-display font-medium capitalize",
+                        active ? "text-white" : "text-ink",
+                      )}
+                      style={{ fontSize: fluid(24, 16), lineHeight: 1.3 }}
+                    >
+                      {tab.name}
                     </span>
-                  )}
-                  <span className="font-heading text-sm sm:text-base font-normal leading-snug">
-                    {a.name}
-                  </span>
-                </button>
+                  </button>
+                </Appear>
               );
             })}
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

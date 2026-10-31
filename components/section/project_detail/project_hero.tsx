@@ -1,13 +1,18 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { useRef } from "react";
+import { useIntro } from "@/components/providers/intro";
+import { Appear, Words } from "@/components/ui/motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { fluid, SETTLE } from "@/lib/utils";
 
 interface ProjectHeroProps {
-  name: string | { id?: string | number; name?: string; address?: string; slug?: string };
+  name:
+    | string
+    | { id?: string | number; name?: string; address?: string; slug?: string };
   image: string;
   tag?:
     | string
@@ -27,81 +32,106 @@ interface ProjectHeroProps {
     | null;
 }
 
+/**
+ * Figma "Hero" (1600 × 800, mobile 375 × 714): full-bleed project photo that settles from a slow
+ * zoom and drifts on scroll, with the location eyebrow above the 100px display title.
+ */
 export function ProjectHero({
   name,
   image,
   tag,
   location,
 }: ProjectHeroProps) {
-  // Normalize name
+  const ref = useRef<HTMLElement>(null);
+  const { done } = useIntro();
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
   const displayName =
     typeof name === "string"
       ? name
-      : name?.name || name?.slug || "";
+      : name?.name || name?.slug || "Prestige Residence";
 
-  // Normalize tag
-  const displayTag =
-    typeof tag === "string"
-      ? tag
-      : tag?.name || "";
-
-  // Normalize location
   const displayLocation =
     typeof location === "string"
       ? location
-      : location?.address || location?.name || "";
+      : location?.address ||
+        location?.name ||
+        (typeof tag === "string" ? tag : tag?.name || "");
 
   return (
-    <section className="relative w-full min-h-[580px] sm:min-h-[680px] md:min-h-[760px] lg:min-h-[820px] flex flex-col justify-end overflow-hidden bg-[#031310] text-white pt-24 sm:pt-28 md:pt-32">
-      {/* Background Architectural Photo */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src={image || "/image/projects/projectsHero.png"}
-          alt={displayName}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center transform scale-102"
-        />
+    <section
+      ref={ref}
+      aria-label={displayName}
+      className="relative isolate flex h-[clamp(580px,50vw,800px)] items-end overflow-hidden bg-green-deep pb-[clamp(56px,6.5vw,104px)] pt-28 text-white"
+    >
+      {/* Background photo with slow zoom-settle and scroll parallax */}
+      <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10">
+        <motion.div
+          initial={{ scale: 1.14 }}
+          animate={done ? { scale: 1 } : undefined}
+          transition={reduce ? { duration: 0 } : { duration: 2.6, ease: SETTLE }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={image || "/image/projects/projectsHero.png"}
+            alt={displayName}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        </motion.div>
 
-        {/* Subtle top header gradient for navbar legibility without dimming the photo */}
-        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 via-black/20 to-transparent pointer-events-none" />
+        {/* Top header gradient for navbar legibility */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
 
-        {/* Localized dark overlay ONLY in the bottom-left corner for the text */}
+        {/* Figma gradient overlay for crisp text contrast */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 85% 65% at 0% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.6) 30%, rgba(0, 0, 0, 0.25) 55%, transparent 75%)",
+              "radial-gradient(ellipse 85% 65% at 0% 100%, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.52) 35%, rgba(0, 0, 0, 0.2) 60%, transparent 80%)",
           }}
         />
-      </div>
+      </motion.div>
 
-
-
-      {/* Hero Headline Overlay */}
-      <div className="relative z-10 max-w-[1440px] w-full mx-auto px-4 sm:px-6 md:px-10 lg:px-12 pb-16 sm:pb-24 md:pb-28">
-        <div className="max-w-2xl space-y-3">
-          {/* Tag */}
-          {displayTag && (
-            <span className="inline-block text-[#d0a65b] font-semibold text-xs sm:text-sm tracking-[0.22em] uppercase">
-              {displayTag}
-            </span>
-          )}
-
-          {/* Project Name */}
-          <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[1.05]">
-            {displayName}
-          </h1>
-
-          {/* Location */}
+      {/* Figma Content Block (x: 80, max-w: 622px): Location above 100px K Victor title */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="shell relative z-10 w-full"
+      >
+        <div className="flex max-w-[622px] flex-col gap-4">
           {displayLocation && (
-            <p className="text-white/80 font-light text-sm sm:text-base tracking-wide pt-1">
+            <Appear
+              as="p"
+              preset="lift"
+              play={done}
+              delay={0.1}
+              className="trim text-[14px] font-medium leading-[1.5] text-white sm:text-[16px]"
+            >
               {displayLocation}
-            </p>
+            </Appear>
           )}
+
+          <Words
+            as="h1"
+            play={done}
+            delay={0.25}
+            by="words"
+            mask
+            text={displayName}
+            className="font-display font-medium capitalize text-white"
+            style={{ fontSize: fluid(100, 44), lineHeight: 1 }}
+          />
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

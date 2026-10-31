@@ -10,7 +10,7 @@ import { SpecificationSection } from "@/components/section/project_detail/specif
 import { SneakPeekGallery } from "@/components/section/project_detail/sneak_peek_gallery";
 import { AroundTheHome } from "@/components/section/project_detail/around_the_home";
 import { RelevantProjects } from "@/components/section/project_detail/relevant_projects";
-import { ArtOfLivingVideo } from "@/components/section/home/art_of_living_video";
+import { HomeArtOfLiving } from "@/components/section/home/home_art_of_living";
 import { ProjectContactSection } from "@/components/section/project_detail/project_contact_section";
 
 interface PageProps {
@@ -71,13 +71,23 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         <ProjectOverviewSection project={project} />
 
         {/* Section 3: Choose Unit Type */}
-        <UnitTypeSelector units={project.units} projectName={project.name} />
+        <UnitTypeSelector
+          units={project.units}
+          projectName={project.name}
+          projectImages={project.images}
+          projectDescription={project.description}
+          projectPrice={project.price_range || project.price}
+        />
 
         {/* Section 4: Specification */}
         <SpecificationSection project={project} />
 
         {/* Section 5: Sneak Peek From Your Future Home */}
-        <SneakPeekGallery images={project.images} projectName={project.name} />
+        <SneakPeekGallery
+          images={project.images}
+          projectName={project.name}
+          amenities={project.amenities}
+        />
 
         {/* Section 6: See What's Around The Home */}
         <AroundTheHome project={project} />
@@ -90,10 +100,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         />
 
         {/* Section 8: More Than Building, A Way Of Living */}
-        <ArtOfLivingVideo />
+        <HomeArtOfLiving />
 
         {/* Section 9: Get In Touch (Let's Talk) */}
-        <ProjectContactSection projectName={project.name} />
+        <ProjectContactSection project={project} />
       </main>
 
       {/* Section 10: Footer */}
@@ -101,3 +111,4 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     </div>
   );
 }
+

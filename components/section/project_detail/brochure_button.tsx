@@ -52,10 +52,10 @@ function saveLead(propertyId: number) {
 }
 
 const BUTTON_CLASS =
-  "inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#044133] hover:bg-[#065e49] text-[#d0a65b] text-xs font-normal tracking-wider uppercase transition-colors cursor-pointer shrink-0 self-start sm:self-auto";
+  "press inline-flex h-[48px] shrink-0 items-center gap-3 rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold transition-colors hover:bg-emerald-deep self-start sm:self-auto";
 
 const INPUT_CLASS =
-  "w-full px-4 py-3 bg-white border border-[#ede7dc] focus:border-[#044133] focus:outline-none text-sm text-gray-800 transition-colors";
+  "w-full h-14 px-4 bg-white border border-[#e6e6e6] focus:border-green focus:outline-none text-[16px] text-ink transition-colors";
 
 const initialState: BrochureLeadState = { success: false };
 
