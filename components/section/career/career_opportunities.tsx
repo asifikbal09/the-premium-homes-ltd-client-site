@@ -140,12 +140,13 @@ function JobCard({ job, index, onApply }: { job: JobVacancy; index: number; onAp
       className="group flex flex-col gap-7 bg-white p-6 transition-shadow duration-500 hover:shadow-[0_18px_40px_-20px_rgba(5,75,60,0.25)]"
     >
       <h3 className="font-display text-[clamp(24px,1.75vw,28px)] font-medium capitalize leading-[1.1] text-green">{job.title}</h3>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-6 md:flex md:gap-[clamp(32px,8.75vw,140px)]">
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        {/* 2×2 on phones, four columns on tablets, and the Figma single row (button inline) from xl. */}
+        <dl className="grid grid-cols-2 gap-6 md:grid-cols-4 xl:flex xl:max-w-[1100px] xl:flex-1 xl:justify-between">
           {META.map(({ label, key }) => (
-            <div key={key} className="flex flex-col gap-4 md:w-[170px]">
+            <div key={key} className="flex flex-col gap-4 xl:w-[170px]">
               <dt className="trim text-[14px] uppercase leading-[1.7] tracking-[2px] text-[#727679]">{label}</dt>
-              <dd className="trim text-[18px] font-medium capitalize leading-[0.7] tracking-[-0.36px] text-ink">{job[key]}</dd>
+              <dd className="trim text-[18px] font-medium capitalize leading-[1.2] tracking-[-0.36px] text-ink">{job[key]}</dd>
             </div>
           ))}
         </dl>

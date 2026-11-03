@@ -67,7 +67,7 @@ export function BoardOfLeadership() {
           copyWidth={442}
         />
         {/* Figma: four 315px columns across 1440 with 60px gutters; rows 80px apart. */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-[clamp(24px,3.75vw,60px)] lg:gap-y-[clamp(48px,5vw,80px)]">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-[clamp(24px,3.75vw,60px)] lg:gap-y-[clamp(48px,5vw,80px)]">
           {GRID.map((leader, i) =>
             leader ? (
               <LeaderCard key={leader.name} leader={leader} column={i % 4} />

@@ -49,7 +49,7 @@ function LocationSelect({
           type="button"
           aria-expanded={open}
           className={cn(
-            "flex h-12 min-w-0 items-center gap-6 rounded-full border px-6 transition-colors duration-300",
+            "flex h-12 min-w-0 items-center justify-between gap-6 rounded-full border px-6 transition-colors duration-300",
             value || open ? "border-green" : "border-chip hover:border-green/50",
           )}
         >
@@ -174,12 +174,13 @@ export function ProjectsFilterGrid({ initialProjects }: { initialProjects: Proje
             className="w-max px-[clamp(16px,5vw,80px)] lg:px-0"
           />
         </div>
-        <Appear preset="lift" delay={0.55} className="relative flex gap-3">
+        {/* Phones stack search over location so neither field is squeezed. */}
+        <Appear preset="lift" delay={0.55} className="relative flex flex-col gap-3 sm:flex-row">
           <SearchField
             value={query}
             onChange={setQuery}
             placeholder="Search project"
-            className="flex-1 lg:w-[240px] lg:flex-none"
+            className="sm:flex-1 lg:w-[240px] lg:flex-none"
           />
           <LocationSelect options={locations} value={location} onChange={setLocation} />
         </Appear>

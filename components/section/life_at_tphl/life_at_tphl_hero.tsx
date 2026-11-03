@@ -92,10 +92,13 @@ export function LifeAtTphlHero() {
 
   return (
     <section ref={ref} aria-label="Life At TPHL" className="relative overflow-hidden bg-sage pt-[clamp(88px,6.25vw,100px)]">
-      {/* Phones get a wider-than-screen strip so the cards stay a readable size; the sides crop. */}
+      {/*
+        Phones get a wider-than-screen strip so the cards stay a readable size; the side photos crop.
+        680px is the widest strip that still keeps the quote card (x 398) on a 360px screen.
+      */}
       <div className="relative w-full overflow-hidden">
         <div
-          className="relative left-1/2 w-[max(100%,820px)] max-w-[1600px] -translate-x-1/2"
+          className="relative left-1/2 w-[max(100%,680px)] max-w-[1600px] -translate-x-1/2"
           style={{ aspectRatio: `${STAGE.w} / ${STAGE.h}` }}
         >
           {CARDS.map((c, i) => (
