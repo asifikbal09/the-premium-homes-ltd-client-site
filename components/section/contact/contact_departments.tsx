@@ -26,12 +26,23 @@ const DEPARTMENTS: Department[] = [
   },
 ];
 
-/** One mail or phone line of a department card: a 24px icon and a link that greens on hover. */
+/**
+ * One mail or phone line of a department card: a 24px icon and a link that greens on hover. A narrow
+ * card may wrap an address only after its "@"; a phone number always stays on one line.
+ */
 function ContactLine({ icon, href, children }: { icon: string; href: string; children: string }) {
+  const [user, domain] = children.split("@");
   return (
     <a href={href} className="flex items-center gap-3 text-[16px] leading-[1.6] text-sage transition-colors duration-300 hover:text-green">
       <Image src={icon} alt="" width={24} height={24} className="size-6 shrink-0" />
-      <span className="min-w-0 [overflow-wrap:anywhere]">{children}</span>
+      {domain === undefined ? (
+        <span className="whitespace-nowrap">{children}</span>
+      ) : (
+        <span className="min-w-0">
+          {user}@<wbr />
+          {domain}
+        </span>
+      )}
     </a>
   );
 }
@@ -53,7 +64,7 @@ export function ContactDepartments() {
           </Appear>
         </div>
 
-        <div className="relative grid gap-6 md:grid-cols-3">
+        <div className="relative grid gap-6 lg:grid-cols-3">
           {DEPARTMENTS.map((dept, i) => (
             // Figma: white cards straight on the warm band, so no warm hover fill.
             <IconCard key={dept.title} item={dept} index={i} className="border-transparent hover:bg-white">

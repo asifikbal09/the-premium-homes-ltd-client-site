@@ -97,7 +97,8 @@ export function FAQContent({ categories }: { categories: FaqCategory[] }) {
 
   return (
     <section aria-label="Frequently asked questions" className="bg-[#f5f6f7] py-[clamp(48px,5vw,80px)]">
-      <div className="shell grid items-start gap-12 lg:grid-cols-[465fr_800fr] lg:gap-[clamp(40px,10.94vw,175px)]">
+      {/* Side by side only from xl: below it the tab row is too narrow for its three labels. */}
+      <div className="shell grid items-start gap-12 xl:grid-cols-[465fr_800fr] xl:gap-[clamp(40px,10.94vw,175px)]">
         <div className="flex flex-col items-start gap-12">
           <div className="flex flex-col gap-6">
             <Heading size={64} min={36} leading={1.1} mask>

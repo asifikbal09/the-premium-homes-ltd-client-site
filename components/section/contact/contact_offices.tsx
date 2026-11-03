@@ -93,14 +93,14 @@ export function ContactOffices() {
       <div className="shell flex flex-col gap-[clamp(40px,5vw,80px)]">
         <div className="flex flex-col items-center gap-10">
           <SectionIntro eyebrow="Our offices" title="Contact our teams" />
-          {/* Scrolls sideways on phones, where the four chips cannot share one row. */}
-          <div className="no-scrollbar -mx-[clamp(16px,5vw,80px)] max-w-[100vw] overflow-x-auto">
+          {/* Bleeds to the screen edges and scrolls sideways on phones, where the four chips cannot share one row; centred once they fit. */}
+          <div className="no-scrollbar -mx-[clamp(16px,5vw,80px)] flex self-stretch overflow-x-auto">
             <FilterChips
               options={OFFICES.map((o) => o.label)}
               value={active}
               onChange={setActive}
               tall
-              className="w-max px-[clamp(16px,5vw,80px)]"
+              className="mx-auto w-max px-[clamp(16px,5vw,80px)]"
             />
           </div>
         </div>

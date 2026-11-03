@@ -6,9 +6,10 @@ import { BlogMeta } from "./blog_meta";
 
 // Figma sets the body in 24px; it is eased to 22px with a looser leading so long posts stay readable.
 const BODY = "text-[clamp(17px,1.375vw,22px)] leading-[1.7] text-sage";
-// Rich `content` from the CMS, styled to match the plain sections.
+// Rich `content` from the CMS, styled to match the plain sections. Media, tables and code are held to
+// the column (tables and code scroll sideways), and long links wrap, so no post can widen the page.
 const RICH =
-  "flex flex-col gap-6 [&_a]:text-green [&_a]:underline [&_h2]:font-display [&_h2]:text-[clamp(28px,2.5vw,40px)] [&_h2]:leading-[1.2] [&_h2]:text-green [&_h3]:font-display [&_h3]:text-[clamp(24px,2vw,32px)] [&_h3]:text-green [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
+  "flex min-w-0 flex-col gap-6 [overflow-wrap:break-word] [&_iframe]:max-w-full [&_img]:h-auto [&_img]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_video]:h-auto [&_video]:max-w-full [&_a]:text-green [&_a]:underline [&_h2]:font-display [&_h2]:text-[clamp(28px,2.5vw,40px)] [&_h2]:leading-[1.2] [&_h2]:text-green [&_h3]:font-display [&_h3]:text-[clamp(24px,2vw,32px)] [&_h3]:text-green [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
 
 function Paragraph({ children }: { children: string }) {
   return (
