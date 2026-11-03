@@ -12,6 +12,7 @@ export type DashboardTab =
   | "payment"
   | "progress"
   | "wishlist"
+  | "auctions"
   | "notice"
   | "live-camera"
   | "refer"
@@ -222,11 +223,32 @@ function IconWishlist({ className }: { className?: string }) {
   );
 }
 
+function IconAuctions({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M14.5 12.5L6.5 20.5C5.67 21.33 4.33 21.33 3.5 20.5C2.67 19.67 2.67 18.33 3.5 17.5L11.5 9.5" />
+      <path d="M16 16L22 10" />
+      <path d="M8 8L14 2" />
+      <path d="M9 7L17 15" />
+      <path d="M21 11L13 3" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS: { id: DashboardTab; label: string; icon: React.ElementType }[] = [
   { id: "overviews", label: "Overviews", icon: IconOverviews },
   { id: "payment", label: "Payment", icon: IconPayment },
   { id: "progress", label: "Progress", icon: IconProgress },
   { id: "wishlist", label: "Wishlist", icon: IconWishlist },
+  { id: "auctions", label: "Auctions", icon: IconAuctions },
   { id: "notice", label: "Notice", icon: IconNotice },
   { id: "live-camera", label: "Live Camera", icon: IconLiveCamera },
   { id: "refer", label: "Refer & Earn", icon: IconRefer },
@@ -252,7 +274,7 @@ export function DashboardSidebar({
 
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-[280px] h-screen bg-white border-r border-[#f0f0f0] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:z-30 shrink-0 overflow-y-auto no-scrollbar",
+          "fixed top-0 bottom-0 left-0 z-50 w-[280px] h-dvh bg-white border-r border-[#f0f0f0] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:z-30 shrink-0 overflow-y-auto no-scrollbar",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >

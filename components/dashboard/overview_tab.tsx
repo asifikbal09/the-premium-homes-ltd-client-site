@@ -437,7 +437,7 @@ export function OverviewTab({
           variants={gridContainerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[16px] w-full"
+          className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-[16px] w-full"
         >
           {/* Card 1: Total Paid (8313:22352) */}
           <motion.div
@@ -445,9 +445,9 @@ export function OverviewTab({
             whileHover={{ y: -3, transition: { duration: 0.2 } }}
             className="bg-white flex h-[148px] items-center px-[16px] py-[32px] rounded-[12px] w-full transition-shadow hover:shadow-[0_10px_28px_rgba(5,75,60,0.06)]"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="bg-[#005d4d] flex items-center justify-center p-[16px] rounded-full shrink-0 w-[64px] h-[64px] text-white">
-                <TotalPaidIcon className="w-[32px] h-[32px]" />
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="bg-[#005d4d] flex items-center justify-center rounded-full shrink-0 size-[52px] sm:size-[64px] text-white">
+                <TotalPaidIcon className="size-[26px] sm:size-[32px]" />
               </div>
               <div className="flex flex-1 flex-col gap-[8px] items-start min-w-0">
                 <p className="text-[16px] font-normal leading-[18px] text-[#59657b] w-full">
@@ -457,7 +457,7 @@ export function OverviewTab({
                   {isLoading ? (
                     <div className="h-[24px] w-32 bg-stone-200 rounded animate-pulse" />
                   ) : (
-                    <p className="text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                    <p className="text-[22px] sm:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                       {totalPaid}
                     </p>
                   )}
@@ -475,9 +475,9 @@ export function OverviewTab({
             whileHover={{ y: -3, transition: { duration: 0.2 } }}
             className="bg-white flex h-[148px] items-center px-[16px] py-[32px] rounded-[12px] w-full transition-shadow hover:shadow-[0_10px_28px_rgba(5,75,60,0.06)]"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="bg-[#bf2318] flex items-center justify-center p-[16px] rounded-full shrink-0 w-[64px] h-[64px] text-white">
-                <OutstandingIcon className="w-[32px] h-[32px]" />
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="bg-[#bf2318] flex items-center justify-center rounded-full shrink-0 size-[52px] sm:size-[64px] text-white">
+                <OutstandingIcon className="size-[26px] sm:size-[32px]" />
               </div>
               <div className="flex flex-1 flex-col gap-[12px] items-start min-w-0">
                 <p className="text-[16px] font-normal leading-[18px] text-[#59657b] w-full">
@@ -487,7 +487,7 @@ export function OverviewTab({
                   {isLoading ? (
                     <div className="h-[24px] w-32 bg-stone-200 rounded animate-pulse" />
                   ) : (
-                    <p className="text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                    <p className="text-[22px] sm:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                       {outstanding}
                     </p>
                   )}
@@ -505,9 +505,9 @@ export function OverviewTab({
             whileHover={{ y: -3, transition: { duration: 0.2 } }}
             className="bg-white flex h-[148px] items-center px-[16px] py-[32px] rounded-[12px] w-full transition-shadow hover:shadow-[0_10px_28px_rgba(5,75,60,0.06)]"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="bg-[#d8a44d] flex items-center justify-center p-[16px] rounded-full shrink-0 w-[64px] h-[64px] text-white">
-                <TotalExpenseIcon className="w-[32px] h-[32px]" />
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="bg-[#d8a44d] flex items-center justify-center rounded-full shrink-0 size-[52px] sm:size-[64px] text-white">
+                <TotalExpenseIcon className="size-[26px] sm:size-[32px]" />
               </div>
               <div className="flex flex-1 flex-col gap-[16px] items-start min-w-0">
                 <p className="text-[16px] font-normal leading-[18px] text-[#59657b] w-full">
@@ -517,7 +517,7 @@ export function OverviewTab({
                   {isLoading ? (
                     <div className="h-[24px] w-32 bg-stone-200 rounded animate-pulse" />
                   ) : (
-                    <p className="text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                    <p className="text-[22px] sm:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                       {totalExpense}
                     </p>
                   )}
@@ -612,7 +612,7 @@ export function OverviewTab({
 
         {/* Skeleton Loading for My Flats */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[16px] w-full">
             {[1, 2, 3].map((n) => (
               <div
                 key={`my-flats-skeleton-${n}`}
@@ -662,7 +662,7 @@ export function OverviewTab({
             variants={gridContainerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[16px] w-full"
           >
             {displayedFlats.map((flat, idx) => {
               const progressPct = Math.min(
@@ -814,7 +814,7 @@ export function OverviewTab({
 
         {/* Skeleton Loading for Ongoing Projects */}
         {isLoadingProjects ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-[12px] w-full">
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={`ongoing-proj-skeleton-${n}`}
@@ -845,7 +845,7 @@ export function OverviewTab({
             variants={gridContainerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full"
+            className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-[12px] w-full"
           >
             {ongoingProjects.map((project, idx) => {
               const isFav = !!favorites[project.id];

@@ -9,6 +9,7 @@ import { OverviewTab } from "@/components/dashboard/overview_tab";
 import { PaymentTab } from "@/components/dashboard/payment_tab";
 import { ProgressTab } from "@/components/dashboard/progress_tab";
 import { WishlistTab } from "@/components/dashboard/wishlist_tab";
+import { AuctionTab } from "@/components/dashboard/auction_tab";
 import { NoticeTab } from "@/components/dashboard/notice_tab";
 import { CameraTab } from "@/components/dashboard/camera_tab";
 import { ReferTab } from "@/components/dashboard/refer_tab";
@@ -148,6 +149,7 @@ function DashboardContent() {
           "payment",
           "progress",
           "wishlist",
+          "auctions",
           "notice",
           "live-camera",
           "refer",
@@ -190,7 +192,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[#f1f6f5] text-[#1f2723]">
+    <div className="h-dvh flex overflow-hidden bg-[#f1f6f5] text-[#1f2723]">
       {/* 1. Left Sidebar Navigation */}
       <DashboardSidebar
         activeTab={activeTab}
@@ -201,7 +203,7 @@ function DashboardContent() {
       />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-y-auto">
         {/* Top Header Bar */}
         <DashboardHeader
           user={user}
@@ -218,7 +220,14 @@ function DashboardContent() {
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 12, filter: "blur(3px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              // Reset filter to "none" once settled: a lingering blur(0px) makes this
+              // wrapper the containing block for position:fixed modals inside tabs.
+              animate={{
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)",
+                transitionEnd: { filter: "none" },
+              }}
               exit={{ opacity: 0, y: -8, filter: "blur(2px)" }}
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -252,6 +261,10 @@ function DashboardContent() {
               )}
 
               {activeTab === "wishlist" && <WishlistTab user={user} />}
+
+              {activeTab === "auctions" && (
+                <AuctionTab user={user} myFlats={myFlats} isLoading={isLoading} />
+              )}
 
               {activeTab === "notice" && (
                 <NoticeTab projects={myFlats} isLoading={isLoading} />

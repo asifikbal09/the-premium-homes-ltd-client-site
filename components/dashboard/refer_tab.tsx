@@ -215,13 +215,13 @@ export function ReferTab({ user }: ReferTabProps) {
         </div>
 
         {/* 3 Stat Cards (Figma node 8279:23068: gap-[16px], h-[116px], p-[20px], rounded-[12px]) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px] sm:gap-[16px] w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[12px] sm:gap-[16px] w-full">
           {/* Card 1: Total Referrals (Figma node 8279:23069) */}
           <motion.div
             whileHover={{ y: -3 }}
-            className="bg-white flex h-[116px] items-center p-[20px] rounded-[12px]"
+            className="bg-white flex min-h-[116px] items-center p-[16px] sm:p-[20px] rounded-[12px]"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
               <div className="bg-[#f1f2f6] flex items-center justify-center p-[14px] rounded-full shrink-0 size-[56px]">
                 <Users className="size-[28px] text-[#054b3c] stroke-[1.75]" />
               </div>
@@ -244,14 +244,14 @@ export function ReferTab({ user }: ReferTabProps) {
           {/* Card 2: Successful Referrals (Figma node 8279:23080) */}
           <motion.div
             whileHover={{ y: -3 }}
-            className="bg-white flex h-[116px] items-center p-[20px] rounded-[12px]"
+            className="bg-white flex min-h-[116px] items-center p-[16px] sm:p-[20px] rounded-[12px]"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
               <div className="bg-[#f1f2f6] flex items-center justify-center p-[14px] rounded-full shrink-0 size-[56px]">
                 <Award className="size-[28px] text-[#054b3c] stroke-[1.75]" />
               </div>
               <div className="flex flex-1 flex-col gap-[8px] items-start min-w-0">
-                <p className="font-sans font-normal leading-[18px] text-[#59657b] text-[14px] whitespace-nowrap">
+                <p className="font-sans font-normal leading-[18px] text-[#59657b] text-[14px] w-full">
                   Successful Referrals
                 </p>
                 <div className="flex flex-col gap-[8px] items-start w-full">
@@ -269,9 +269,9 @@ export function ReferTab({ user }: ReferTabProps) {
           {/* Card 3: Total Earnings (Figma node 8279:23091) */}
           <motion.div
             whileHover={{ y: -3 }}
-            className="bg-white flex h-[116px] items-center p-[20px] rounded-[12px]"
+            className="bg-white flex min-h-[116px] items-center p-[16px] sm:p-[20px] rounded-[12px] sm:col-span-2 xl:col-span-1"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
               <div className="bg-[#f1f2f6] flex items-center justify-center p-[14px] rounded-full shrink-0 size-[56px]">
                 <Banknote className="size-[28px] text-[#054b3c] stroke-[1.75]" />
               </div>

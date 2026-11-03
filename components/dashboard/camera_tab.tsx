@@ -412,45 +412,44 @@ function ProjectCameraCard({
           </div>
         </div>
 
-        {/* Multi-camera switcher pills + Link to full project progress details */}
-        <div className="flex items-center gap-2 shrink-0">
-          {cameras.length > 1 && (
-            <div className="flex items-center gap-1">
-              {cameras.map((cam, idx) => (
-                <button
-                  key={cam.id}
-                  type="button"
-                  onClick={() => setSelectedCamIdx(idx)}
-                  className={cn(
-                    "px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors cursor-pointer",
-                    selectedCamIdx === idx
-                      ? "bg-[#054b3c] text-white"
-                      : "bg-[#f1f2f6] text-[#546360] hover:bg-[#e4e6ed]"
-                  )}
-                >
-                  {cam.camera_name || `Cam ${idx + 1}`}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <Link
-            href={`/project-progress/${detailSlug}`}
-            title="View Full Project Progress"
-            className="relative shrink-0 size-[24px] text-[#232f43] hover:text-[#054b3c] transition-colors flex items-center justify-center"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="size-full">
-              <path
-                d="M7 17L17 7M17 7H8M17 7V16"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        </div>
+        {/* Link to full project progress details */}
+        <Link
+          href={`/project-progress/${detailSlug}`}
+          title="View Full Project Progress"
+          className="relative shrink-0 size-[24px] text-[#232f43] hover:text-[#054b3c] transition-colors flex items-center justify-center"
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="size-full">
+            <path
+              d="M7 17L17 7M17 7H8M17 7V16"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
       </div>
+
+      {/* Multi-camera switcher: own row so it never squeezes the project title */}
+      {cameras.length > 1 && (
+        <div className="flex flex-wrap items-center gap-1.5 w-full -mt-[8px]">
+          {cameras.map((cam, idx) => (
+            <button
+              key={cam.id}
+              type="button"
+              onClick={() => setSelectedCamIdx(idx)}
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer",
+                selectedCamIdx === idx
+                  ? "bg-[#054b3c] text-white"
+                  : "bg-[#f1f2f6] text-[#546360] hover:bg-[#e4e6ed]"
+              )}
+            >
+              {cam.camera_name || `Cam ${idx + 1}`}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Video Player Frame (Figma node 8313:24385: h-[349px] rounded-[16px] w-full) */}
       <div
@@ -623,7 +622,7 @@ function ProjectCameraCard({
           </>
         ) : (
           /* Honest Empty Camera State when this project has NO camera in /api/cameras */
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 text-center text-white">
             {(matchedProgress?.project_image || project.image) && (
               <img
                 src={matchedProgress?.project_image || project.image}
@@ -632,17 +631,17 @@ function ProjectCameraCard({
               />
             )}
             <div className="relative z-10 flex flex-col items-center max-w-sm">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mb-3 text-white/80">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mb-2 sm:mb-3 text-white/80">
                 <VideoOff className="w-6 h-6" />
               </div>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/90 border border-white/15 mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Camera Offline / Not Deployed
               </span>
-              <h3 className="font-serif text-lg font-semibold text-white">
+              <h3 className="font-serif text-base sm:text-lg font-semibold text-white line-clamp-2">
                 No Active Camera Feed for {displayTitle}
               </h3>
-              <p className="text-xs text-white/70 mt-1 leading-relaxed">
+              <p className="text-xs text-white/70 mt-1 leading-relaxed line-clamp-3 sm:line-clamp-none">
                 There is currently no live CCTV stream assigned to this project in the camera server. Real-time engineering progress from the construction API is shown below.
               </p>
             </div>
@@ -652,7 +651,7 @@ function ProjectCameraCard({
 
       {/* Bottom Real Construction Progress Rows from /api/constructions/projects-progress (Figma node 8313:24416) */}
       <div className="flex flex-col gap-[16px] items-start px-[4px] w-full">
-        <div className="flex items-center justify-between w-full border-b border-[#f1f2f6] pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 w-full border-b border-[#f1f2f6] pb-2">
           <span className="text-[12px] font-semibold uppercase tracking-wider text-[#546360]">
             Real-Time Construction Breakdown
           </span>
@@ -670,9 +669,9 @@ function ProjectCameraCard({
         {isLoadingData ? (
           <div className="flex flex-col gap-[16px] w-full">
             {[1, 2, 3, 4, 5].map((n) => (
-              <div key={n} className="flex items-center justify-between w-full">
-                <div className="h-4 w-24 bg-stone-200 rounded animate-pulse" />
-                <div className="h-2.5 w-[200px] sm:w-[253px] bg-stone-100 rounded animate-pulse" />
+              <div key={n} className="flex items-center justify-between gap-4 w-full">
+                <div className="h-4 w-24 shrink-0 bg-stone-200 rounded animate-pulse" />
+                <div className="h-2.5 flex-1 max-w-[253px] bg-stone-100 rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -681,14 +680,14 @@ function ProjectCameraCard({
             {stageRows.map((stage, idx) => (
               <div
                 key={stage.label}
-                className="flex items-center justify-between gap-4 w-full"
+                className="flex items-center justify-between gap-3 sm:gap-4 w-full"
               >
-                <p className="font-sans font-medium leading-[18px] text-[#232f43] text-[14px] whitespace-nowrap">
+                <p className="font-sans font-medium leading-[18px] text-[#232f43] text-[13px] sm:text-[14px] whitespace-nowrap shrink-0">
                   {stage.label}
                 </p>
 
-                {/* 253px Progress Bar + Percentage (Figma node 8313:24419) */}
-                <div className="flex gap-[8px] items-center shrink-0 w-[180px] sm:w-[253px]">
+                {/* Progress Bar + Percentage: fluid, capped at Figma's 253px (8313:24419) */}
+                <div className="flex gap-[8px] items-center flex-1 min-w-0 max-w-[253px]">
                   <div className="flex-1 h-[8px] relative rounded-[4px] bg-[#f2f4f7] overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
@@ -925,7 +924,7 @@ export function CameraTab({
 
       {/* Content */}
       {showSkeleton ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] lg:gap-[30px] items-start w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-[24px] xl:gap-[30px] items-start w-full">
           {[1, 2].map((n) => (
             <div
               key={`cam-skeleton-${n}`}
@@ -938,9 +937,9 @@ export function CameraTab({
               <div className="h-[260px] sm:h-[349px] rounded-[16px] bg-stone-200 w-full" />
               <div className="space-y-3 pt-2">
                 {[1, 2, 3, 4, 5].map((r) => (
-                  <div key={r} className="flex justify-between items-center">
-                    <div className="h-4 w-24 bg-stone-200 rounded" />
-                    <div className="h-2.5 w-[200px] bg-stone-100 rounded" />
+                  <div key={r} className="flex justify-between items-center gap-4">
+                    <div className="h-4 w-24 shrink-0 bg-stone-200 rounded" />
+                    <div className="h-2.5 flex-1 max-w-[200px] bg-stone-100 rounded" />
                   </div>
                 ))}
               </div>
@@ -961,7 +960,7 @@ export function CameraTab({
         </div>
       ) : (
         /* 2-Column Project Camera Cards Grid (Figma node 8313:24372: gap-[30px]) */
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] lg:gap-[30px] items-start w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-[24px] xl:gap-[30px] items-start w-full">
           {userProjects.map((proj, index) => {
             const matchedProgress = findProgressForProject(proj);
             const matchedCameras = findCamerasForProject(proj, matchedProgress);

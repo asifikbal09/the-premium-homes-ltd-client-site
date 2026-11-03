@@ -439,7 +439,7 @@ export function WishlistTab({ user }: WishlistTabProps) {
       {/* ========================================================= */}
       <motion.div variants={itemVariants} className="w-full">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[16px] w-full">
             {[1, 2, 3].map((n) => (
               <div
                 key={`wishlist-skeleton-${n}`}
@@ -487,7 +487,7 @@ export function WishlistTab({ user }: WishlistTabProps) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[16px] w-full">
             <AnimatePresence mode="popLayout">
               {wishlist.map((item, idx) => {
                 const isRemoving = removingId === item.propertyId;

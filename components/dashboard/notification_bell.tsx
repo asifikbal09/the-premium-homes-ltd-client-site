@@ -94,7 +94,7 @@ export function NotificationBell() {
         aria-expanded={isOpen}
         aria-haspopup="true"
         className={cn(
-          "relative size-[44px] rounded-full border-[1.1px] border-[#eaecf0] bg-gradient-to-b from-white to-[#f8f9fc] active:scale-95 text-[#475467] flex items-center justify-center transition-all cursor-pointer",
+          "relative size-[40px] sm:size-[44px] rounded-full border-[1.1px] border-[#eaecf0] bg-gradient-to-b from-white to-[#f8f9fc] active:scale-95 text-[#475467] flex items-center justify-center transition-all cursor-pointer",
           isOpen && "ring-2 ring-[#054b3c]/15",
         )}
       >
@@ -110,7 +110,9 @@ export function NotificationBell() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full mt-2 w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-xl border border-stone-200 shadow-[0_12px_32px_rgba(0,0,0,0.12)] overflow-hidden z-50"
+          // Mobile: pinned to the viewport under the 64px header so it can't overflow
+          // off-screen (the bell isn't at the right edge). sm+: anchored to the bell.
+          className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[340px] bg-white rounded-xl border border-stone-200 shadow-[0_12px_32px_rgba(0,0,0,0.12)] overflow-hidden z-50"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">

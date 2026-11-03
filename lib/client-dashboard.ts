@@ -935,7 +935,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
   }
 }
 
-function getAuthHeaders(includeJsonContentType = false): Record<string, string> {
+export function getAuthHeaders(includeJsonContentType = false): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
   };

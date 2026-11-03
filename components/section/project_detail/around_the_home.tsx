@@ -85,7 +85,7 @@ export function AroundTheHome({ project }: AroundTheHomeProps) {
                     onClick={() => setActiveIdx(idx)}
                     aria-pressed={active}
                     className={cn(
-                      "flex h-[84px] w-full items-center gap-4 border px-5 text-left transition-colors duration-300 sm:h-[112px] sm:px-8",
+                      "flex min-h-[96px] w-full flex-col items-start justify-center gap-2 border p-3 text-left transition-colors duration-300 sm:p-5 lg:h-[112px] lg:flex-row lg:items-center lg:gap-4 lg:px-8 lg:py-0",
                       active
                         ? "border-green bg-green text-white"
                         : "border-[#E6E6E6] bg-white text-ink hover:border-green/50 hover:bg-warm",
@@ -117,7 +117,7 @@ export function AroundTheHome({ project }: AroundTheHomeProps) {
 
                     <span
                       className={cn(
-                        "trim font-display font-medium capitalize",
+                        "trim min-w-0 break-words font-display font-medium capitalize",
                         active ? "text-white" : "text-ink",
                       )}
                       style={{ fontSize: fluid(24, 16), lineHeight: 1.3 }}

@@ -269,7 +269,7 @@ export function ProgressAroundHome({
                     onClick={() => setActiveCategory(cat.id)}
                     aria-pressed={isActive}
                     className={cn(
-                      "flex h-[88px] w-full cursor-pointer items-center gap-[18px] border px-5 text-left transition-colors duration-300 sm:h-[112px] sm:p-[32px]",
+                      "flex min-h-[96px] w-full cursor-pointer flex-col items-start justify-center gap-2 border p-3 text-left transition-colors duration-300 sm:h-[112px] sm:flex-row sm:items-center sm:gap-[18px] sm:p-[32px]",
                       isActive
                         ? "border-[#054b3c] bg-[#054b3c] text-white"
                         : "border-[#e6e6e6] bg-white text-[#3b3e40] hover:border-[#054b3c]/50",
@@ -293,7 +293,7 @@ export function ProgressAroundHome({
 
                     <span
                       className={cn(
-                        "trim whitespace-nowrap font-display font-medium capitalize",
+                        "trim min-w-0 break-words font-display font-medium capitalize sm:whitespace-nowrap",
                         isActive ? "text-white" : "text-[#3b3e40]",
                       )}
                       style={{ fontSize: fluid(28, 18), lineHeight: 1.2 }}

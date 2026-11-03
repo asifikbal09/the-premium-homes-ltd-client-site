@@ -281,7 +281,7 @@ export function ProgressTab({
 
       {/* Skeletons Loading State */}
       {showLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7">
           {[1, 2].map((n) => (
             <div
               key={`progress-card-skeleton-${n}`}
@@ -331,7 +331,7 @@ export function ProgressTab({
         </div>
       ) : (
         /* User Project Cards Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7">
           {projectCards.map((card) => (
             <div
               key={card.id}

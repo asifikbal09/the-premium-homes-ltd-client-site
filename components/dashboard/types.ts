@@ -123,6 +123,83 @@ export interface LiveCamera {
   status: string;
 }
 
+/** One bid on an auction. Amounts are raw taka, as the API stores them. */
+export interface AuctionBid {
+  id: number | string;
+  user_id?: number | string;
+  user_name: string;
+  amount: number;
+  created_at?: string;
+  referral_code?: string;
+}
+
+/** A flat listed for resale by its owner. Amounts are raw taka. */
+export interface Auction {
+  id: number | string;
+  user_id?: number | string;
+  property_name: string;
+  property_slug?: string;
+  property_image?: string;
+  location?: string;
+  beds?: number;
+  size?: string | number;
+  type?: string;
+  flat_no?: string;
+  starting_bid: number;
+  reserve_price: number | null;
+  highest_bid: number | null;
+  total_bids: number;
+  duration_days?: number;
+  start_date?: string;
+  time_left?: string;
+  status: string;
+  /** Sorted highest first. */
+  bids: AuctionBid[];
+}
+
+export interface AuctionFeed {
+  hot: Auction[];
+  live: Auction[];
+  upcoming: Auction[];
+  completed: Auction[];
+}
+
+export interface CompletedAuctionBidder {
+  name: string;
+  /** Raw taka, or a label the API already formatted (e.g. "58.00 Lakh"). */
+  amount: number | string;
+  time?: string;
+}
+
+export interface CompletedAuction {
+  id: number | string;
+  name: string;
+  image?: string;
+  location?: string;
+  ended_at?: string;
+  winner: CompletedAuctionBidder | null;
+  runners_up: CompletedAuctionBidder[];
+}
+
+/** Body of POST /auctions and PUT /auctions/{id}. */
+export interface AuctionListingPayload {
+  user_id: number | string;
+  user_email?: string;
+  user_name?: string;
+  property_name: string;
+  property_slug?: string;
+  property_image?: string;
+  location?: string;
+  size?: number;
+  type: string;
+  flat_no?: string;
+  paid_amount: number;
+  starting_bid: number;
+  reserve_price: number | null;
+  duration_days: number;
+  start_date: string;
+}
+
 export interface WishlistPropertyItem {
   id: string | number;
   propertyId: string;

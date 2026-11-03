@@ -2,7 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
-import { User, Mail, Phone, MapPin, Building, ShieldCheck, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { User, Mail, Phone, MapPin, Building, ShieldCheck, type LucideIcon } from "lucide-react";
 import { ClientUser, ClientFlat } from "./types";
 
 interface ProfileTabProps {
@@ -12,30 +13,117 @@ interface ProfileTabProps {
   onUpdateUser?: (updated: ClientUser) => void;
 }
 
-export function ProfileTab({
-  user,
-  isLoading = false,
-  myFlats = [],
-}: ProfileTabProps) {
-  if (isLoading || !user) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-[32px] font-bold text-[#044133] tracking-tight">
-            Client Profile
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Your verified onboard account information and allotment details.
-          </p>
+interface InfoField {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  wide?: boolean;
+  breakAll?: boolean;
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+const CARD = "bg-white rounded-[16px] p-[20px] sm:p-[32px] w-full";
+const PULSE = "bg-stone-200 rounded animate-pulse";
+
+function ProfileHeader() {
+  return (
+    <motion.div variants={itemVariants} className="flex flex-col gap-[12px] items-start">
+      <h1 className="capitalize font-serif font-semibold leading-[1.1] text-[#054b3c] text-[28px] sm:text-[32px]">
+        Profile Settings
+      </h1>
+      <p className="font-sans font-normal leading-[1.4] text-[#546360] text-[15px] sm:text-[16px]">
+        Your verified account information and allotment details.
+      </p>
+    </motion.div>
+  );
+}
+
+function InfoTile({ icon: Icon, label, value, wide, breakAll }: InfoField) {
+  return (
+    <motion.div
+      variants={itemVariants}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2 }}
+      className={`flex items-center gap-[14px] sm:gap-[16px] p-[16px] rounded-[12px] bg-[#f8f9fc] border border-[#eaecf0] hover:border-[#054b3c]/30 transition-colors min-w-0 ${
+        wide ? "sm:col-span-2" : ""
+      }`}
+    >
+      <div className="bg-white flex items-center justify-center rounded-full shrink-0 size-[44px]">
+        <Icon className="size-[20px] text-[#054b3c] stroke-[1.75]" />
+      </div>
+      <div className="flex flex-col gap-[6px] min-w-0">
+        <p className="font-sans font-normal leading-[18px] text-[#59657b] text-[13px] sm:text-[14px]">
+          {label}
+        </p>
+        <p
+          className={`font-sans font-semibold leading-[1.2] text-[#054b3c] text-[15px] sm:text-[16px] ${
+            breakAll ? "break-all" : "break-words"
+          }`}
+        >
+          {value || "—"}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="flex flex-col gap-[16px] sm:gap-[24px] max-w-[952px] mx-auto w-full" aria-busy="true">
+      <div className="flex flex-col gap-[12px]">
+        <div className={`h-[32px] w-56 ${PULSE}`} />
+        <div className={`h-[16px] w-72 max-w-full ${PULSE}`} />
+      </div>
+
+      <div className={CARD}>
+        <div className="flex items-center gap-[16px] sm:gap-[20px] pb-[24px] border-b border-[#f1f2f6]">
+          <div className="size-[72px] sm:size-[88px] rounded-full bg-stone-200 animate-pulse shrink-0" />
+          <div className="flex flex-col gap-[10px] flex-1 min-w-0">
+            <div className={`h-[22px] w-48 max-w-full ${PULSE}`} />
+            <div className={`h-[14px] w-60 max-w-full ${PULSE}`} />
+            <div className="h-[24px] w-40 rounded-full bg-stone-200 animate-pulse" />
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-16 border border-stone-200/80 flex flex-col items-center justify-center text-stone-500 shadow-xs max-w-3xl">
-          <Loader2 className="w-8 h-8 animate-spin text-[#044133] mb-3" />
-          <p className="text-sm font-medium text-stone-700">Loading profile details...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] sm:gap-[16px] pt-[24px]">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <div
+              key={n}
+              className={`flex items-center gap-[16px] p-[16px] rounded-[12px] bg-[#f8f9fc] border border-[#eaecf0] ${
+                n === 5 ? "sm:col-span-2" : ""
+              }`}
+            >
+              <div className="size-[44px] rounded-full bg-stone-200 animate-pulse shrink-0" />
+              <div className="flex flex-col gap-[8px] flex-1 min-w-0">
+                <div className={`h-[12px] w-28 ${PULSE}`} />
+                <div className={`h-[16px] w-40 max-w-full ${PULSE}`} />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+export function ProfileTab({ user, isLoading = false, myFlats = [] }: ProfileTabProps) {
+  if (isLoading || !user) return <ProfileSkeleton />;
 
   const name =
     user.name ||
@@ -43,11 +131,10 @@ export function ProfileTab({
     [user.first_name, user.last_name].filter(Boolean).join(" ") ||
     "";
   const email = user.email || "";
-  const phone = user.phone || "";
   const flatNo = user.flat_no || (myFlats[0]?.flatNo ? `Unit ${myFlats[0].flatNo}` : "");
   const building = user.building_name || myFlats[0]?.title || "";
 
-  // Get user initials for avatar fallback if no image provided
+  // Initials for the avatar fallback when no image is provided
   const initials = (name || "Client")
     .split(" ")
     .filter(Boolean)
@@ -56,98 +143,71 @@ export function ProfileTab({
     .slice(0, 2)
     .toUpperCase();
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-2xl sm:text-[32px] font-bold text-[#044133] tracking-tight">
-          Client Profile
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-1">
-          Your verified onboard account information and allotment details.
-        </p>
-      </div>
+  const fields: InfoField[] = [
+    { icon: User, label: "Full Legal Name", value: name },
+    { icon: Mail, label: "Registered Email", value: email, breakAll: true },
+    { icon: Phone, label: "Primary Phone Number", value: user.phone || "" },
+    { icon: Building, label: "Allotted Property Unit", value: flatNo },
+    { icon: MapPin, label: "Assigned Development Project", value: building, wide: true },
+  ];
 
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-stone-200/80 shadow-xs max-w-3xl space-y-6">
-        {/* Avatar and Account Header */}
-        <div className="flex items-center gap-5 pb-6 border-b border-stone-100">
-          <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[#044133]/10 ring-4 ring-[#044133]/10 shrink-0 flex items-center justify-center">
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="flex flex-col gap-[16px] sm:gap-[24px] max-w-[952px] mx-auto w-full"
+    >
+      <ProfileHeader />
+
+      <motion.div variants={itemVariants} className={CARD}>
+        {/* Avatar and account header */}
+        <div className="flex items-center gap-[16px] sm:gap-[20px] pb-[24px] border-b border-[#f1f2f6]">
+          <motion.div
+            initial={{ scale: 0.86, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="relative size-[72px] sm:size-[88px] rounded-full overflow-hidden bg-[#f1f2f6] ring-4 ring-[#054b3c]/10 shrink-0 flex items-center justify-center"
+          >
             {user.avatar ? (
               <Image
                 src={user.avatar}
                 alt={name || "User"}
                 fill
-                sizes="80px"
+                sizes="88px"
                 className="object-cover object-top"
               />
             ) : (
-              <span className="font-bold text-xl text-[#044133]">{initials}</span>
+              <span className="font-serif font-semibold text-[24px] sm:text-[28px] text-[#054b3c]">
+                {initials}
+              </span>
             )}
-          </div>
-          <div>
-            <h2 className="font-bold text-lg sm:text-xl text-stone-900 leading-tight">
+          </motion.div>
+
+          <div className="flex flex-col gap-[6px] items-start min-w-0">
+            <h2 className="font-serif font-semibold leading-[1.1] text-[#054b3c] text-[22px] sm:text-[24px] break-words">
               {name || "—"}
             </h2>
-            <p className="text-xs text-stone-500 mt-0.5">{email || "—"}</p>
-            <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-semibold border border-emerald-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <p className="font-sans font-normal text-[#59657b] text-[14px] break-all">
+              {email || "—"}
+            </p>
+            <span className="inline-flex items-center gap-[6px] mt-[4px] px-[10px] py-[4px] rounded-[40px] bg-[#054b3c]/5 text-[#054b3c] text-[12px] font-medium">
+              <ShieldCheck className="size-[14px]" />
               Verified Onboard Client
             </span>
           </div>
         </div>
 
-        {/* Read-only Information Tiles */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/60">
-            <div className="flex items-center gap-2 text-stone-500 text-xs font-medium mb-1">
-              <User className="w-3.5 h-3.5 text-stone-400" />
-              <span>Full Legal Name</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold text-stone-900">
-              {name || "—"}
-            </p>
-          </div>
-
-          <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/60">
-            <div className="flex items-center gap-2 text-stone-500 text-xs font-medium mb-1">
-              <Mail className="w-3.5 h-3.5 text-stone-400" />
-              <span>Registered Email</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold text-stone-900 break-all">
-              {email || "—"}
-            </p>
-          </div>
-
-          <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/60">
-            <div className="flex items-center gap-2 text-stone-500 text-xs font-medium mb-1">
-              <Phone className="w-3.5 h-3.5 text-stone-400" />
-              <span>Primary Phone Number</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold text-stone-900">
-              {phone || "—"}
-            </p>
-          </div>
-
-          <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/60">
-            <div className="flex items-center gap-2 text-stone-500 text-xs font-medium mb-1">
-              <Building className="w-3.5 h-3.5 text-stone-400" />
-              <span>Allotted Property Unit</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold text-stone-900">
-              {flatNo || "—"}
-            </p>
-          </div>
-
-          <div className="bg-stone-50/70 rounded-xl p-4 border border-stone-200/60 sm:col-span-2">
-            <div className="flex items-center gap-2 text-stone-500 text-xs font-medium mb-1">
-              <MapPin className="w-3.5 h-3.5 text-stone-400" />
-              <span>Assigned Development Project</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold text-stone-900">
-              {building || "—"}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        {/* Read-only information tiles */}
+        <motion.div
+          variants={containerVariants}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] sm:gap-[16px] pt-[24px]"
+        >
+          {fields.map((field) => (
+            <InfoTile key={field.label} {...field} />
+          ))}
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

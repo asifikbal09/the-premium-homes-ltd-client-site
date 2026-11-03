@@ -276,7 +276,7 @@ export function UnitTypeSelector({
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {visibleUnits.map((unit, idx) => (
             <UnitCard
-              key={unit.id || idx}
+              key={`${unit.id}-${idx}`}
               unit={unit}
               idx={idx}
               projectName={projectName}

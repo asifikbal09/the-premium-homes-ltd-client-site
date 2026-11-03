@@ -233,11 +233,11 @@ export function PaymentTab({
           </div>
 
           {/* Property Selector Card (Figma node 8261:21190: bg-white p-[12px] rounded-[8px]) */}
-          <div className="relative self-start sm:self-auto">
+          <div className="relative w-full sm:w-auto shrink-0">
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="bg-white flex items-center justify-between gap-[24px] sm:gap-[56px] p-[12px] rounded-[8px] cursor-pointer text-left hover:shadow-xs transition-shadow"
+              className="w-full sm:w-auto bg-white flex items-center justify-between gap-[24px] sm:gap-[56px] p-[12px] rounded-[8px] cursor-pointer text-left hover:shadow-xs transition-shadow"
             >
               <div className="flex gap-[15px] items-center min-w-0">
                 <div className="relative rounded-[6px] shrink-0 size-[56px] overflow-hidden bg-[#f1f2f6]">
@@ -277,7 +277,7 @@ export function PaymentTab({
                   className="fixed inset-0 z-20"
                   onClick={() => setIsDropdownOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-full min-w-[280px] bg-white rounded-[12px] border border-[#eaecf0] shadow-xl z-30 overflow-hidden py-1.5">
+                <div className="absolute left-0 right-0 sm:left-auto top-full mt-2 sm:min-w-[280px] bg-white rounded-[12px] border border-[#eaecf0] shadow-xl z-30 overflow-hidden py-1.5">
                   <div className="px-3.5 py-2 border-b border-stone-100 text-[11px] font-bold text-[#6d737e] uppercase tracking-wider">
                     Select Property
                   </div>
@@ -324,16 +324,16 @@ export function PaymentTab({
         </div>
 
         {/* 4 Metric Cards (Figma node 8261:21198: h-[148px] px-[16px] py-[32px] rounded-[12px] gap-[16px]) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[12px] sm:gap-[16px] w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-[12px] sm:gap-[16px] w-full">
           {/* Card 1: Total Paid (8261:21199) */}
           <motion.div
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
             className="bg-white rounded-[12px] h-[148px] px-[16px] py-[32px] flex items-center"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="w-[64px] h-[64px] rounded-full bg-[#005d4d] p-[16px] flex items-center justify-center shrink-0">
-                <svg className="w-[32px] h-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="size-[52px] sm:size-[64px] rounded-full bg-[#005d4d] flex items-center justify-center shrink-0">
+                <svg className="size-[26px] sm:size-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="6" width="20" height="12" rx="2" />
                   <circle cx="12" cy="12" r="2" />
                   <path d="M6 12h.01M18 12h.01" />
@@ -346,7 +346,7 @@ export function PaymentTab({
                 {isLoading ? (
                   <div className="h-[24px] w-28 bg-stone-200 rounded animate-pulse" />
                 ) : (
-                  <span className="text-[22px] xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                  <span className="text-[22px] 2xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                     {totalPaid}
                   </span>
                 )}
@@ -363,9 +363,9 @@ export function PaymentTab({
             transition={{ duration: 0.2 }}
             className="bg-white rounded-[12px] h-[148px] px-[16px] py-[32px] flex items-center"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="w-[64px] h-[64px] rounded-full bg-[#bf2318] p-[16px] flex items-center justify-center shrink-0">
-                <svg className="w-[32px] h-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="size-[52px] sm:size-[64px] rounded-full bg-[#bf2318] flex items-center justify-center shrink-0">
+                <svg className="size-[26px] sm:size-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2" />
                   <line x1="2" y1="10" x2="22" y2="10" />
                 </svg>
@@ -377,7 +377,7 @@ export function PaymentTab({
                 {isLoading ? (
                   <div className="h-[24px] w-28 bg-stone-200 rounded animate-pulse" />
                 ) : (
-                  <span className="text-[22px] xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                  <span className="text-[22px] 2xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                     {outstanding}
                   </span>
                 )}
@@ -394,9 +394,9 @@ export function PaymentTab({
             transition={{ duration: 0.2 }}
             className="bg-white rounded-[12px] h-[148px] px-[16px] py-[32px] flex items-center"
           >
-            <div className="flex flex-1 gap-[20px] items-start min-w-0">
-              <div className="w-[64px] h-[64px] rounded-full bg-[#d8a44d] p-[16px] flex items-center justify-center shrink-0">
-                <svg className="w-[32px] h-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <div className="flex flex-1 gap-[14px] sm:gap-[20px] items-start min-w-0">
+              <div className="size-[52px] sm:size-[64px] rounded-full bg-[#d8a44d] flex items-center justify-center shrink-0">
+                <svg className="size-[26px] sm:size-[32px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
               </div>
@@ -407,7 +407,7 @@ export function PaymentTab({
                 {isLoading ? (
                   <div className="h-[24px] w-28 bg-stone-200 rounded animate-pulse" />
                 ) : (
-                  <span className="text-[22px] xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+                  <span className="text-[22px] 2xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                     {totalExpense}
                   </span>
                 )}
@@ -459,7 +459,7 @@ export function PaymentTab({
               )}
             </div>
             <div className="flex flex-1 flex-col gap-[12px] items-start min-w-0">
-              <span className="text-[22px] xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
+              <span className="text-[22px] 2xl:text-[24px] font-semibold leading-none text-[#054b3c] w-full truncate">
                 Completion
               </span>
               <span className="text-[14px] font-normal leading-[1.2] text-[#59657b] w-full truncate">
@@ -475,7 +475,7 @@ export function PaymentTab({
       {/* ========================================================= */}
       <motion.div variants={itemVariants} className="flex flex-col gap-[24px] w-full">
         {/* Sub-tabs Navigation Pills (Figma node 8261:21236: gap-[12px] h-[44px] px-[24px] rounded-[40px]) */}
-        <div className="flex flex-wrap items-center gap-[12px] w-full">
+        <div className="flex items-center gap-[8px] sm:gap-[12px] w-full overflow-x-auto no-scrollbar sm:flex-wrap">
           {(
             [
               { id: "history", label: "Payment history" },
@@ -490,7 +490,7 @@ export function PaymentTab({
                 type="button"
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`h-[44px] px-[24px] rounded-[40px] flex items-center justify-center font-sans font-medium text-[14px] tracking-[1px] uppercase whitespace-nowrap transition-colors cursor-pointer ${
+                className={`h-[40px] sm:h-[44px] px-[16px] sm:px-[24px] shrink-0 rounded-[40px] flex items-center justify-center font-sans font-medium text-[12px] sm:text-[14px] tracking-[1px] uppercase whitespace-nowrap transition-colors cursor-pointer ${
                   isActive
                     ? "bg-[#054b3c] text-white"
                     : "bg-white text-[#054b3c] hover:bg-[#054b3c]/5"
@@ -503,9 +503,9 @@ export function PaymentTab({
         </div>
 
         {/* Main 2-Column Content Area (Figma node 8261:21253: gap-[24px]) */}
-        <div className="flex flex-col lg:flex-row gap-[24px] items-start w-full">
+        <div className="flex flex-col xl:flex-row gap-[24px] items-start w-full">
           {/* LEFT COLUMN (924px in Figma, flex-1 min-w-0) */}
-          <div className="w-full lg:flex-1 min-w-0">
+          <div className="w-full xl:flex-1 min-w-0">
             {/* TAB 1: PAYMENT HISTORY TABLE (Figma node 8261:21255) */}
             {activeSubTab === "history" && (
               <div className="bg-white rounded-[12px] p-[20px] sm:p-[24px] flex flex-col justify-between min-h-[600px] gap-[24px]">
@@ -685,15 +685,21 @@ export function PaymentTab({
                     <button
                       type="button"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      aria-label="Previous page"
                       disabled={safePage <= 1}
                       className="bg-gradient-to-b from-white to-[#f8f9fc] border border-[#eaecf0] flex gap-[6px] h-[36px] items-center justify-center px-[12px] py-[8px] rounded-[78px] text-[14px] font-medium text-[#6d737e] hover:bg-stone-50 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
                     >
                       <ArrowLeft className="size-[16px]" />
-                      <span>Previous</span>
+                      <span className="hidden sm:inline">Previous</span>
                     </button>
 
                     {/* Actual Page Numbers (8261:21408) */}
-                    <div className="flex items-center gap-[2px] h-[36px]">
+                    {/* Phones: compact page indicator instead of the number list */}
+                    <span className="sm:hidden text-[14px] font-medium text-[#546360] whitespace-nowrap">
+                      Page {safePage} of {totalPages}
+                    </span>
+
+                    <div className="hidden sm:flex items-center gap-[2px] h-[36px]">
                       {pageNumbers.map((page, i) =>
                         page === "..." ? (
                           <span
@@ -723,10 +729,11 @@ export function PaymentTab({
                     <button
                       type="button"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      aria-label="Next page"
                       disabled={safePage >= totalPages}
                       className="border border-[#546360] flex gap-[6px] h-[36px] items-center justify-center px-[12px] py-[8px] rounded-[78px] text-[14px] font-medium text-[#1f1f1e] hover:bg-stone-50 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
                     >
-                      <span>Next</span>
+                      <span className="hidden sm:inline">Next</span>
                       <ArrowRight className="size-[16px]" />
                     </button>
                   </div>
@@ -759,8 +766,8 @@ export function PaymentTab({
                         key={item.id}
                         className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-[12px] border border-[#eaecf0] hover:border-[#054b3c]/30 bg-[#fafafa]/60 hover:bg-white transition-all gap-4"
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="font-semibold text-sm text-[#101828]">
                               {item.installment_title}
                             </span>
@@ -772,7 +779,7 @@ export function PaymentTab({
                               {item.status === "due" ? "Immediate Due" : "Upcoming Milestone"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-[#59657b]">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#59657b]">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3.5 h-3.5 text-[#546360]" />
                               Due: {item.due_date}
@@ -838,9 +845,9 @@ export function PaymentTab({
                     {historyPayments.map((item, i) => (
                       <div
                         key={item.id || i}
-                        className="flex items-center justify-between p-3.5 rounded-[12px] border border-[#eaecf0] hover:bg-[#fafafa] text-xs sm:text-sm"
+                        className="flex items-center justify-between gap-3 p-3.5 rounded-[12px] border border-[#eaecf0] hover:bg-[#fafafa] text-xs sm:text-sm"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           {item.status === "paid" ? (
                             <CheckCircle2 className="w-5 h-5 text-[#039855] shrink-0" />
                           ) : (
@@ -853,7 +860,7 @@ export function PaymentTab({
                             </p>
                           </div>
                         </div>
-                        <span className="font-bold text-[#101828]">{item.amount}</span>
+                        <span className="font-bold text-[#101828] shrink-0 whitespace-nowrap">{item.amount}</span>
                       </div>
                     ))}
                   </div>
@@ -863,7 +870,7 @@ export function PaymentTab({
           </div>
 
           {/* RIGHT COLUMN: NEXT PAYMENT & AUTO PAYMENT CARDS (Figma node 8261:21426: w-[308px] gap-[16px]) */}
-          <div className="w-full lg:w-[308px] shrink-0 flex flex-col gap-[16px]">
+          <div className="w-full xl:w-[308px] shrink-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 items-start gap-[16px]">
             {/* Card 1: Next Payment (Figma node 8261:21427: bg-white px-[16px] py-[24px] rounded-[12px]) */}
             <div className="bg-white rounded-[12px] px-[16px] py-[24px] flex flex-col gap-[24px] w-full">
               <h3 className="capitalize font-serif font-semibold leading-[1.1] text-[#054b3c] text-[28px]">

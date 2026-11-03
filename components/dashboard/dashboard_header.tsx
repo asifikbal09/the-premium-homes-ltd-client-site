@@ -37,40 +37,40 @@ export function DashboardHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 h-[80px] shrink-0 bg-white border-b border-[#f0f0f0] pl-4 sm:pl-[32px] pr-4 sm:pr-[24px] py-[20px] flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 h-[64px] sm:h-[80px] shrink-0 bg-white border-b border-[#f0f0f0] pl-4 sm:pl-[32px] pr-4 sm:pr-[24px] py-[10px] sm:py-[20px] flex items-center justify-between gap-2 sm:gap-4">
       {/* Left: Mobile Menu Toggle + Search Box (Figma 8313:22319) */}
-      <div className="flex items-center gap-3 flex-1 max-w-[500px]">
+      <div className="flex items-center gap-1 sm:gap-3 flex-1 min-w-0 max-w-[500px]">
         <button
           type="button"
           onClick={onOpenMobileMenu}
-          className="lg:hidden p-2 text-[#546360] hover:text-[#054b3c] rounded-lg hover:bg-stone-100 cursor-pointer"
+          className="lg:hidden shrink-0 p-2 -ml-2 sm:ml-0 text-[#546360] hover:text-[#054b3c] rounded-lg hover:bg-stone-100 cursor-pointer"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="relative w-full h-[46px] flex items-center gap-[8px] rounded-[999px] border border-[#e9ebf1] bg-white pl-[16px] pr-[12px] py-[12px] focus-within:border-[#054b3c] focus-within:ring-2 focus-within:ring-[#054b3c]/10 transition-all">
+        <div className="relative w-full min-w-0 h-[42px] sm:h-[46px] flex items-center gap-[8px] rounded-[999px] border border-[#e9ebf1] bg-white pl-[12px] sm:pl-[16px] pr-[12px] py-[12px] focus-within:border-[#054b3c] focus-within:ring-2 focus-within:ring-[#054b3c]/10 transition-all">
           <Search className="size-[20px] shrink-0 text-[#546360] stroke-[1.75]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search projects..."
-            className="w-full bg-transparent font-sans text-[14px] font-normal leading-[16px] text-[#3b3e40] placeholder:text-[#546360] focus:outline-none"
+            className="w-full min-w-0 bg-transparent font-sans text-[14px] font-normal leading-[16px] text-[#3b3e40] placeholder:text-[#546360] focus:outline-none"
           />
         </div>
       </div>
 
       {/* Right: AI Sparkles, Notification Bell, Divider & User Profile (Figma 8313:22322) */}
-      <div className="flex items-center gap-[16px] shrink-0">
-        <div className="flex items-center gap-[12px]">
+      <div className="flex items-center gap-[8px] sm:gap-[16px] shrink-0">
+        <div className="flex items-center gap-[8px] sm:gap-[12px]">
           {/* AI / Concierge Sparkles Button (Figma 8313:22324) */}
           <button
             type="button"
             onClick={onSparklesClick}
             aria-label="TPHL Concierge AI"
             title="TPHL Concierge Assistant"
-            className="size-[44px] p-[10px] rounded-full active:scale-95 text-white flex items-center justify-center transition-transform cursor-pointer"
+            className="size-[40px] sm:size-[44px] p-[10px] rounded-full active:scale-95 text-white flex items-center justify-center transition-transform cursor-pointer"
             style={{
               backgroundImage:
                 "linear-gradient(180deg, rgb(0, 133, 110) 0%, rgb(0, 61, 51) 100%)",
@@ -92,11 +92,11 @@ export function DashboardHeader({
         </div>
 
         {/* Vertical Divider (Figma 8313:22335) */}
-        <div className="h-[32px] w-px bg-[#eaecf0] shrink-0" />
+        <div className="hidden sm:block h-[32px] w-px bg-[#eaecf0] shrink-0" />
 
         {/* User Profile Block (Figma 8313:22336) */}
         <div className="flex items-center gap-[8px]">
-          <div className="relative size-[44px] rounded-full overflow-hidden bg-[#888] shrink-0">
+          <div className="relative size-[40px] sm:size-[44px] rounded-full overflow-hidden bg-[#888] shrink-0">
             <Image
               src={user?.avatar || profile}
               alt="Profile"
