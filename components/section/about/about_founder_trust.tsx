@@ -24,34 +24,44 @@ export function AboutFounderTrust() {
 
   return (
     <section ref={ref} aria-label="Founder-led trust" className="relative overflow-hidden bg-[#0d0d0d] text-white">
-      <div className="relative mx-auto min-h-[720px] w-full max-w-[1600px] lg:aspect-[1600/1189] lg:min-h-0">
-        <motion.div style={{ y }} className="absolute inset-[-6%_0]">
-          <div className="absolute" style={{ left: "-8.375%", top: "-19%", width: "134.75%", height: "123.05%" }}>
-            <Image
-              src="/image/about/DolonSir.png"
-              alt="Mainul Hasan Dulon, Managing Director and CEO"
-              fill
-              sizes="135vw"
-              className="object-cover object-[60%_center]"
-            />
-          </div>
-        </motion.div>
-        {/* Figma: 791 wide, black at the left edge fading out by about three quarters across. */}
-        <div
-          aria-hidden
-          className="absolute inset-y-0 left-0 w-full lg:w-[49.4%]"
-          style={{ backgroundImage: "linear-gradient(to left, rgba(0,0,0,0) 24.08%, #000 105.69%)" }}
-        />
+      <div className="relative mx-auto flex w-full max-w-[1600px] flex-col lg:block lg:aspect-[1600/1189]">
+        {/* Below lg the portrait sits in the flow between the title and the quote instead of under the copy. */}
+        <div className="relative order-2 aspect-[4/5] w-full overflow-hidden lg:absolute lg:inset-0 lg:aspect-auto">
+          <motion.div style={{ y }} className="absolute inset-[-6%_0]">
+            <div className="absolute inset-0 lg:left-[-8.375%] lg:top-[-19%] lg:h-[123.05%] lg:w-[134.75%]">
+              <Image
+                src="/image/about/DolonSir.png"
+                alt="Mainul Hasan Dulon, Managing Director and CEO"
+                fill
+                sizes="(min-width: 1024px) 135vw, 185vw"
+                className="object-cover object-[60%_center]"
+              />
+            </div>
+          </motion.div>
+          {/* Mobile: fade the portrait into the section background at the top and bottom. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 lg:hidden"
+            style={{ backgroundImage: "linear-gradient(to bottom, #0d0d0d 0%, rgba(13,13,13,0) 18%, rgba(13,13,13,0) 60%, #0d0d0d 100%)" }}
+          />
+          {/* Figma: 791 wide, black at the left edge fading out by about three quarters across. */}
+          <div
+            aria-hidden
+            className="absolute inset-y-0 left-0 hidden w-[49.4%] lg:block"
+            style={{ backgroundImage: "linear-gradient(to left, rgba(0,0,0,0) 24.08%, #000 105.69%)" }}
+          />
+        </div>
 
-        <div className="shell relative flex flex-col gap-[clamp(40px,4.5vw,72px)] py-16 lg:absolute lg:inset-x-0 lg:top-[9.25%] lg:py-0">
-          <h2 aria-label="Founder-Led Trust" className="font-display font-medium capitalize leading-none text-[clamp(56px,7.5vw,120px)]">
+        <div className="contents lg:absolute lg:inset-x-0 lg:top-[9.25%] lg:flex lg:flex-col lg:gap-[clamp(40px,4.5vw,72px)]">
+          <h2 aria-label="Founder-Led Trust" className="shell order-1 pb-8 pt-16 font-display font-medium capitalize leading-none text-[clamp(56px,7.5vw,120px)] lg:py-0">
             <Words as="span" text="Founder-Led" mask className="block" />
             <Words as="span" text="Trust" mask delay={0.12} className="block" />
           </h2>
-          <div className="flex flex-col gap-[clamp(40px,4.75vw,76px)]">
+          <div className="shell relative order-3 -mt-12 flex flex-col gap-[clamp(40px,4.75vw,76px)] pb-16 lg:mt-0 lg:pb-0">
+            {/* The Figma line breaks only make sense beside the desktop portrait. */}
             <InkScrub
               text={QUOTE}
-              className="max-w-[13.67em] font-display font-medium capitalize leading-[1.2] text-[clamp(28px,3vw,48px)]"
+              className="max-w-[13.67em] font-display font-medium leading-[1.2] text-[clamp(22px,3vw,48px)] lg:capitalize [&_br]:hidden lg:[&_br]:inline"
             />
             <div className="flex w-full max-w-[502px] flex-col gap-[29px]">
               <motion.span
