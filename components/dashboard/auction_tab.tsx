@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarClock, Flame, Gavel, Medal, Radio, Tag, Trophy } from "lucide-react";
 import { toast } from "sonner";
@@ -132,8 +132,22 @@ function SkeletonGrid({ count = 3 }: { count?: number }) {
 
 /** Horizontal scroller on phones so chip rows never wrap into a wall of pills. */
 function ChipRow(props: React.ComponentProps<typeof FilterChips>) {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Keep the selected chip fully visible when it sits past the scroller's edge.
+  useEffect(() => {
+    const row = rowRef.current;
+    const active = row?.querySelector<HTMLElement>('button[aria-pressed="true"]');
+    if (!row || !active) return;
+    const rowBox = row.getBoundingClientRect();
+    const chipBox = active.getBoundingClientRect();
+    if (chipBox.left < rowBox.left || chipBox.right > rowBox.right) {
+      row.scrollBy({ left: chipBox.left - rowBox.left - (rowBox.width - chipBox.width) / 2, behavior: "smooth" });
+    }
+  }, [props.value]);
+
   return (
-    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+    <div ref={rowRef} className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:max-w-full overflow-x-auto no-scrollbar">
       <FilterChips {...props} className="w-max" />
     </div>
   );
@@ -290,7 +304,8 @@ export function AuctionTab({ user, myFlats, isLoading }: AuctionTabProps) {
         <motion.div variants={itemVariants} className="flex flex-col gap-[24px] sm:gap-[32px]">
           <div className="bg-white rounded-[16px] p-[16px] sm:p-[20px] flex flex-col gap-[16px]">
             <SearchField value={search} onChange={setSearch} placeholder="Search auctions" className="w-full" />
-            <div className="flex flex-col lg:flex-row lg:items-center gap-[12px] lg:gap-[24px]">
+            {/* Rows sit side by side only when both fit; otherwise the second wraps below. */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-[12px] sm:gap-x-[24px]">
               <ChipRow options={TYPE_OPTIONS} value={typeFilter} onChange={setTypeFilter} delay={0.15} />
               <ChipRow options={BED_OPTIONS} value={bedFilter} onChange={setBedFilter} delay={0.2} />
             </div>
@@ -458,8 +473,8 @@ export function AuctionTab({ user, myFlats, isLoading }: AuctionTabProps) {
                   badges={<AuctionBadge tone="ended">Ended{h.ended_at ? ` ${h.ended_at}` : ""}</AuctionBadge>}
                 >
                   {h.winner && (
-                    <div className="rounded-[12px] bg-[#f9f0e2] border border-[#f5e5cc] p-[14px] flex items-center justify-between gap-3">
-                      <div className="min-w-0">
+                    <div className="rounded-[12px] bg-[#f9f0e2] border border-[#f5e5cc] p-[14px] flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+                      <div className="min-w-0 w-full sm:w-auto">
                         <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[1px] text-[#8a621e]">
                           <Trophy className="w-4 h-4" /> Winner
                         </p>

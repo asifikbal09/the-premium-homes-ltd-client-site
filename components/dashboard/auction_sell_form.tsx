@@ -185,7 +185,7 @@ function SellFormBody({
             )}
           </div>
           <div className="flex flex-col gap-[4px] min-w-0">
-            <p className="text-[16px] font-semibold text-[#054b3c] truncate">
+            <p className="text-[16px] font-semibold leading-[1.3] text-[#054b3c] line-clamp-2">
               {flat.title}
               {flat.flatNo && <span className="font-normal text-[#59657b]"> · Unit {flat.flatNo}</span>}
             </p>

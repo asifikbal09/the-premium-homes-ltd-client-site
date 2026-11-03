@@ -73,7 +73,7 @@ interface AuctionCardShellProps {
   location?: string;
   /** Pinned over the image's top-left corner. */
   badges?: React.ReactNode;
-  /** Pinned over the image's top-right corner. */
+  /** Pinned over the image's top-right corner; wraps under the badges when the card is too narrow. */
   corner?: React.ReactNode;
   children?: React.ReactNode;
   /** Makes the whole card a button. Leave unset when the card holds its own buttons. */
@@ -107,10 +107,12 @@ export function AuctionCardShell({
         ) : (
           <Building2 className="w-10 h-10 text-stone-300" />
         )}
-        {badges && (
-          <div className="absolute left-[12px] top-[12px] z-10 flex flex-wrap items-center gap-1.5">{badges}</div>
+        {(badges || corner) && (
+          <div className="absolute inset-x-[12px] top-[12px] z-10 flex flex-wrap items-start justify-between gap-1.5">
+            {badges && <div className="flex flex-wrap items-center gap-1.5">{badges}</div>}
+            {corner && <div className="ml-auto">{corner}</div>}
+          </div>
         )}
-        {corner && <div className="absolute right-[12px] top-[12px] z-10">{corner}</div>}
       </div>
 
       <div className="flex flex-col gap-[5px] w-full min-w-0">

@@ -234,8 +234,8 @@ function BidPanelBody({
                     <p className="text-[12px] text-[#59657b]">{timeAgo(bid.created_at)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[14px] font-semibold text-[#101828]">{formatAuctionAmount(bid.amount)}</span>
+                <div className="flex flex-col-reverse items-end gap-1 sm:flex-row sm:items-center sm:gap-2 shrink-0">
+                  <span className="text-[14px] font-semibold text-[#101828] whitespace-nowrap">{formatAuctionAmount(bid.amount)}</span>
                   {idx === 0 && <AuctionBadge tone="live">Highest</AuctionBadge>}
                 </div>
               </li>
