@@ -500,7 +500,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
               </motion.div>
 
               <div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
-                <div className="shell flex flex-1 flex-col justify-center gap-8 py-6 lg:gap-10 lg:px-[clamp(40px,4vw,72px)]">
+                <div className="shell my-auto flex flex-col justify-start gap-8 py-6 lg:justify-center lg:gap-10 lg:px-[clamp(40px,4vw,72px)]">
                   <MenuSearch query={query} setQuery={setQuery} onSubmit={submitSearch} />
 
                   {query.trim() ? (
@@ -574,7 +574,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
                       <AuthActions onNavigate={close} />
                     </motion.div>
 
-                    <div className="grid grid-cols-2 gap-x-10 gap-y-6 md:grid-cols-[auto_auto_1fr] md:gap-x-[clamp(32px,4vw,64px)]">
+                    <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 md:grid-cols-[auto_auto_1fr] md:gap-x-[clamp(32px,4vw,64px)]">
                       <MenuMeta
                         label="Hotline"
                         delay={LINK_START + (MENU_ITEMS.length + 1) * 0.07}
@@ -600,7 +600,7 @@ export function Navbar({ theme }: NavbarProps = {}) {
                       <MenuMeta
                         label="Follow us"
                         delay={LINK_START + (MENU_ITEMS.length + 3) * 0.07}
-                        className="col-span-2 md:col-span-1"
+                        className="sm:col-span-2 md:col-span-1"
                       >
                         <ul className="flex items-center gap-2">
                           {SOCIALS.map((s) => (

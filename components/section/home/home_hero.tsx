@@ -37,7 +37,7 @@ function Dropdown({
         <button
           type="button"
           aria-expanded={open}
-          className="flex w-full min-w-0 items-center justify-between gap-3 py-2 text-left text-[14px] uppercase text-white md:w-auto md:gap-12 md:text-[16px]"
+          className="flex min-w-0 flex-1 items-center justify-between gap-1.5 py-1.5 text-left text-[12px] uppercase text-white sm:gap-2.5 sm:text-[13px] md:w-auto md:flex-none md:gap-12 md:py-2 md:text-[16px]"
         >
           <span className="trim truncate leading-[1.7]">{value ?? label}</span>
           <Image
@@ -45,7 +45,7 @@ function Dropdown({
             alt=""
             width={24}
             height={24}
-            className={cn("size-6 shrink-0 rotate-90 transition-transform duration-500 ease-out-expo", open && "-rotate-90")}
+            className={cn("size-4 shrink-0 rotate-90 transition-transform duration-500 ease-out-expo sm:size-5 md:size-6", open && "-rotate-90")}
           />
         </button>
       </PopoverTrigger>
@@ -105,7 +105,7 @@ function SearchBar({ filters }: { filters: Filters }) {
         const query = params.toString();
         router.push(`/projects${query ? `?${query}` : ""}`);
       }}
-      className="glass relative grid w-full grid-cols-2 items-center gap-x-6 gap-y-3 rounded-[28px] bg-white/[0.115] px-6 py-4 backdrop-blur-[12px] md:flex md:w-auto md:gap-16 md:rounded-full md:py-3 md:pl-12 md:pr-4"
+      className="glass relative flex w-full max-w-[520px] items-center justify-between gap-2 rounded-full bg-white/[0.115] py-1.5 pl-4 pr-1.5 backdrop-blur-[12px] sm:gap-4 sm:py-2 sm:pl-7 sm:pr-2 md:w-auto md:max-w-none md:gap-16 md:py-3 md:pl-12 md:pr-4"
     >
       {(Object.keys(filters) as FilterKey[]).map((key) => (
         <Dropdown
@@ -120,9 +120,9 @@ function SearchBar({ filters }: { filters: Filters }) {
       ))}
       <button
         type="submit"
-        className="glass press col-span-2 flex items-center justify-center gap-3 overflow-hidden rounded-full bg-[rgba(157,139,123,0.72)] px-12 py-[15px] text-[14px] font-medium uppercase text-white backdrop-blur-[6px]"
+        className="glass press flex shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-[rgba(157,139,123,0.72)] px-4 py-2.5 text-[12px] font-medium uppercase text-white backdrop-blur-[6px] sm:px-7 sm:py-3 sm:text-[13px] md:gap-3 md:px-12 md:py-[15px] md:text-[14px]"
       >
-        <Image src="/home/icons/search.svg" alt="" width={24} height={24} className="size-6" />
+        <Image src="/home/icons/search.svg" alt="" width={24} height={24} className="size-4 sm:size-5 md:size-6" />
         <span className="trim leading-[1.7]">Search</span>
       </button>
     </form>
@@ -158,8 +158,6 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    // The search rides over the hero's bottom edge from tablets up; on phones it sits below the hero.
-    <div className="relative">
     <section
       id="top"
       ref={ref}
@@ -194,7 +192,7 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
       {/* Headline — Figma: x 80, y 325 of a 900 tall frame */}
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="shell absolute inset-x-0 bottom-16 md:bottom-[235px] lg:bottom-auto lg:top-[36.1%]"
+        className="shell absolute inset-x-0 bottom-[148px] md:bottom-[235px] lg:bottom-auto lg:top-[36.1%]"
       >
         <div className="flex flex-col gap-4">
           <Appear as="p" preset="rise" play={done} delay={0.1} className="text-[13px] font-medium uppercase leading-[1.5] tracking-[0.5px] sm:text-[16px] sm:tracking-normal">
@@ -214,6 +212,17 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
         </div>
       </motion.div>
 
+      {/* Search */}
+      <Appear
+        preset="slide"
+        play={done}
+        delay={0.5}
+        slow
+        className="shell absolute inset-x-0 bottom-[76px] z-10 flex justify-center md:bottom-[18px]"
+      >
+        <SearchBar filters={filters} />
+      </Appear>
+
       {/* Scroll cue */}
       <Appear
         preset="fade"
@@ -231,17 +240,5 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
         Scroll
       </Appear>
     </section>
-
-      {/* Search: its own band under the hero on phones, over the hero's bottom edge from tablets up. */}
-      <Appear
-        preset="slide"
-        play={done}
-        delay={0.5}
-        slow
-        className="shell relative z-10 flex justify-center bg-green-deep py-6 text-white md:absolute md:inset-x-0 md:bottom-[18px] md:bg-transparent md:py-0"
-      >
-        <SearchBar filters={filters} />
-      </Appear>
-    </div>
   );
 }

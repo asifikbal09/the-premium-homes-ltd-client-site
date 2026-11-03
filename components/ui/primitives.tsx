@@ -188,7 +188,7 @@ export function GreenPill({
         className={cn(
           "group relative inline-flex shrink-0 items-center overflow-hidden rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold",
           size === "lg" &&
-            "whitespace-nowrap text-[12px] sm:px-8 sm:text-[14px]",
+            "whitespace-nowrap px-4 text-[12px] tracking-[1.2px] sm:px-8 sm:text-[14px] sm:tracking-[2px]",
           h,
           className,
         )}
@@ -216,7 +216,7 @@ export function GreenPill({
         "press inline-flex shrink-0 items-center rounded-full bg-green px-6 text-[14px] font-medium uppercase tracking-[2px] text-gold hover:tracking-[2.6px]",
         size === "md"
           ? "h-[42px]"
-          : "h-[56px] whitespace-nowrap px-6 text-[12px] sm:px-8 sm:text-[14px]",
+          : "h-[56px] whitespace-nowrap px-4 text-[12px] tracking-[1.2px] sm:px-8 sm:text-[14px] sm:tracking-[2px]",
         className,
       )}
     >

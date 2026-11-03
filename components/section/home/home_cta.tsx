@@ -107,7 +107,7 @@ export function HomeCta({
               </div>
             </div>
           </Shutter>
-          <div className="flex flex-col items-center gap-5 px-6 pb-6 pt-7 text-center md:pb-[19px] md:pt-[30px]">
+          <div className="flex flex-col items-center gap-5 px-4 pb-6 pt-7 text-center sm:px-6 md:pb-[19px] md:pt-[30px]">
             <div className="flex flex-col items-center gap-1.5">
               <Appear
                 as="p"

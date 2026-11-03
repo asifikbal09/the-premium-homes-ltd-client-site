@@ -166,12 +166,12 @@ function AmenityRow({
       <div className="grid gap-6 md:grid-cols-[40.2%_minmax(0,1fr)] md:grid-rows-[auto_minmax(0,1fr)] md:gap-x-10 md:gap-y-6">
         <h3
           className="order-first font-display font-normal leading-none text-green md:col-start-2 md:row-start-1"
-          style={{ fontSize: fluid(48, 30) }}
+          style={{ fontSize: fluid(48, 32) }}
         >
           {a.title}
         </h3>
         {/* Opens like a shutter as it scrolls in, same as the collage above; hover zoom lives inside. */}
-        <Shutter className="relative aspect-[588/600] w-full md:col-start-1 md:row-start-1 md:row-span-2 lg:aspect-auto lg:h-[clamp(320px,calc(100vh-300px),600px)]">
+        <Shutter className="relative aspect-[4/3] sm:aspect-[588/600] w-full md:col-start-1 md:row-start-1 md:row-span-2 lg:aspect-auto lg:h-[clamp(320px,calc(100vh-300px),600px)]">
           <div className="zoom-frame relative size-full">
             <div className="absolute inset-0">
               <Image
@@ -187,7 +187,7 @@ function AmenityRow({
         <div className="min-w-0 overflow-hidden font-display font-normal leading-none md:col-start-2 md:row-start-2 md:self-end">
           <motion.p
             aria-hidden
-            style={{ x: wordX, fontSize: fluid(400, 120) }}
+            style={{ x: wordX, fontSize: fluid(400, 96) }}
             className="text-sage/20"
           >
             {a.word}
