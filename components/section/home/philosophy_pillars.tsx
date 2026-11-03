@@ -74,7 +74,7 @@ function PillarCard({ p, i }: { p: (typeof PILLARS)[number]; i: number }) {
         <PillarIcon layers={p.icon} draw={inView} delay={i * 0.14} />
       </span>
       <div className="relative">
-        <span className="mb-4 block font-sans text-[14px] font-medium tracking-[2px] text-gold opacity-0 transition-all duration-700 ease-out-expo group-hover:opacity-100">
+        <span className="mb-4 block font-sans text-[14px] font-medium tracking-[2px] text-gold opacity-0 transition-all duration-700 ease-out-expo group-hover:opacity-100 pointer-coarse:opacity-100">
           0{i + 1}
         </span>
         <h3

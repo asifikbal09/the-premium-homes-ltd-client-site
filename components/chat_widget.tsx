@@ -19,9 +19,10 @@ export function ChatWidget() {
   const { done } = useIntro();
   const [open, setOpen] = useState(false);
 
-  // Opens on its own once the page is revealed, a beat after the disc lands; only on the first page of a visit.
+  // Opens on its own once the page is revealed, a beat after the disc lands; only on the first page of a visit,
+  // and only on desktop: on phones and tablets the panel would cover the hero, so there it waits for a tap.
   useEffect(() => {
-    if (!done) return;
+    if (!done || !window.matchMedia("(min-width: 1024px)").matches) return;
     try {
       if (sessionStorage.getItem(AUTO_OPENED_KEY) === "1") return;
     } catch {}

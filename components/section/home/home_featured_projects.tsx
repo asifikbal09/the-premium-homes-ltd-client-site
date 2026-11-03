@@ -152,7 +152,7 @@ function ProjectCard({
         ...SPRING,
         delay: settled ? (index % 2) * 0.1 : 0.7 + index * 0.12,
       }}
-      className="group flex flex-col gap-6"
+      className="group @container flex flex-col gap-6"
     >
       <Link href={p.href} className="zoom-frame relative block aspect-[700/505]">
         <div className="absolute inset-0">
@@ -173,8 +173,8 @@ function ProjectCard({
       </Link>
 
       <div className="flex flex-col gap-7">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:gap-6">
-          <div className="flex min-w-0 max-w-[464px] flex-col gap-3 md:h-[77px]">
+        <div className="flex flex-col items-start justify-between gap-4 @sm:flex-row @sm:gap-6">
+          <div className="flex min-w-0 max-w-[464px] flex-col gap-3 lg:h-[77px]">
             <h3
               className={cn(
                 "trim font-display text-[26px] font-normal capitalize leading-[1.5] transition-colors duration-500 group-hover:text-green md:text-[32px]",
@@ -182,21 +182,27 @@ function ProjectCard({
                 index >= 2 ? "text-sage" : "text-green",
               )}
             >
-              <Link href={p.href}>{p.name}</Link>
+              {/* An invisible overlay stretches the tap area to ~44px without touching the trimmed layout. */}
+              <Link
+                href={p.href}
+                className="relative after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']"
+              >
+                {p.name}
+              </Link>
             </h3>
             {p.blurb && (
-              <div className="trim flex flex-col justify-center md:flex-1">
+              <div className="trim flex flex-col justify-center lg:flex-1">
                 <p className="line-clamp-1 text-[16px] leading-[28px] text-sage md:text-[20px]">
                   {p.blurb}
                 </p>
               </div>
             )}
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:items-end sm:gap-4">
-            <p className="trim text-[14px] leading-[1.5] tracking-[-0.32px] text-sage sm:text-right md:text-[16px]">
+          <div className="flex shrink-0 flex-col gap-2 @sm:items-end @sm:gap-4">
+            <p className="trim text-[14px] leading-[1.5] tracking-[-0.32px] text-sage @sm:text-right md:text-[16px]">
               Starting from
             </p>
-            <p className="trim whitespace-nowrap text-[18px] sm:text-right font-medium capitalize leading-[1.5] tracking-[-0.48px] text-sage md:text-[24px]">
+            <p className="trim whitespace-nowrap text-[18px] @sm:text-right font-medium capitalize leading-[1.5] tracking-[-0.48px] text-sage md:text-[24px]">
               {p.price}
             </p>
           </div>
@@ -285,7 +291,7 @@ export function HomeFeaturedProjects({ initialProjects = [] }: { initialProjects
         <motion.div
           ref={gridRef}
           layout
-          className="mt-12 grid w-full grid-cols-1 gap-x-10 gap-y-12 md:mt-20 lg:grid-cols-2"
+          className="mt-12 grid w-full grid-cols-1 gap-x-6 gap-y-12 md:mt-20 md:grid-cols-2 lg:gap-x-10"
         >
           <AnimatePresence mode="popLayout">
             {visible.map((p, i) => (

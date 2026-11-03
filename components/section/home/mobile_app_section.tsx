@@ -134,9 +134,9 @@ export function MobileAppSection() {
           preset="grow"
           slow
           play={play}
-          className="relative overflow-hidden rounded-[32px] bg-green-deep lg:absolute lg:left-[5.125%] lg:top-[23.1%] lg:h-[67.72%] lg:w-[89.75%] lg:rounded-[clamp(32px,3vw,48px)]"
+          className="relative overflow-hidden rounded-[32px] bg-green-deep md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-center lg:block lg:absolute lg:left-[5.125%] lg:top-[23.1%] lg:h-[67.72%] lg:w-[89.75%] lg:rounded-[clamp(32px,3vw,48px)]"
         >
-          <div className="relative z-10 flex flex-col gap-10 px-6 pb-4 pt-10 sm:px-10 lg:absolute lg:left-[3.62%] lg:top-[50.16%] lg:w-[583px] lg:max-w-[42%] lg:p-0 xl:gap-14">
+          <div className="relative z-10 flex flex-col gap-10 px-6 pb-4 pt-10 sm:px-10 md:py-12 md:pr-0 lg:absolute lg:left-[3.62%] lg:top-[50.16%] lg:w-[583px] lg:max-w-[42%] lg:p-0 xl:gap-14">
             <Words
               as="h2"
               play={play}
@@ -158,7 +158,7 @@ export function MobileAppSection() {
           </div>
 
           {/* Device inside the card on small screens */}
-          <div className="relative -mb-6 ml-auto mt-4 w-[110%] max-w-[700px] translate-x-[6%] lg:hidden">
+          <div className="relative -mb-6 ml-auto mt-4 w-[110%] max-w-[700px] translate-x-[6%] md:my-0 md:w-[118%] md:translate-x-[8%] lg:hidden">
             <Device play={play} />
           </div>
         </Appear>

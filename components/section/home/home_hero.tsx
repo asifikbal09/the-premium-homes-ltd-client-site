@@ -158,6 +158,8 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
+    // The search rides over the hero's bottom edge from tablets up; on phones it sits below the hero.
+    <div className="relative">
     <section
       id="top"
       ref={ref}
@@ -192,7 +194,7 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
       {/* Headline — Figma: x 80, y 325 of a 900 tall frame */}
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="shell absolute inset-x-0 bottom-[220px] md:bottom-[235px] lg:bottom-auto lg:top-[36.1%]"
+        className="shell absolute inset-x-0 bottom-16 md:bottom-[235px] lg:bottom-auto lg:top-[36.1%]"
       >
         <div className="flex flex-col gap-4">
           <Appear as="p" preset="rise" play={done} delay={0.1} className="text-[13px] font-medium uppercase leading-[1.5] tracking-[0.5px] sm:text-[16px] sm:tracking-normal">
@@ -212,17 +214,6 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
         </div>
       </motion.div>
 
-      {/* Search */}
-      <Appear
-        preset="slide"
-        play={done}
-        delay={0.5}
-        slow
-        className="shell absolute inset-x-0 bottom-4 z-10 flex justify-center md:bottom-[18px]"
-      >
-        <SearchBar filters={filters} />
-      </Appear>
-
       {/* Scroll cue */}
       <Appear
         preset="fade"
@@ -240,5 +231,17 @@ export function HomeHero({ initialLocations = [], initialStatuses = [] }: HomeHe
         Scroll
       </Appear>
     </section>
+
+      {/* Search: its own band under the hero on phones, over the hero's bottom edge from tablets up. */}
+      <Appear
+        preset="slide"
+        play={done}
+        delay={0.5}
+        slow
+        className="shell relative z-10 flex justify-center bg-green-deep py-6 text-white md:absolute md:inset-x-0 md:bottom-[18px] md:bg-transparent md:py-0"
+      >
+        <SearchBar filters={filters} />
+      </Appear>
+    </div>
   );
 }

@@ -63,7 +63,7 @@ export function FounderMessage() {
           />
         </div>
 
-        <div className="mt-14 grid gap-12 md:mt-[85px] lg:grid-cols-[minmax(0,658fr)_minmax(0,612fr)] lg:gap-[clamp(40px,10.6vw,169px)]">
+        <div className="mt-14 grid gap-12 md:mt-[85px] md:grid-cols-[minmax(0,658fr)_minmax(0,612fr)] md:gap-[clamp(40px,10.6vw,169px)]">
           {/* One trigger for the column: eyebrow, title lines, paragraph lines, rule, then signature. */}
           <div
             ref={colRef}
@@ -147,7 +147,7 @@ export function FounderMessage() {
                 src="/home/img/founder.jpg"
                 alt="Mainul Hasan Dulon, Managing Director & CEO"
                 fill
-                sizes="(min-width: 1024px) 612px, 100vw"
+                sizes="(min-width: 1024px) 612px, (min-width: 768px) 45vw, 100vw"
                 className="object-cover object-bottom"
               />
             </Drift>

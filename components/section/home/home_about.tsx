@@ -36,7 +36,7 @@ export function HomeAbout() {
     >
       {/* About */}
       <div className="shell">
-        <div className="relative grid items-start gap-10 lg:grid-cols-[minmax(0,473fr)_minmax(0,832fr)] lg:gap-[clamp(40px,8.4vw,135px)]">
+        <div className="relative grid items-start gap-10 md:grid-cols-[minmax(0,473fr)_minmax(0,832fr)] md:gap-[clamp(40px,8.4vw,135px)]">
           <div className="relative lg:h-[430px]">
             {/* Same shutter as the community collage: bands open top to bottom. */}
             <Shutter className="relative aspect-[473/521] w-full max-w-[473px] lg:absolute lg:inset-x-0 lg:top-[-77px]">
@@ -55,7 +55,7 @@ export function HomeAbout() {
                     src="/home/img/about-houses.png"
                     alt="Brownstone townhouses with trees on a corner lot"
                     fill
-                    sizes="(min-width: 1024px) 970px, 180vw"
+                    sizes="(min-width: 1024px) 970px, (min-width: 768px) 70vw, 180vw"
                     className="object-cover"
                   />
                 </div>
