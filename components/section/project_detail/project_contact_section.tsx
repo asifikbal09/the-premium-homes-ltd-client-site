@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MapPin, Phone, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ProjectDetail } from "@/lib/projects";
+import { CONTACT } from "@/lib/site";
 import { submitContact } from "@/app/actions/contact";
 import { Appear, Shutter } from "@/components/ui/motion";
 import { Heading, GreenPill } from "@/components/ui/primitives";
@@ -23,11 +24,9 @@ export function ProjectContactSection({ project }: ProjectContactSectionProps) {
   const [submitted, setSubmitted] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const contactLocation =
-    project.location ||
-    "House 15, Road 7, Block B\nBashundhara R/A, Dhaka 1229";
+  const contactLocation = project.location || CONTACT.office.join("\n");
   const contactPhone = project.contact_phone || "+971 54 308 6000";
-  const contactEmail = project.contact_email || "hello@premiumhomes.com.bd";
+  const contactEmail = project.contact_email || CONTACT.email.label;
   const sideImage = "/image/prediction/predictionBg.png";
 
   const handleSubmit = (e: React.FormEvent) => {

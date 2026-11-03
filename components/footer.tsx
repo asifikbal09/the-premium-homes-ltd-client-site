@@ -197,7 +197,7 @@ export function Footer({ reveal = false }: FooterProps = {}) {
                 </p>
                 <div className="flex flex-col gap-[43.2px]">
                   <div className="flex flex-col gap-3 text-[16px] tracking-[-0.36px] text-warm md:text-[18px]">
-                    {[CONTACT.phone, CONTACT.email].map((c) => (
+                    {[CONTACT.hotline, CONTACT.email].map((c) => (
                       <a
                         key={c.href}
                         href={c.href}
@@ -260,7 +260,7 @@ export function Footer({ reveal = false }: FooterProps = {}) {
                 </p>
               </div>
               <div className="flex flex-col font-display text-[20px] font-normal lowercase tracking-[0.24px] text-white md:text-[24px]">
-                {[CONTACT.email, CONTACT.phoneLocal].map((c) => (
+                {[CONTACT.email, CONTACT.hotline].map((c) => (
                   <a key={c.href} href={c.href} className="group w-fit">
                     <RollingText text={c.label} align="top" />
                   </a>
